@@ -30,17 +30,6 @@ async function getActiveChildrenWithSchedules(driverId: string, date: string) {
 
   const childIds = schedules.map(s => s.childId)
 
-  // Verify children have FULLY_SIGNED contracts
-  const { data: contracts } = await supabase
-    .from('Contract')
-    .select('childId')
-    .in('childId', childIds)
-    .eq('driverId', driverId)
-    .eq('status', 'FULLY_SIGNED')
-  const contractedChildIds = new Set((contracts ?? []).map(c => c.childId))
-  const contracted = schedules.filter(s => contractedChildIds.has(s.childId))
-  if (!contracted.length) return []
-
   // Fetch overrides
   const { data: overrides } = await supabase
     .from('ScheduleOverride')
@@ -50,7 +39,7 @@ async function getActiveChildrenWithSchedules(driverId: string, date: string) {
 
   const overrideMap = new Map((overrides ?? []).map(o => [o.childId, o]))
 
-  return contracted
+  return schedules
     .filter(s => {
       if (s.endDate && s.endDate < date) return false
       const ov = overrideMap.get(s.childId)

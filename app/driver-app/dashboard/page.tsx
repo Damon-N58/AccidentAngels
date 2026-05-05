@@ -52,7 +52,7 @@ export default async function DriverDashboardPage() {
     .eq('status', 'PENDING_DRIVER_SIGNATURE')
     .order('createdAt', { ascending: false })
 
-  // Active children with fully-signed contracts — use a single batch query
+  // Active children with fully-signed contracts — or any child assigned to this driver
   const { data: childrenRaw } = await supabase
     .from('Child')
     .select('*, parent:Parent(user:User(*))')
@@ -67,17 +67,20 @@ export default async function DriverDashboardPage() {
         .from('Contract')
         .select('*')
         .in('childId', activeChildIds)
-        .eq('status', 'FULLY_SIGNED')
         .order('createdAt', { ascending: false })
     : { data: [] }
 
-  const contractByChildId = new Map((allContracts ?? []).map((c: any) => [c.childId, c]))
+  const latestContractByChildId = new Map<string, any>()
+  for (const c of allContracts ?? []) {
+    if (!latestContractByChildId.has(c.childId)) {
+      latestContractByChildId.set(c.childId, c)
+    }
+  }
+
   const children = (childrenRaw ?? []).map((child: any) => ({
     ...child,
-    contracts: contractByChildId.has(child.id) ? [contractByChildId.get(child.id)] : [],
+    contracts: latestContractByChildId.has(child.id) ? [latestContractByChildId.get(child.id)] : [],
   }))
-
-  const activeChildren = children.filter((c: any) => c.contracts.length > 0)
 
   const totalDocs = 6
   const approvedDocs = (complianceDocs ?? []).filter((d: any) => d.status === 'APPROVED').length
@@ -196,18 +199,16 @@ export default async function DriverDashboardPage() {
           <h2 className="text-base font-bold text-[#0F1923]">Active children</h2>
         </div>
 
-        {activeChildren.length === 0 ? (
+        {children.length === 0 ? (
           <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-6 text-center">
             <p className="text-sm font-medium text-[#0F1923]">No active children yet</p>
             <p className="text-xs text-[#5A6474] mt-1">
-              {isFullyCompliant
-                ? 'Parents will find you once they search for a driver.'
-                : 'Complete your compliance documents so parents can find you.'}
+              A parent needs to assign you as their driver first.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {activeChildren.map((child: any) => {
+            {children.map((child: any) => {
               const contract = child.contracts[0]
               return (
                 <Link key={child.id} href={`/children/${child.id}`}>
