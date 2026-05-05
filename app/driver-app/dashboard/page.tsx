@@ -30,12 +30,26 @@ export default async function DriverDashboardPage() {
   if (!driver) redirect('/onboarding')
 
   const todayStr = new Date().toISOString().split('T')[0]
-  const { data: todayTripsData } = await supabase
+  let { data: todayTripsData } = await supabase
     .from('Trip')
     .select('*, stops:TripStop(*, child:Child(name, schoolName))')
     .eq('driverId', driver.id)
     .eq('date', todayStr)
     .order('createdAt', { ascending: true })
+
+  // Auto-generate trips if none exist for today
+  if (!todayTripsData?.length) {
+    const { generateTripsForDriver } = await import('@/lib/trips/generate')
+    await generateTripsForDriver(driver.id, todayStr)
+    const { data: generated } = await supabase
+      .from('Trip')
+      .select('*, stops:TripStop(*, child:Child(name, schoolName))')
+      .eq('driverId', driver.id)
+      .eq('date', todayStr)
+      .order('createdAt', { ascending: true })
+    todayTripsData = generated
+  }
+
   const todayTrips = (todayTripsData ?? []).map((t: any) => ({
     ...t,
     stops: (t.stops ?? []).sort((a: any, b: any) => a.stopOrder - b.stopOrder),
