@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <!-- Wings -->
+  <g>
+    <!-- Left wing -->
+    <path d="M72 30 C60 18, 30 14, 10 22 C28 20, 52 26, 68 36 Z" fill="#1A3F7A" opacity="0.9"/>
+    <path d="M72 30 C58 28, 34 32, 16 42 C36 34, 58 34, 70 38 Z" fill="#1A3F7A" opacity="0.6"/>
+    <path d="M72 30 C62 34, 40 42, 24 50 C42 40, 64 40, 72 40 Z" fill="#1A3F7A" opacity="0.35"/>
+    <!-- Right wing -->
+    <path d="M128 30 C140 18, 170 14, 190 22 C172 20, 148 26, 132 36 Z" fill="#1A3F7A" opacity="0.9"/>
+    <path d="M128 30 C142 28, 166 32, 184 42 C164 34, 142 34, 130 38 Z" fill="#1A3F7A" opacity="0.6"/>
+    <path d="M128 30 C138 34, 160 42, 176 50 C158 40, 136 40, 128 40 Z" fill="#1A3F7A" opacity="0.35"/>
+    <!-- Gold accent dot (halo) -->
+    <circle cx="100" cy="16" r="5" fill="#F5A623"/>
+    <!-- Body / connector -->
+    <ellipse cx="100" cy="32" rx="10" ry="12" fill="#1A3F7A"/>
+  </g>
+</svg>

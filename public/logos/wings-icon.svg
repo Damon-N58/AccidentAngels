@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Halo -->
+  <ellipse cx="32" cy="11" rx="7" ry="3.5" stroke="#F5A623" stroke-width="2.5" fill="none"/>
+  <!-- Left wing: single sweeping filled shape -->
+  <path d="M30 32 C26 26, 14 18, 4 22 C10 22, 20 27, 26 36 Z" fill="#FFFFFF"/>
+  <path d="M29 36 C24 32, 10 30, 4 36 C12 33, 22 34, 28 40 Z" fill="#FFFFFF" opacity="0.6"/>
+  <!-- Right wing -->
+  <path d="M34 32 C38 26, 50 18, 60 22 C54 22, 44 27, 38 36 Z" fill="#FFFFFF"/>
+  <path d="M35 36 C40 32, 54 30, 60 36 C52 33, 42 34, 36 40 Z" fill="#FFFFFF" opacity="0.6"/>
+</svg>

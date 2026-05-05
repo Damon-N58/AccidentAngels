@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/check-expiry",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/billing",
+      "schedule": "0 5 1 * *"
+    },
+    {
+      "path": "/api/trips/generate-all",
+      "schedule": "0 21 * * *"
+    }
+  ]
+}

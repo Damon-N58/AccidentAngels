@@ -1,0 +1,356 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────
+
+enum UserRole {
+  DRIVER
+  PARENT
+  ADMIN
+  ASSOCIATION_ADMIN
+}
+
+enum ComplianceDocType {
+  PDP
+  POLICE_CLEARANCE
+  PASSENGER_LIABILITY
+  ROADWORTHY_CERTIFICATE
+  VEHICLE_PHOTOS
+  DRIVER_LICENSE
+}
+
+enum ComplianceStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum DriverStatus {
+  PENDING_COMPLIANCE
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_DRIVER_SIGNATURE
+  PENDING_PARENT_SIGNATURE
+  FULLY_SIGNED
+  CANCELLED
+}
+
+enum PaymentMethodType {
+  PAYSTACK_CARD
+  DEBICHECK
+  CAPITEC_PAY_VRP
+}
+
+enum PaymentMethodStatus {
+  PENDING_SETUP
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  FAILED
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  RETRY_SCHEDULED
+  CANCELLED
+}
+
+// ─── MODELS ───────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  email     String?  @unique
+  name      String
+  role      UserRole
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver    Driver?
+  parent    Parent?
+  otpTokens OtpToken[]
+}
+
+model OtpToken {
+  id        String    @id @default(cuid())
+  userId    String?
+  phone     String
+  code      String
+  purpose   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([phone, purpose])
+}
+
+model Association {
+  id           String   @id @default(cuid())
+  name         String
+  code         String   @unique
+  region       String
+  monthlyLevy  Int      @default(0)
+  contactName  String
+  contactPhone String
+  contactEmail String?
+  bankName     String?
+  bankAccount  String?
+  bankBranch   String?
+  paystackSubAccountCode String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  drivers Driver[]
+}
+
+model Driver {
+  id                     String       @id @default(cuid())
+  userId                 String       @unique
+  associationId          String?
+  getsRegistrationNumber String?
+
+  vehicleRegistration String?
+  vehicleMake         String?
+  vehicleModel        String?
+  vehicleYear         Int?
+  vehicleCapacity     Int?
+  vehicleColour       String?
+
+  bankName              String?
+  bankAccountNumber     String?
+  bankBranchCode        String?
+  bankAccountName       String?
+  paystackSubAccountCode String?
+  paystackSubAccountId  String?
+
+  status            DriverStatus @default(PENDING_COMPLIANCE)
+  profilePhotoUrl   String?
+  isVerifiedByAdmin Boolean      @default(false)
+  verifiedAt        DateTime?
+  verifiedByUserId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user           User                 @relation(fields: [userId], references: [id])
+  association    Association?         @relation(fields: [associationId], references: [id])
+  complianceDocs ComplianceDocument[]
+  children       Child[]
+  contracts      Contract[]
+  transactions   Transaction[]
+  payouts        Payout[]
+}
+
+model ComplianceDocument {
+  id               String            @id @default(cuid())
+  driverId         String
+  type             ComplianceDocType
+  status           ComplianceStatus  @default(PENDING)
+  fileUrl          String
+  fileName         String
+  fileSizeBytes    Int?
+  mimeType         String?
+  issueDate        DateTime?
+  expiryDate       DateTime?
+  documentNumber   String?
+  reviewNotes      String?
+  reviewedAt       DateTime?
+  reviewedByUserId String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@index([driverId, type])
+  @@index([status, expiryDate])
+}
+
+model Parent {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  paymentMethodType   PaymentMethodType?
+  paymentMethodStatus PaymentMethodStatus @default(PENDING_SETUP)
+
+  paystackCustomerId         String?
+  paystackAuthorizationCode  String?
+  paystackAuthorizationEmail String?
+  paystackCardLast4          String?
+  paystackCardBank           String?
+  paystackCardBrand          String?
+
+  debiCheckMandateRef    String?
+  debiCheckMandateStatus String?
+  debiCheckBankName      String?
+  debiCheckAccountNumber String?
+  debiCheckBranchCode    String?
+  debiCheckIdNumber      String?
+
+  capitecPayEnrollmentCode String?
+  capitecPayPhone          String?
+  capitecPayMaxAmountCents Int?
+  capitecPayStartDate      DateTime?
+  capitecPayExpiryDate     DateTime?
+  capitecPayProvider       String?
+
+  isPaymentSetup Boolean   @default(false)
+  paymentSetupAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  children     Child[]
+  contracts    Contract[]
+  transactions Transaction[]
+}
+
+model Child {
+  id             String    @id @default(cuid())
+  parentId       String
+  driverId       String?
+  name           String
+  dateOfBirth    DateTime?
+  schoolName     String
+  grade          String?
+  pickupAddress  String
+  pickupLat      Float?
+  pickupLng      Float?
+  dropoffAddress String
+  dropoffLat     Float?
+  dropoffLng     Float?
+  monthlyFee     Int?
+  startDate      DateTime?
+  endDate        DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  parent       Parent        @relation(fields: [parentId], references: [id])
+  driver       Driver?       @relation(fields: [driverId], references: [id])
+  contracts    Contract[]
+  transactions Transaction[]
+
+  @@index([parentId])
+  @@index([driverId])
+}
+
+model Contract {
+  id                 String         @id @default(cuid())
+  driverId           String
+  parentId           String
+  childId            String
+  contractVersion    String         @default("1.0")
+  monthlyAmountCents Int
+  startDate          DateTime
+  endDate            DateTime?
+  terms              Json
+  status             ContractStatus @default(DRAFT)
+  pdfUrl             String?
+
+  driverSignedAt         DateTime?
+  driverSignatureOtpHash String?
+  driverIpAddress        String?
+  driverUserAgent        String?
+
+  parentSignedAt           DateTime?
+  parentSignatureOtpHash   String?
+  parentIpAddress          String?
+  parentUserAgent          String?
+  parentPhone              String?
+  parentSigningToken       String?   @unique
+  parentSigningTokenExpiry DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver   Driver   @relation(fields: [driverId], references: [id])
+  parent   Parent   @relation(fields: [parentId], references: [id])
+  child    Child    @relation(fields: [childId], references: [id])
+
+  @@index([driverId, status])
+  @@index([parentId, status])
+  @@index([parentSigningToken])
+}
+
+model Transaction {
+  id           String @id @default(cuid())
+  parentId     String
+  driverId     String
+  childId      String
+  billingMonth Int
+  billingYear  Int
+
+  grossAmountCents     Int
+  gatewayFeeCents      Int
+  platformFeeCents     Int
+  associationLevyCents Int
+  tccSplitCents        Int
+  driverNetCents       Int
+
+  paymentMethodType PaymentMethodType?
+  status            TransactionStatus  @default(PENDING)
+  providerReference String?            @unique
+  providerChargeId  String?
+
+  attemptCount  Int       @default(0)
+  lastAttemptAt DateTime?
+  nextRetryAt   DateTime?
+  failureReason String?
+  failureCode   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent @relation(fields: [parentId], references: [id])
+  driver Driver @relation(fields: [driverId], references: [id])
+  child  Child  @relation(fields: [childId], references: [id])
+
+  @@index([parentId, billingYear, billingMonth])
+  @@index([status, nextRetryAt])
+}
+
+model Payout {
+  id            String    @id @default(cuid())
+  driverId      String
+  amountCents   Int
+  providerRef   String?
+  status        String    @default("PENDING")
+  scheduledAt   DateTime
+  processedAt   DateTime?
+  failureReason String?
+  createdAt     DateTime  @default(now())
+
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@index([driverId, status])
+}
+
+model PlatformConfig {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String
+  description     String?
+  updatedAt       DateTime @updatedAt
+  updatedByUserId String?
+}
