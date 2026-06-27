@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { User, Car, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import { User, Car, CheckCircle2, ChevronDown, ChevronUp, Star } from 'lucide-react'
+import { StarRating } from '@/components/ratings/StarRating'
 
 type Driver = {
   id: string
@@ -15,6 +16,10 @@ type Driver = {
   approvedDocsCount: number
   association: { name: string; region: string } | null
   profilePhotoUrl: string | null
+  // Recommendation-endpoint additions
+  ratingAvg: number | null
+  ratingCount: number
+  distanceKm: number | null
 }
 
 export function ParentDriverPicker({
@@ -38,7 +43,8 @@ export function ParentDriverPicker({
   async function loadDrivers() {
     setLoading(true)
     try {
-      const res = await fetch('/api/drivers')
+      // Use recommendation endpoint so results are ranked by distance/rating
+      const res = await fetch('/api/drivers/recommend?childId=' + childId)
       const data = await res.json()
       setDrivers(Array.isArray(data) ? data : [])
     } catch {
@@ -58,6 +64,11 @@ export function ParentDriverPicker({
       })
       if (!res.ok) {
         const data = await res.json()
+        // P1-C: surface outstanding-balance error with specific message
+        if (res.status === 402 && data.code === 'BALANCE_OUTSTANDING') {
+          toast.error(data.error)
+          return
+        }
         throw new Error(data.error ?? 'Failed to assign driver')
       }
       toast.success('Driver assigned!')
@@ -93,8 +104,10 @@ export function ParentDriverPicker({
           ) : drivers.length === 0 ? (
             <div className="text-center py-6 text-sm text-[#5A6474]">No active drivers available</div>
           ) : (
-            drivers.map(d => {
+            drivers.map((d, idx) => {
               const vehicle = [d.vehicleColour, d.vehicleMake, d.vehicleModel].filter(Boolean).join(' ')
+              // Show "Recommended" badge on first card when it has ≥4 avg rating from ≥3 parents
+              const showRecommended = idx === 0 && d.ratingAvg != null && d.ratingAvg >= 4 && d.ratingCount >= 3
               return (
                 <button
                   key={d.id}
@@ -109,9 +122,18 @@ export function ParentDriverPicker({
                         : <User className="w-4 h-4 text-[#1A3F7A]" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold text-sm text-[#0F1923]">{d.user.name}</p>
-                        {assigning === d.id && <span className="text-xs text-[#1A3F7A]">Assigning…</span>}
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-semibold text-sm text-[#0F1923] truncate">{d.user.name}</p>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Amber "Recommended" badge on top-ranked qualifying driver */}
+                          {showRecommended && (
+                            <span className="inline-flex items-center gap-0.5 bg-[#F5A623]/15 text-[#B97A00] text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                              <Star className="w-2.5 h-2.5 fill-[#F5A623] stroke-[#F5A623]" />
+                              Recommended
+                            </span>
+                          )}
+                          {assigning === d.id && <span className="text-xs text-[#1A3F7A]">Assigning…</span>}
+                        </div>
                       </div>
                       {vehicle && (
                         <div className="flex items-center gap-1 mt-0.5">
@@ -119,6 +141,18 @@ export function ParentDriverPicker({
                           <span className="text-xs text-[#5A6474]">{vehicle}</span>
                         </div>
                       )}
+                      {/* Rating row with distance chip */}
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <StarRating value={d.ratingAvg} readonly size="sm" />
+                          <span className="text-xs text-[#5A6474]">({d.ratingCount})</span>
+                        </div>
+                        {d.distanceKm != null && (
+                          <span className="text-[10px] bg-[#1A3F7A]/08 text-[#1A3F7A] px-1.5 py-0.5 rounded-full font-medium">
+                            ~{d.distanceKm} km
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1 mt-0.5">
                         <CheckCircle2 className="w-3 h-3 text-[#0F6E56]" />
                         <span className="text-xs text-[#0F6E56]">{d.approvedDocsCount}/6 docs verified</span>

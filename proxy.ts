@@ -21,21 +21,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
-  // Local dev fallback — NEXT_PUBLIC_LOCAL_APP defaults to driver
-  // Skip rewrite if already on the correct app prefix (direct access)
-  if (host === 'localhost') {
-    const appType = process.env.NEXT_PUBLIC_LOCAL_APP ?? 'driver'
-    const prefix = appType === 'parent' ? '/parent-app' : appType === 'admin' ? '/admin' : '/driver-app'
-    if (!url.pathname.startsWith(prefix)) {
-      url.pathname = `${prefix}${url.pathname}`
-      return NextResponse.rewrite(url)
-    }
-    return NextResponse.next()
+  // Fallback for localhost, Vercel preview URLs, and any other unknown host.
+  // Routes to the app specified by NEXT_PUBLIC_LOCAL_APP (defaults to driver).
+  const appType = process.env.NEXT_PUBLIC_LOCAL_APP ?? 'driver'
+  const prefix = appType === 'parent' ? '/parent-app' : appType === 'admin' ? '/admin' : '/driver-app'
+  if (!url.pathname.startsWith(prefix)) {
+    url.pathname = `${prefix}${url.pathname}`
+    return NextResponse.rewrite(url)
   }
-
-  return NextResponse.redirect(
-    new URL(process.env.NEXT_PUBLIC_DRIVER_URL ?? 'https://driver.accidentangels.co.za')
-  )
+  return NextResponse.next()
 }
 
 export const config = {

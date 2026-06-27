@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { DriverTopBar } from '@/components/driver/DriverTopBar'
 import { TripStopCard } from '@/components/trips/TripStopCard'
 import { TripProgressBar } from '@/components/trips/TripProgressBar'
-import { Button } from '@/components/ui/button'
 import { TripMap } from '@/components/trips/TripMap'
+import { ActiveTripNavigation } from '@/components/trips/ActiveTripNavigation'
+import { Button } from '@/components/ui/button'
 import { ChevronLeft, Navigation, Play } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TripData } from '@/lib/trips/types'
@@ -47,7 +48,7 @@ export default function DriverTripDetailPage({
     try {
       const res = await fetch(`/api/trips/${tripId}/start`, { method: 'POST' })
       if (!res.ok) throw new Error('Failed to start')
-      toast.success('Trip started!')
+      toast.success('Trip started — good luck!')
       await fetchTrip()
     } catch {
       toast.error('Failed to start trip')
@@ -57,35 +58,50 @@ export default function DriverTripDetailPage({
   }
 
   const handleComplete = async (stopId: string, lat?: number, lng?: number) => {
-    try {
-      const res = await fetch(`/api/trips/${tripId}/stops`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stopId, status: 'COMPLETED', lat, lng }),
-      })
-      if (!res.ok) throw new Error('Failed')
-      toast.success('Stop completed')
-      await fetchTrip()
-    } catch {
-      toast.error('Failed to update stop')
-    }
+    const res = await fetch(`/api/trips/${tripId}/stops`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stopId, status: 'COMPLETED', lat, lng }),
+    })
+    if (!res.ok) throw new Error('Failed')
+    await fetchTrip()
+  }
+
+  const handleArrived = async (stopId: string) => {
+    const res = await fetch(`/api/trips/${tripId}/stops/arrive`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stopId }),
+    })
+    if (!res.ok) { toast.error('Could not record arrival'); return }
+    await fetchTrip() // refetch so arrivedAt populates and timer starts
   }
 
   const handleMissed = async (stopId: string, reason: string) => {
-    try {
-      const res = await fetch(`/api/trips/${tripId}/stops`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stopId, status: 'MISSED', missedReason: reason }),
-      })
-      if (!res.ok) throw new Error('Failed')
-      toast.success('Stop marked as missed')
-      await fetchTrip()
-    } catch {
-      toast.error('Failed to update stop')
-    }
+    const res = await fetch(`/api/trips/${tripId}/stops`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stopId, status: 'MISSED', missedReason: reason }),
+    })
+    if (!res.ok) throw new Error('Failed')
+    await fetchTrip()
   }
 
+  // ── Active navigation (full-screen Uber-style) ────────────
+  if (trip?.status === 'IN_PROGRESS') {
+    return (
+      <ActiveTripNavigation
+        trip={trip}
+        onBack={() => router.push('/driver-app/trips')}
+        onStopComplete={handleComplete}
+        onStopMissed={handleMissed}
+        onStopArrived={handleArrived}
+        onTripRefresh={fetchTrip}
+      />
+    )
+  }
+
+  // ── Pre-trip / completed summary view ─────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F9FB]">
@@ -113,19 +129,38 @@ export default function DriverTripDetailPage({
   }
 
   const completedStops = trip.stops.filter(s => s.status === 'COMPLETED').length
+  const tripLabel = trip.type === 'MORNING' ? 'Morning school run' : 'Afternoon school run'
+  const isCompleted = trip.status === 'COMPLETED'
+
+  // Payment summary — only relevant in driver view (stops without paymentStatus are ignored)
+  const paidCount = trip.stops.filter(s => s.paymentStatus === 'PAID').length
+  const overdueCount = trip.stops.filter(s => s.paymentStatus === 'OVERDUE').length
+  const hasPaymentInfo = trip.stops.some(s => s.paymentStatus)
 
   return (
     <div className="min-h-screen bg-[#F8F9FB]">
-      <DriverTopBar title={trip.type === 'MORNING' ? 'Morning school run' : 'Afternoon school run'} />
+      <DriverTopBar title={tripLabel} />
       <div className="px-4 pt-4 pb-24 space-y-4">
 
-        {/* Back */}
-        <button onClick={() => router.push('/trips')} className="flex items-center gap-1 text-sm text-[#1A3F7A] font-medium hover:underline">
+        <button onClick={() => router.push('/driver-app/trips')} className="flex items-center gap-1 text-sm text-[#1A3F7A] font-medium hover:underline">
           <ChevronLeft className="w-4 h-4" /> All trips
         </button>
 
-        {/* Progress */}
+        {/* Status + progress */}
         <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="font-bold text-[#0F1923]">{tripLabel}</p>
+              <p className="text-xs text-[#5A6474] mt-0.5">{trip.date}</p>
+            </div>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              isCompleted ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
+              trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
+              'bg-[#1A3F7A]/10 text-[#1A3F7A]'
+            }`}>
+              {isCompleted ? 'Completed' : trip.status === 'CANCELLED' ? 'Cancelled' : 'Scheduled'}
+            </span>
+          </div>
           <TripProgressBar
             completedStops={completedStops}
             totalStops={trip.stops.length}
@@ -135,11 +170,24 @@ export default function DriverTripDetailPage({
             <span>{trip.stops.filter(s => s.type === 'PICKUP').length} pickups</span>
             <span>{trip.stops.filter(s => s.type === 'DROPOFF').length} dropoffs</span>
           </div>
+          {/* Payment summary chips — only when the API has annotated stops with paymentStatus */}
+          {hasPaymentInfo && (
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#0F6E56]/10 text-[#0F6E56]">
+                {paidCount} paying
+              </span>
+              {overdueCount > 0 && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#E24B4A]/10 text-[#E24B4A]">
+                  {overdueCount} overdue
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Map */}
+        {/* Map overview */}
         {trip.stops.some(s => s.lat && s.lng) && (
-          <TripMap stops={trip.stops} tripStatus={trip.status} />
+          <TripMap stops={trip.stops} tripStatus={trip.status} isDriverView={true} />
         )}
 
         {/* Start button */}
@@ -147,18 +195,18 @@ export default function DriverTripDetailPage({
           <Button
             onClick={handleStart}
             disabled={starting}
-            className="w-full h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl text-base"
+            className="w-full h-14 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl text-base"
           >
-            <Play className="w-5 h-5 mr-2" />
-            {starting ? 'Starting…' : 'Start trip'}
+            <Play className="w-5 h-5 mr-2 fill-current" />
+            {starting ? 'Starting…' : 'Start trip — begin navigation'}
           </Button>
         )}
 
-        {/* Stop list */}
+        {/* Stop list (summary view for scheduled/completed) */}
         <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4">
           <div className="flex items-center gap-2 mb-4">
             <Navigation className="w-4 h-4 text-[#1A3F7A]" />
-            <p className="font-semibold text-sm text-[#0F1923]">Route</p>
+            <p className="font-semibold text-sm text-[#0F1923]">Route — {trip.stops.length} stops</p>
           </div>
           {trip.stops.map((stop, i) => (
             <TripStopCard
@@ -166,10 +214,8 @@ export default function DriverTripDetailPage({
               stop={stop}
               isFirst={i === 0}
               isLast={i === trip.stops.length - 1}
-              isDriverView
+              isDriverView={false}
               tripStatus={trip.status}
-              onComplete={handleComplete}
-              onMissed={handleMissed}
             />
           ))}
         </div>

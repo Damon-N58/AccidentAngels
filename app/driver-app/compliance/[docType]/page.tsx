@@ -62,7 +62,7 @@ export default function DocUploadPage({ params }: { params: Promise<{ docType: s
       if (!saveRes.ok) throw new Error('Failed to save document')
 
       toast.success('Document uploaded. Under review.')
-      router.push('/compliance')
+      router.push('/driver-app/compliance')
     } catch (err) {
       toast.error((err as Error).message)
     } finally {

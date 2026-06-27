@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { OtpInput } from '@/components/shared/OtpInput'
 import { AddressPicker } from '@/components/shared/AddressPicker'
 import { CheckCircle2, User, Car } from 'lucide-react'
+import { Logo } from '@/components/ui/Logo'
 
 const STEPS = ['Your name', 'Your child', 'Pickup & dropoff', 'Choose a driver', 'Sign & confirm']
 
@@ -130,7 +131,7 @@ export default function ParentOnboardingPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <div className="bg-gradient-to-br from-[#1A3F7A] to-[#0F2A52] px-6 pt-12 pb-10 flex flex-col items-center text-center">
-        <img src="/logos/wings-icon.svg" alt="Angels" className="w-14 h-14 mb-4" />
+        <Logo size={56} className="mb-4 rounded-2xl object-contain bg-white p-1" />
         <h1 className="text-xl font-bold text-white">Get started</h1>
         <p className="text-white/70 text-sm mt-1">Step {step + 1} of {STEPS.length}</p>
         <div className="flex gap-1.5 mt-4">

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShieldCheck, Navigation, CreditCard, User } from 'lucide-react'
+import { LayoutDashboard, ShieldCheck, Navigation, CreditCard, User, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -10,6 +10,7 @@ const NAV = [
   { href: '/driver-app/compliance', label: 'Compliance',  Icon: ShieldCheck },
   { href: '/driver-app/trips',      label: 'Trips',       Icon: Navigation },
   { href: '/driver-app/payments',   label: 'Payments',    Icon: CreditCard },
+  { href: '/driver-app/ratings',    label: 'Ratings',     Icon: Star },
   { href: '/driver-app/profile',    label: 'Profile',     Icon: User },
 ]
 

@@ -69,18 +69,21 @@ export default function DriverTripsPage() {
             ))}
           </div>
         ) : trips.length === 0 && !error ? (
-          <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-6 text-center">
+          <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-6 text-center space-y-1">
             <CalendarDays className="w-8 h-8 text-[#5A6474] mx-auto mb-2" />
             <p className="text-sm font-medium text-[#0F1923]">No trips for this date</p>
-            <p className="text-xs text-[#5A6474] mt-1">
+            <p className="text-xs text-[#5A6474]">
               Trips are auto-generated from children&apos;s schedules.
+            </p>
+            <p className="text-xs text-[#F5A623] font-medium pt-1">
+              Ask the parent to set up a schedule under their child&apos;s profile, then trips will appear here automatically.
             </p>
           </div>
         ) : (
           <>
             {/* Morning trip */}
             {morning && (
-              <button onClick={() => router.push(`/trips/${morning.id}`)} className="w-full text-left">
+              <button onClick={() => router.push(`/driver-app/trips/${morning.id}`)} className="w-full text-left">
                 <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
@@ -103,6 +106,23 @@ export default function DriverTripsPage() {
                       totalStops={morning.stops.length}
                       status={morning.status}
                     />
+                    {/* Payment chips — only when at least one stop has paymentStatus annotated */}
+                    {morning.stops.some(s => s.paymentStatus) && (() => {
+                      const paid = morning.stops.filter(s => s.paymentStatus === 'PAID').length
+                      const overdue = morning.stops.filter(s => s.paymentStatus === 'OVERDUE').length
+                      return (
+                        <div className="flex items-center gap-2 mt-3 flex-wrap">
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#0F6E56]/10 text-[#0F6E56]">
+                            {paid} paying
+                          </span>
+                          {overdue > 0 && (
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#E24B4A]/10 text-[#E24B4A]">
+                              {overdue} overdue
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
               </button>
@@ -110,7 +130,7 @@ export default function DriverTripsPage() {
 
             {/* Afternoon trip */}
             {afternoon && (
-              <button onClick={() => router.push(`/trips/${afternoon.id}`)} className="w-full text-left">
+              <button onClick={() => router.push(`/driver-app/trips/${afternoon.id}`)} className="w-full text-left">
                 <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
@@ -133,6 +153,23 @@ export default function DriverTripsPage() {
                       totalStops={afternoon.stops.length}
                       status={afternoon.status}
                     />
+                    {/* Payment chips — only when at least one stop has paymentStatus annotated */}
+                    {afternoon.stops.some(s => s.paymentStatus) && (() => {
+                      const paid = afternoon.stops.filter(s => s.paymentStatus === 'PAID').length
+                      const overdue = afternoon.stops.filter(s => s.paymentStatus === 'OVERDUE').length
+                      return (
+                        <div className="flex items-center gap-2 mt-3 flex-wrap">
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#0F6E56]/10 text-[#0F6E56]">
+                            {paid} paying
+                          </span>
+                          {overdue > 0 && (
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#E24B4A]/10 text-[#E24B4A]">
+                              {overdue} overdue
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
               </button>

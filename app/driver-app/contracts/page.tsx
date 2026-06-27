@@ -15,6 +15,7 @@ export default async function ContractsPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
   if (!session) redirect('/login')
+  if (session.role !== 'DRIVER') redirect('/driver-app/login')
 
   const { data: driver } = await supabase.from('Driver').select('id').eq('userId', session.userId).maybeSingle()
   if (!driver) redirect('/onboarding')
@@ -33,7 +34,7 @@ export default async function ContractsPage() {
           <EmptyState icon={<FileText />} title="No contracts yet" description="Contracts are created when you add a child." />
         ) : (
           (contracts ?? []).map((contract: any) => (
-            <Link key={contract.id} href={`/contracts/${contract.id}`}>
+            <Link key={contract.id} href={`/driver-app/contracts/${contract.id}`}>
               <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
                 <CardContent className="p-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">

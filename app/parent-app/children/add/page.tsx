@@ -6,12 +6,11 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { OtpInput } from '@/components/shared/OtpInput'
 import { ParentTopBar } from '@/components/parent/ParentTopBar'
 import { AddressPicker } from '@/components/shared/AddressPicker'
 import { CheckCircle2, User, Car } from 'lucide-react'
 
-const STEPS = ['Your child', 'Pickup & dropoff', 'Choose a driver', 'Sign & confirm']
+const STEPS = ['Your child', 'Pickup & dropoff', 'Choose a driver']
 
 type Driver = {
   id: string
@@ -29,8 +28,6 @@ export default function AddChildPage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [otpSent, setOtpSent] = useState(false)
-  const [otp, setOtp] = useState('')
 
   const [child, setChild] = useState({ name: '', dateOfBirth: '', schoolName: '', grade: '' })
   const [pickupAddr, setPickupAddr] = useState('')
@@ -61,30 +58,7 @@ export default function AddChildPage() {
     }
   }
 
-  async function sendOtp() {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ purpose: 'contract_sign' }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to send code')
-      if (data.devCode) {
-        toast(`Dev OTP: ${data.devCode}`, { duration: 20000, description: 'Auto-hides in 20s' })
-        setTimeout(() => toast.dismiss(), 20000)
-      }
-      setOtpSent(true)
-    } catch (err) {
-      toast.error((err as Error).message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   async function handleSubmit() {
-    if (!otp || otp.length !== 6) { toast.error('Enter the 6-digit code'); return }
     setLoading(true)
     try {
       const body: Record<string, any> = {
@@ -93,14 +67,14 @@ export default function AddChildPage() {
         schoolName:     child.schoolName.trim(),
         grade:          child.grade.trim() || undefined,
         pickupAddress:  pickupAddr,
-        pickupLat:      pickupLat,
-        pickupLng:      pickupLng,
+        pickupLat,
+        pickupLng,
         dropoffAddress: dropoffAddr,
-        dropoffLat:     dropoffLat,
-        dropoffLng:     dropoffLng,
-        otp,
+        dropoffLat,
+        dropoffLng,
       }
       if (selectedDriver) body.driverId = selectedDriver.id
+
       const res = await fetch('/api/children', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,11 +82,10 @@ export default function AddChildPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to add child')
-      toast.success('Child added! Your driver has been notified.')
+      toast.success('Child added!')
       router.push('/parent-app/dashboard')
     } catch (err) {
       toast.error((err as Error).message)
-      setOtp('')
     } finally {
       setLoading(false)
     }
@@ -123,6 +96,14 @@ export default function AddChildPage() {
     if (step === 1) return !!pickupAddr && !!dropoffAddr && pickupLat != null && dropoffLat != null && !isNaN(pickupLat) && !isNaN(dropoffLat)
     if (step === 2) return !!selectedDriver || skipDriver
     return false
+  }
+
+  function handleNext() {
+    if (step < 2) {
+      setStep(s => s + 1)
+    } else {
+      handleSubmit()
+    }
   }
 
   return (
@@ -171,11 +152,7 @@ export default function AddChildPage() {
               value={pickupAddr}
               lat={pickupLat}
               lng={pickupLng}
-              onChange={(addr, lat, lng) => {
-                setPickupAddr(addr)
-                setPickupLat(lat)
-                setPickupLng(lng)
-              }}
+              onChange={(addr, lat, lng) => { setPickupAddr(addr); setPickupLat(lat); setPickupLng(lng) }}
             />
             <div className="border-t border-[rgba(26,63,122,0.08)] pt-4">
               <AddressPicker
@@ -184,11 +161,7 @@ export default function AddChildPage() {
                 value={dropoffAddr}
                 lat={dropoffLat}
                 lng={dropoffLng}
-                onChange={(addr, lat, lng) => {
-                  setDropoffAddr(addr)
-                  setDropoffLat(lat)
-                  setDropoffLng(lng)
-                }}
+                onChange={(addr, lat, lng) => { setDropoffAddr(addr); setDropoffLat(lat); setDropoffLng(lng) }}
               />
             </div>
           </>
@@ -236,13 +209,10 @@ export default function AddChildPage() {
                   )
                 })}
 
-                {/* Select later option */}
                 <button
                   onClick={() => { setSelectedDriver(null); setSkipDriver(true) }}
                   className={`w-full text-center rounded-2xl border-2 border-dashed p-4 transition-all ${
-                    skipDriver
-                      ? 'border-[#F5A623] bg-[#F5A623]/05'
-                      : 'border-[rgba(26,63,122,0.15)] hover:border-[#F5A623]/40'
+                    skipDriver ? 'border-[#F5A623] bg-[#F5A623]/05' : 'border-[rgba(26,63,122,0.15)] hover:border-[#F5A623]/40'
                   }`}
                 >
                   <p className="font-semibold text-sm text-[#0F1923]">Select later</p>
@@ -252,54 +222,20 @@ export default function AddChildPage() {
             )}
           </>
         )}
-
-        {step === 3 && (
-          <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-1.5">
-              {[
-                ['Child',   child.name],
-                ['School',  child.schoolName],
-                ['Pickup',  pickupAddr],
-                ['Dropoff', dropoffAddr],
-                ['Driver',  selectedDriver?.user.name ?? 'To be assigned'],
-              ].map(([label, val]) => (
-                <div key={label} className="flex justify-between text-sm py-1 border-b border-[rgba(26,63,122,0.05)] last:border-0">
-                  <span className="text-[#5A6474]">{label}</span>
-                  <span className="font-medium text-[#0F1923] text-right max-w-[55%] truncate">{val}</span>
-                </div>
-              ))}
-            </div>
-
-            {!otpSent ? (
-              <Button onClick={sendOtp} disabled={loading}
-                className="w-full h-12 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] font-semibold rounded-xl">
-                {loading ? 'Sending code…' : 'Send code to sign →'}
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-[#5A6474] text-center">Enter the 6-digit code sent to your phone</p>
-                <OtpInput value={otp} onChange={setOtp} disabled={loading} />
-                <Button onClick={handleSubmit} disabled={otp.length !== 6 || loading}
-                  className="w-full h-12 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] font-semibold rounded-xl">
-                  {loading ? 'Submitting…' : 'Sign & send to driver →'}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      {step < 3 && (
-        <div className="px-6 pb-8 pt-2 flex gap-3">
-          {step > 0 && (
-            <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-12 flex-1">Back</Button>
-          )}
-          <Button onClick={() => setStep(s => s + 1)} disabled={!canAdvance()}
-            className="h-12 flex-1 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold">
-            Continue →
-          </Button>
-        </div>
-      )}
+      <div className="px-6 pb-8 pt-2 flex gap-3">
+        {step > 0 && (
+          <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-12 flex-1">Back</Button>
+        )}
+        <Button
+          onClick={handleNext}
+          disabled={!canAdvance() || loading}
+          className="h-12 flex-1 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold"
+        >
+          {loading ? 'Adding child…' : step === 2 ? 'Add child →' : 'Continue →'}
+        </Button>
+      </div>
     </div>
   )
 }

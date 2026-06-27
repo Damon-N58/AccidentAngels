@@ -1,6 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card'
 
 export default function AdminPaymentsPage() {
+  // NOTE: Never render Transaction.grossAmountCents, driverNetCents, or Contract.monthlyAmountCents directly here.
+  // Use maskAmountForAdmin() from lib/utils/payment-messages.ts — admin sees "Please pay your transport fees" only.
   return (
     <div className="p-6 max-w-4xl">
       <h1 className="text-xl font-bold text-[#0F1923] mb-4">Payments</h1>

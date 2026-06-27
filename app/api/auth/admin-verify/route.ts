@@ -14,10 +14,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Admin phones may be test numbers — normalise but skip strict SA mobile validation
     const normalized = normalizeSAPhone(phone)
-    if (!isValidSAPhone(normalized)) {
-      return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
-    }
 
     if (!checkRateLimit(`admin-verify:${normalized}`, 5, 300_000)) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })

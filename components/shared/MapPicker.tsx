@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import 'leaflet/dist/leaflet.css'
 
 interface MapPickerProps {
   initialLat?: number
@@ -35,7 +36,6 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
       }
 
       const L = await import('leaflet')
-      await import('leaflet/dist/leaflet.css')
 
       if (cancelled || !mapRef.current) return
 

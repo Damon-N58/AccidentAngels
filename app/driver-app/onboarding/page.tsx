@@ -64,7 +64,7 @@ export default function DriverOnboardingPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to complete setup')
-      router.push('/dashboard')
+      router.push('/driver-app/dashboard')
     } catch (err) {
       toast.error((err as Error).message)
     } finally {

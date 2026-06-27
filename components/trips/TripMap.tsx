@@ -1,14 +1,23 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import 'leaflet/dist/leaflet.css'
 import type { TripStopData } from '@/lib/trips/types'
 
 interface TripMapProps {
   stops: TripStopData[]
   tripStatus: string
+  isDriverView?: boolean
 }
 
-export function TripMap({ stops, tripStatus }: TripMapProps) {
+/** Returns the ring border style string based on paymentStatus. */
+function paymentBorder(paymentStatus?: 'PAID' | 'OVERDUE'): string {
+  if (paymentStatus === 'PAID') return '4px solid #22C55E'
+  if (paymentStatus === 'OVERDUE') return '4px solid #EF4444'
+  return '2px solid white'
+}
+
+export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const markerLayerRef = useRef<any>(null)
@@ -22,7 +31,6 @@ export function TripMap({ stops, tripStatus }: TripMapProps) {
 
     const init = async () => {
       const L = await import('leaflet')
-      await import('leaflet/dist/leaflet.css')
 
       const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png'
       const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png'
@@ -30,31 +38,7 @@ export function TripMap({ stops, tripStatus }: TripMapProps) {
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
 
-      // Custom icons for pickup vs dropoff
-      const pickupIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:32px;height:32px;border-radius:50%;background:#1A3F7A;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">P</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      })
-      const dropoffIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:32px;height:32px;border-radius:50%;background:#0F6E56;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">D</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      })
-      const completedIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:32px;height:32px;border-radius:50%;background:#0F6E56;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">✓</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      })
-      const missedIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:32px;height:32px;border-radius:50%;background:#E24B4A;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">✕</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      })
+      // Stop icons are built per-stop (see forEach below) to incorporate payment ring colour.
 
       // Determine center from first stop with coords, or default Joburg
       const firstCoord = stops.find(s => s.lat && s.lng)
@@ -85,13 +69,31 @@ export function TripMap({ stops, tripStatus }: TripMapProps) {
         latLngs.push(latLng)
         bounds.extend(latLng)
 
-        let icon = stop.type === 'PICKUP' ? pickupIcon : dropoffIcon
-        if (stop.status === 'COMPLETED') icon = completedIcon
-        else if (stop.status === 'MISSED') icon = missedIcon
+        // Fill colour = stop status/type; ring border = payment status
+        const bg =
+          stop.status === 'COMPLETED' ? '#0F6E56' :
+          stop.status === 'MISSED'    ? '#E24B4A' :
+          stop.type === 'PICKUP'      ? '#1A3F7A' : '#0F6E56'
+        const glyph =
+          stop.status === 'COMPLETED' ? '✓' :
+          stop.status === 'MISSED'    ? '✕' :
+          stop.type === 'PICKUP'      ? 'P' : 'D'
+        const border = paymentBorder(stop.paymentStatus)
+
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="width:32px;height:32px;border-radius:50%;background:${bg};color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:${border};box-shadow:0 2px 6px rgba(0,0,0,0.3);">${glyph}</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        })
 
         const label = `${stop.child?.name ?? 'Child'} – ${stop.type === 'PICKUP' ? 'Pickup' : 'Dropoff'}`
+        // Append overdue warning line for driver view
+        const overdueHtml = stop.paymentStatus === 'OVERDUE'
+          ? `<br/><span style="color:#EF4444;font-weight:600;font-size:11px;">Fees overdue</span>`
+          : ''
         L.marker(latLng, { icon })
-          .bindPopup(`<b>${label}</b><br/>${stop.address ?? ''}`)
+          .bindPopup(`<b>${label}</b><br/>${stop.address ?? ''}${overdueHtml}`)
           .addTo(featureGroup)
       })
 
@@ -160,7 +162,7 @@ export function TripMap({ stops, tripStatus }: TripMapProps) {
   return (
     <div className="rounded-2xl overflow-hidden border border-[rgba(26,63,122,0.10)] shadow-sm">
       <div ref={mapRef} className="w-full h-64" />
-      <div className="flex items-center gap-4 px-3 py-2 bg-white text-xs text-[#5A6474] border-t border-[rgba(26,63,122,0.06)]">
+      <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-white text-xs text-[#5A6474] border-t border-[rgba(26,63,122,0.06)]">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-[#1A3F7A] inline-block" /> Pickup
         </span>
@@ -170,6 +172,17 @@ export function TripMap({ stops, tripStatus }: TripMapProps) {
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-[#4285F4] border border-white shadow-sm inline-block" /> Your location
         </span>
+        {/* Payment ring legend — only shown in driver view when at least one stop has paymentStatus */}
+        {isDriverView && stops.some(s => s.paymentStatus) && (
+          <>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-transparent border-2 border-[#22C55E] inline-block" /> Paid
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-transparent border-2 border-[#EF4444] inline-block" /> Overdue
+            </span>
+          </>
+        )}
       </div>
     </div>
   )

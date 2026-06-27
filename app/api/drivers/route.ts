@@ -30,6 +30,8 @@ export async function GET(request: Request) {
         ? { id: d.association.id, name: d.association.name, region: d.association.region }
         : null,
       approvedDocsCount: (d.complianceDocs ?? []).filter((c: any) => c.status === 'APPROVED').length,
+      ratingAvg: d.ratingAvg ?? null,
+      ratingCount: d.ratingCount ?? 0,
     }))
 
     return NextResponse.json(result)

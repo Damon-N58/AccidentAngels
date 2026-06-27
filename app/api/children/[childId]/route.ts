@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth'
 import { verifyChildAccess } from '@/lib/auth/ownership'
 import { supabase } from '@/lib/supabase'
 import { validateAndParseJson } from '@/lib/request-validation'
+import { hasOutstandingBalance } from '@/lib/payments/balance-check'
 
 export async function PATCH(
   request: Request,
@@ -18,6 +19,24 @@ export async function PATCH(
 
   const [body, bodyErr] = await validateAndParseJson(request)
   if (bodyErr) return bodyErr
+
+  // P1-C: Block driver switch when the parent has an overdue balance with the current driver
+  if (
+    body.driverId !== undefined &&
+    body.driverId !== child.driverId &&
+    child.driverId // only relevant when a driver is currently assigned
+  ) {
+    const { blocked, driverName } = await hasOutstandingBalance(child.parentId, child.driverId)
+    if (blocked) {
+      return NextResponse.json(
+        {
+          error: `Please clear your balance with ${driverName} before switching drivers`,
+          code: 'BALANCE_OUTSTANDING',
+        },
+        { status: 402 }
+      )
+    }
+  }
 
   const updates: Record<string, any> = {}
   if (body.driverId !== undefined) updates.driverId = body.driverId || null

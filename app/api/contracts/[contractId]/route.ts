@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { maskAmountForAdmin } from '@/lib/utils/payment-messages'
 
 export async function GET(
   request: Request,
@@ -37,7 +38,7 @@ export async function GET(
       childName:          contract.child.name,
       parentName:         contract.parent.user.name,
       parentPhone:        contract.parent.user.phone,
-      monthlyAmountCents: contract.monthlyAmountCents,
+      monthlyAmountCents: maskAmountForAdmin(contract.monthlyAmountCents, session.role),
       startDate:          contract.startDate,
       driverSignedAt:     contract.driverSignedAt ?? null,
       parentSignedAt:     contract.parentSignedAt ?? null,

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function DriverAppRoot() {
-  redirect('/login')
+  redirect('/driver-app/login')
 }

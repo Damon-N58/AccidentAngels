@@ -56,7 +56,6 @@ interface Driver {
   vehicleYear: number | null
   vehicleColour: string | null
   vehicleCapacity: number | null
-  bankName: string | null
   getsRegistrationNumber: string | null
   user: { name: string; phone: string; email: string | null }
   association: { name: string; region: string } | null
@@ -73,7 +72,11 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
   useEffect(() => {
     fetch(`/api/admin/drivers/${driverId}`)
       .then(r => r.json())
-      .then(data => { setDriver(data); setLoading(false) })
+      .then(data => {
+        // Guard: only accept well-formed driver objects
+        if (data?.id && Array.isArray(data?.complianceDocs)) setDriver(data)
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [driverId])
 
@@ -142,7 +145,6 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
             {[
               ['GETS #', driver.getsRegistrationNumber ?? '—'],
               ['Email', driver.user.email ?? '—'],
-              ['Bank', driver.bankName ?? '—'],
             ].map(([l, v]) => (
               <div key={l} className="flex justify-between gap-2">
                 <span className="text-[#5A6474] shrink-0">{l}</span>

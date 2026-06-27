@@ -79,4 +79,13 @@ export const smsTemplates = {
 
   complianceExpired: (docType: string) =>
     `Accident Angels: Your ${docType} has expired. Your account is now suspended. Upload a new document immediately.`,
+
+  driverArrived: (driverName: string, childName: string) =>
+    `Accident Angels: Your driver ${driverName} has arrived for ${childName}. Please be ready. A 3-minute grace applies before waiting charges.`,
+
+  stopMissed: (childName: string, reason: string) =>
+    `Accident Angels: ${childName} was not collected on this trip. Reason: ${reason}. Please contact your driver.`,
+
+  waitingChargeAccrued: (childName: string, minutes: number, amountRand: string) =>
+    `Accident Angels: A waiting charge of R${amountRand} (${minutes} min) was recorded for ${childName} and will appear on your next invoice.`,
 }

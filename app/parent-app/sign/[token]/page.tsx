@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CheckCircle2, FileText, ChevronDown, ChevronUp } from 'lucide-react'
 import { formatZAR } from '@/lib/utils/cents'
+import { Logo } from '@/components/ui/Logo'
 
 interface ContractInfo {
   driverName: string
@@ -88,7 +89,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
   if (error) return (
     <div className="min-h-screen flex items-center justify-center p-6 text-center bg-[#F8F9FB]">
       <div>
-        <img src="/logos/wings-icon.svg" alt="" className="w-12 h-12 mx-auto mb-4 opacity-40" />
+        <Logo size={48} className="mx-auto mb-4 rounded-xl object-contain opacity-40" />
         <p className="text-[#E24B4A] font-semibold mb-2">Link expired or invalid</p>
         <p className="text-sm text-[#5A6474]">Ask your driver to send a new contract link.</p>
       </div>
@@ -98,7 +99,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
   if (!info) return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FB]">
       <div className="text-center">
-        <img src="/logos/wings-icon.svg" alt="" className="w-12 h-12 mx-auto mb-3 animate-pulse" />
+        <Logo size={48} className="mx-auto mb-3 rounded-xl object-contain bg-white animate-pulse" />
         <p className="text-sm text-[#5A6474]">Loading agreement…</p>
       </div>
     </div>
@@ -129,7 +130,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
       {/* Header */}
       <div className="bg-[#1A3F7A] px-6 pt-12 pb-8 text-white">
         <div className="flex items-center gap-2 mb-4">
-          <img src="/logos/wings-icon.svg" alt="Angels" className="w-8 h-8" />
+          <Logo size={32} className="rounded-lg object-contain bg-white" />
           <span className="font-bold">Accident Angels</span>
         </div>
         <h1 className="text-xl font-bold mb-1">Transport Agreement</h1>

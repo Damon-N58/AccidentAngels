@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { decrypt } from '@/lib/auth/encryption'
 import { supabase } from '@/lib/supabase'
 
 export async function GET(
@@ -39,10 +38,6 @@ export async function GET(
       vehicleYear:            driver.vehicleYear,
       vehicleColour:          driver.vehicleColour,
       vehicleCapacity:        driver.vehicleCapacity,
-      bankName:               driver.bankName,
-      bankAccountNumber:      driver.bankAccountNumber ? decrypt(driver.bankAccountNumber) : null,
-      bankBranchCode:         driver.bankBranchCode ? decrypt(driver.bankBranchCode) : null,
-      bankAccountName:        driver.bankAccountName ? decrypt(driver.bankAccountName) : null,
       user: {
         name:  driver.user.name,
         phone: driver.user.phone,

@@ -13,6 +13,7 @@ export default async function DriverDashboardPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
   if (!session) redirect('/login')
+  if (session.role !== 'DRIVER') redirect('/driver-app/login')
 
   const { data: driver, error: driverErr } = await supabase
     .from('Driver').select('*').eq('userId', session.userId).maybeSingle()
@@ -106,7 +107,7 @@ export default async function DriverDashboardPage() {
       <div className="px-4 pt-4 pb-8 space-y-4">
 
         {/* Compliance status */}
-        <Link href="/compliance">
+        <Link href="/driver-app/compliance">
           <div className={`rounded-2xl p-4 flex items-start gap-3 ${
             isFullyCompliant ? 'bg-[#0F6E56] text-white' : 'bg-[#F59E0B]/10 border border-[#F59E0B]/30'
           }`}>
@@ -136,7 +137,7 @@ export default async function DriverDashboardPage() {
               {todayTrips.map((trip: any) => {
                 const completed = trip.stops.filter((s: any) => s.status === 'COMPLETED').length
                 return (
-                  <Link key={trip.id} href={`/trips/${trip.id}`}>
+                  <Link key={trip.id} href={`/driver-app/trips/${trip.id}`}>
                     <Card className="rounded-xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
@@ -182,7 +183,7 @@ export default async function DriverDashboardPage() {
             </div>
             <div className="space-y-3">
               {(pendingContracts ?? []).map((contract: any) => (
-                <Link key={contract.id} href={`/contracts/${contract.id}`}>
+                <Link key={contract.id} href={`/driver-app/contracts/${contract.id}`}>
                   <Card className="rounded-2xl border border-[#F59E0B]/30 bg-[#F59E0B]/05 shadow-none">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
@@ -225,7 +226,7 @@ export default async function DriverDashboardPage() {
             {children.map((child: any) => {
               const contract = child.contracts[0]
               return (
-                <Link key={child.id} href={`/children/${child.id}`}>
+                <Link key={child.id} href={`/driver-app/children/${child.id}`}>
                   <Card className="rounded-2xl border border-[rgba(26,63,122,0.10)] shadow-none">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">

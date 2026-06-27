@@ -4,8 +4,10 @@ import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { ParentTopBar } from '@/components/parent/ParentTopBar'
 import { Card, CardContent } from '@/components/ui/card'
-import { CheckCircle2, XCircle, AlertTriangle, Shield, Car, User } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertTriangle, Shield, Car, User, Flag, Star } from 'lucide-react'
 import { format } from 'date-fns'
+import Link from 'next/link'
+import { RateDriverPanel } from '@/components/ratings/RateDriverPanel'
 
 const DOC_LABELS: Record<string, string> = {
   PDP:                    'Professional Driving Permit',
@@ -28,6 +30,36 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
     .eq('id', driverId)
     .maybeSingle()
   if (!driver) notFound()
+
+  // Resolve the Parent record for rating lookup
+  const { data: parent } = await supabase
+    .from('Parent')
+    .select('id')
+    .eq('userId', session.userId)
+    .maybeSingle()
+
+  // Fetch this parent's own DriverRating for this driver (null if none)
+  const { data: myRatingRow } = parent
+    ? await supabase
+        .from('DriverRating')
+        .select('score, comment')
+        .eq('driverId', driverId)
+        .eq('parentId', parent.id)
+        .maybeSingle()
+    : { data: null }
+
+  // Public reviews: visible (non-hidden) comments from parents, shown anonymously.
+  // Drivers can hide a comment (sets isHidden=true) to remove it from this list — the
+  // score still counts toward the aggregate, only the text is withheld.
+  const { data: reviewRows } = await supabase
+    .from('DriverRating')
+    .select('id, score, comment, createdAt')
+    .eq('driverId', driverId)
+    .eq('isHidden', false)
+    .not('comment', 'is', null)
+    .order('createdAt', { ascending: false })
+    .limit(20)
+  const reviews = (reviewRows ?? []).filter((r: any) => (r.comment ?? '').trim().length > 0)
 
   const { data: complianceDocs } = await supabase
     .from('ComplianceDocument').select('*').eq('driverId', driverId).order('createdAt', { ascending: false })
@@ -118,6 +150,58 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
             </div>
           </CardContent>
         </Card>
+        {/* Driver rating panel — injected below compliance, above report link */}
+        <RateDriverPanel
+          driverId={driverId}
+          driverName={driver.user.name}
+          initialRating={myRatingRow
+            ? { score: myRatingRow.score, comment: myRatingRow.comment ?? null }
+            : null}
+          ratingAvg={driver.ratingAvg ?? null}
+          ratingCount={driver.ratingCount ?? 0}
+        />
+
+        {/* Public parent reviews (anonymised, non-hidden) */}
+        {reviews.length > 0 && (
+          <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+            <CardContent className="p-4">
+              <p className="font-semibold text-sm text-[#0F1923] mb-3">Parent reviews</p>
+              <div className="space-y-3">
+                {reviews.map((r: any) => (
+                  <div key={r.id} className="border-t border-[rgba(26,63,122,0.06)] first:border-t-0 pt-3 first:pt-0">
+                    <div className="flex items-center gap-1 mb-1">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <Star
+                          key={i}
+                          className="w-3.5 h-3.5"
+                          style={{
+                            fill: i <= r.score ? '#F5A623' : 'none',
+                            stroke: i <= r.score ? '#F5A623' : '#D1D5DB',
+                          }}
+                        />
+                      ))}
+                      <span className="text-[10px] text-[#5A6474] ml-1">
+                        {format(new Date(r.createdAt), 'd MMM yyyy')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#0F1923]">{r.comment}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Subtle escape hatch — not a primary action */}
+        <div className="flex justify-center pt-2 pb-4">
+          <Link
+            href={`/parent-app/report/${driverId}`}
+            className="flex items-center gap-1.5 text-sm text-[#5A6474] hover:text-[#0F1923] transition-colors"
+          >
+            <Flag className="w-3.5 h-3.5" />
+            Report a safety concern
+          </Link>
+        </div>
       </div>
     </div>
   )

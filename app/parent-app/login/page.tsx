@@ -6,10 +6,13 @@ import { toast } from 'sonner'
 import { PhoneInput } from '@/components/shared/PhoneInput'
 import { Button } from '@/components/ui/button'
 import { isValidSAPhone, normalizeSAPhone } from '@/lib/utils/validators'
+import { Logo } from '@/components/ui/Logo'
 
 export default function ParentLoginPage() {
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
+  const [devCode, setDevCode] = useState('')
+  const [codeSent, setCodeSent] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -30,14 +33,16 @@ export default function ParentLoginPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to send code')
 
-      if (data.devCode) {
-        toast(`Dev OTP: ${data.devCode}`, { duration: 20000, description: 'Auto-hides in 20s' })
-        setTimeout(() => toast.dismiss(), 20000)
-      }
-
       sessionStorage.setItem('otp_phone', normalized)
       sessionStorage.setItem('otp_role', 'PARENT')
-      router.push('/parent-app/verify')
+
+      if (data.devCode) {
+        sessionStorage.setItem('otp_dev_code', data.devCode)
+        setDevCode(data.devCode)
+        setCodeSent(true)
+      } else {
+        router.push('/parent-app/verify')
+      }
     } catch (err) {
       toast.error((err as Error).message)
     } finally {
@@ -47,36 +52,65 @@ export default function ParentLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Hero */}
       <div className="bg-gradient-to-br from-[#1A3F7A] to-[#0F2A52] px-6 pt-16 pb-12 flex flex-col items-center text-center">
-        <img src="/logos/wings-icon.svg" alt="Angels" className="w-20 h-20 mb-5" />
+        <Logo size={80} className="mb-5 rounded-2xl object-contain" />
         <h1 className="text-3xl font-bold text-white mb-2">Angels</h1>
         <p className="text-white/70 text-base">Safe transport, every day</p>
       </div>
 
-      {/* Form card */}
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Welcome back</h2>
-        <p className="text-sm text-[#5A6474] mb-8">Enter your number to sign in</p>
+        {codeSent ? (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-[#0F1923] mb-1">Code sent!</h2>
+              <p className="text-sm text-[#5A6474]">Use the code below to sign in.</p>
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-[#0F1923] mb-2">Mobile number</label>
-            <PhoneInput value={phone} onChange={setPhone} disabled={loading} />
+            <div className="bg-[#F5A623] rounded-2xl p-6 text-center shadow-sm">
+              <p className="text-sm font-semibold text-[#0F1923] mb-2 uppercase tracking-wide">Your login code</p>
+              <p className="text-5xl font-bold tracking-[0.25em] text-[#0F1923]">{devCode}</p>
+              <p className="text-xs text-[#0F1923]/60 mt-3">Valid for 5 minutes</p>
+            </div>
+
+            <Button
+              onClick={() => router.push('/parent-app/verify')}
+              className="w-full h-14 text-base font-semibold bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] rounded-xl"
+            >
+              Continue to verify →
+            </Button>
+
+            <button
+              onClick={() => { setCodeSent(false); setDevCode('') }}
+              className="w-full text-sm text-[#5A6474] text-center"
+            >
+              ← Use a different number
+            </button>
           </div>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold text-[#0F1923] mb-1">Welcome back</h2>
+            <p className="text-sm text-[#5A6474] mb-8">Enter your number to sign in</p>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-14 text-base font-semibold bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] rounded-xl"
-          >
-            {loading ? 'Sending code…' : 'Continue →'}
-          </Button>
-        </form>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-[#0F1923] mb-2">Mobile number</label>
+                <PhoneInput value={phone} onChange={setPhone} disabled={loading} />
+              </div>
 
-        <p className="text-xs text-[#5A6474] text-center mt-8">
-          New here? Sign up to add your child and choose a driver.
-        </p>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 text-base font-semibold bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] rounded-xl"
+              >
+                {loading ? 'Sending code…' : 'Continue →'}
+              </Button>
+            </form>
+
+            <p className="text-xs text-[#5A6474] text-center mt-8">
+              New here? Sign up to add your child and choose a driver.
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

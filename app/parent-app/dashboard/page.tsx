@@ -3,17 +3,20 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { isPaymentsLive } from '@/lib/config'
 import { ParentTopBar } from '@/components/parent/ParentTopBar'
 import { Card, CardContent } from '@/components/ui/card'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { CheckCircle2, AlertTriangle, ChevronRight, Clock, Plus, Sun, Moon, Navigation } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, ChevronRight, Clock, Plus, Sun, Moon, Navigation, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+import { Logo } from '@/components/ui/Logo'
 
 export default async function ParentDashboardPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
   if (!session) redirect('/parent-app/login')
+  if (session.role !== 'PARENT') redirect('/parent-app/login')
 
   const { data: parent, error: parentErr } = await supabase
     .from('Parent').select('*').eq('userId', session.userId).maybeSingle()
@@ -92,6 +95,21 @@ export default async function ParentDashboardPage() {
     stops: (t.stops ?? []).sort((a: any, b: any) => a.stopOrder - b.stopOrder),
   }))
 
+  // Fetch unbilled waiting charges and check if payments are live
+  const [waitingChargesResult, paymentsLive] = await Promise.all([
+    supabase
+      .from('WaitingCharge')
+      .select('chargeCents, billedAt')
+      .eq('parentId', parent.id)
+      .is('billedAt', null),
+    isPaymentsLive(),
+  ])
+  const unbilledCharges = waitingChargesResult.data ?? []
+  const waitingChargesTotal = unbilledCharges.reduce(
+    (sum: number, row: any) => sum + (row.chargeCents ?? 0),
+    0
+  )
+
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const today = format(new Date(), 'EEEE, d MMMM')
@@ -149,9 +167,27 @@ export default async function ParentDashboardPage() {
           </div>
         )}
 
+        {/* Waiting charges callout — only shown when payments are live and there are unbilled charges */}
+        {paymentsLive && waitingChargesTotal > 0 && (
+          <Link href="/parent-app/charges">
+            <div className="bg-[#F5A623]/10 border border-[#F5A623]/30 rounded-2xl p-4 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#F5A623]/20 flex items-center justify-center shrink-0">
+                <Timer className="w-5 h-5 text-[#F5A623]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-[#0F1923]">Waiting time charges</p>
+                <p className="text-xs text-[#5A6474] mt-0.5">
+                  R{(waitingChargesTotal / 100).toFixed(2)} pending on your next invoice
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#5A6474] shrink-0 mt-0.5" />
+            </div>
+          </Link>
+        )}
+
         {children.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center border border-[rgba(26,63,122,0.10)]">
-            <img src="/logos/wings-icon.svg" alt="" className="w-14 h-14 mx-auto mb-4 opacity-30" />
+            <Logo size={64} className="mx-auto mb-4 rounded-2xl object-contain opacity-30" />
             <p className="text-base font-semibold text-[#0F1923]">No children added yet</p>
             <p className="text-sm text-[#5A6474] mt-2 mb-5 max-w-xs mx-auto">
               Add your child and choose a verified driver to get started.

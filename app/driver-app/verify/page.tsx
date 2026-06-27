@@ -6,19 +6,24 @@ import { toast } from 'sonner'
 import { OtpInput } from '@/components/shared/OtpInput'
 import { Button } from '@/components/ui/button'
 import { formatPhone } from '@/lib/utils/formatters'
+import { Logo } from '@/components/ui/Logo'
 
 export default function DriverVerifyPage() {
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(30)
   const [phone, setPhone] = useState('')
+  const [devCode, setDevCode] = useState('')
   const router = useRouter()
   const verifyingRef = useRef(false)
+  const succeededRef = useRef(false)
 
   useEffect(() => {
     const p = sessionStorage.getItem('otp_phone')
     if (!p) { router.replace('/driver-app/login'); return }
     setPhone(p)
+    const code = sessionStorage.getItem('otp_dev_code')
+    if (code) setDevCode(code)
   }, [router])
 
   useEffect(() => {
@@ -28,7 +33,7 @@ export default function DriverVerifyPage() {
   }, [resendTimer])
 
   async function handleVerify() {
-    if (verifyingRef.current || loading) return
+    if (succeededRef.current || verifyingRef.current || loading) return
     verifyingRef.current = true
     if (otp.length !== 6) { verifyingRef.current = false; return }
     setLoading(true)
@@ -41,8 +46,10 @@ export default function DriverVerifyPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Invalid code')
 
+      succeededRef.current = true
       sessionStorage.removeItem('otp_phone')
       sessionStorage.removeItem('otp_role')
+      sessionStorage.removeItem('otp_dev_code')
 
       router.push(data.isNewUser ? '/driver-app/onboarding' : '/driver-app/dashboard')
     } catch (err) {
@@ -75,7 +82,7 @@ export default function DriverVerifyPage() {
   return (
     <div className="min-h-screen bg-[#1A3F7A] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
-        <img src="/logos/wings-icon.svg" alt="Accident Angels" className="w-16 h-16 mb-4" />
+        <Logo size={64} className="mb-4 rounded-2xl object-contain bg-white p-1" />
       </div>
 
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl px-6 pt-8">
@@ -83,6 +90,13 @@ export default function DriverVerifyPage() {
         <p className="text-sm text-[#5A6474] mb-8">
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
+
+        {devCode && (
+          <div className="mb-4 px-4 py-3 bg-[#F5A623]/15 border border-[#F5A623]/40 rounded-xl text-center">
+            <p className="text-xs text-[#0F1923] font-medium mb-0.5">Your code (SMS unavailable)</p>
+            <p className="text-2xl font-bold tracking-[0.3em] text-[#0F1923]">{devCode}</p>
+          </div>
+        )}
 
         <div className="mb-8">
           <OtpInput value={otp} onChange={setOtp} disabled={loading} />

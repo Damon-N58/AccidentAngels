@@ -82,9 +82,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  driver    Driver?
-  parent    Parent?
-  otpTokens OtpToken[]
+  driver        Driver?
+  parent        Parent?
+  otpTokens     OtpToken[]
+  notifications Notification[]
 }
 
 model OtpToken {
@@ -149,6 +150,10 @@ model Driver {
   verifiedAt        DateTime?
   verifiedByUserId  String?
 
+  // Phase 5 — ratings aggregate (denormalised for fast sorting)
+  ratingAvg   Float? // null until first rating received
+  ratingCount Int    @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -159,6 +164,8 @@ model Driver {
   contracts      Contract[]
   transactions   Transaction[]
   payouts        Payout[]
+  reports        Report[]
+  ratings        DriverRating[]
 }
 
 model ComplianceDocument {
@@ -223,6 +230,8 @@ model Parent {
   children     Child[]
   contracts    Contract[]
   transactions Transaction[]
+  reports      Report[]
+  ratings      DriverRating[]
 }
 
 model Child {
@@ -353,4 +362,83 @@ model PlatformConfig {
   description     String?
   updatedAt       DateTime @updatedAt
   updatedByUserId String?
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+}
+
+model Report {
+  id                String    @id @default(cuid())
+  parentId          String
+  driverId          String
+  childId           String?
+  category          String    // UNSAFE_VEHICLE | UNSAFE_BEHAVIOUR | OTHER
+  description       String
+  status            String    @default("OPEN") // OPEN | UNDER_REVIEW | RESOLVED | DISMISSED
+  adminNotes        String?
+  resolvedAt        DateTime?
+  resolvedByUserId  String?
+  driverNotifiedAt  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  parent Parent @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([driverId])
+  @@index([parentId])
+}
+
+// Phase 3 — waiting time charges
+model WaitingCharge {
+  id              String    @id @default(cuid())
+  tripStopId      String    @unique
+  tripId          String
+  childId         String
+  parentId        String
+  driverId        String
+  arrivedAt       DateTime
+  completedAt     DateTime
+  waitingSeconds  Int
+  graceSeconds    Int       @default(180)
+  billableMinutes Int
+  chargeCents     Int
+  isLive          Boolean   @default(false)
+  billedAt        DateTime?
+  transactionId   String?
+  createdAt       DateTime  @default(now())
+
+  @@index([parentId, billedAt])
+  @@index([tripId])
+}
+
+// Phase 5 — driver ratings (one rating per parent per driver)
+model DriverRating {
+  id        String   @id @default(cuid())
+  driverId  String
+  parentId  String
+  score     Int      // 1–5
+  comment   String?
+  isHidden  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  parent Parent @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, parentId])
+  @@index([driverId])
 }

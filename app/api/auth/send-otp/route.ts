@@ -20,7 +20,8 @@ export async function POST(request: Request) {
     }
 
     const normalized = normalizeSAPhone(phone)
-    if (!isValidSAPhone(normalized)) {
+    // Skip strict SA mobile validation for admin login (test/seed numbers like +27000000000)
+    if (purpose !== 'admin_login' && !isValidSAPhone(normalized)) {
       return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
     }
 
@@ -36,15 +37,22 @@ export async function POST(request: Request) {
     const userAgent = request.headers.get('user-agent') ?? undefined
     const code = await createOtp(normalized, purpose, ipAddress, userAgent)
 
+    let smsFailed = false
     try {
       await sendSms(normalized, smsTemplates.otp(code))
     } catch (smsErr) {
-      if (process.env.NODE_ENV !== 'development') throw smsErr
-      console.warn('[send-otp] SMS skipped in dev:', smsErr)
+      console.warn('[send-otp] SMS failed:', smsErr)
+      smsFailed = true
     }
 
-    const isDev = process.env.NODE_ENV === 'development'
-    return NextResponse.json({ ok: true, ...(isDev && { devCode: code }) })
+    // Return devCode when SMS is not delivering to real phones:
+    // - dev mode, explicit DEMO_MODE flag, AT sandbox username, or SMS threw an error
+    const isSandbox = process.env.AT_USERNAME === 'sandbox'
+    const showCode = process.env.NODE_ENV === 'development'
+      || process.env.DEMO_MODE === 'true'
+      || isSandbox
+      || smsFailed
+    return NextResponse.json({ ok: true, smsFailed, ...(showCode && { devCode: code }) })
   } catch (err) {
     console.error('[send-otp]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

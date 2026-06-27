@@ -7,6 +7,7 @@ import { OtpInput } from '@/components/shared/OtpInput'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Logo } from '@/components/ui/Logo'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -60,7 +61,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-[#1A3F7A] flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/logos/wings-icon.svg" alt="Accident Angels" className="w-14 h-14 mx-auto mb-4" />
+          <Logo size={64} className="mx-auto mb-4 rounded-2xl object-contain bg-white p-1" />
           <h1 className="text-xl font-bold text-white">Admin Portal</h1>
           <p className="text-white/60 text-sm mt-1">Sign in to manage the platform</p>
         </div>

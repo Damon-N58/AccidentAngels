@@ -83,7 +83,13 @@ export interface TripStopData {
   notes: string | null
   missedReason: string | null
   completedAt: string | null
+  arrivedAt: string | null
+  waitingChargeCents: number | null
   child?: { name: string; schoolName: string }
+  /** Set only in the DRIVER branch — whether this stop's parent has an overdue balance */
+  paymentStatus?: 'PAID' | 'OVERDUE'
+  /** Set only in the DRIVER branch — the parentId of this stop's child (stripped for parent/admin) */
+  parentId?: string
 }
 
 export interface ChildScheduleData {

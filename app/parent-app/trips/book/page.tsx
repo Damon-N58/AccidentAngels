@@ -12,6 +12,7 @@ export default function BookTripPage() {
   const [children, setChildren] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [booked, setBooked] = useState(false)
   const [selectedChildId, setSelectedChildId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [tripType, setTripType] = useState<'MORNING' | 'AFTERNOON'>('MORNING')
@@ -52,13 +53,44 @@ export default function BookTripPage() {
         }),
       })
       if (!res.ok) throw new Error('Failed to book')
-      toast.success('Trip booked!')
-      router.push('/parent-app/trips')
+      // Try to generate the trip immediately so it appears on the trips page
+      await fetch('/api/trips/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date }),
+      }).catch(() => {}) // non-fatal
+      setBooked(true)
     } catch {
       toast.error('Failed to book trip')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (booked) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FB]">
+        <ParentTopBar title="Book a trip" showBack />
+        <div className="px-4 pt-12 pb-24 flex flex-col items-center text-center space-y-5">
+          <div className="w-20 h-20 rounded-full bg-[#0F6E56]/10 flex items-center justify-center">
+            <CalendarDays className="w-9 h-9 text-[#0F6E56]" />
+          </div>
+          <div>
+            <p className="text-xl font-bold text-[#0F1923]">Trip requested!</p>
+            <p className="text-sm text-[#5A6474] mt-2 max-w-xs">
+              Your trip for <strong>{date}</strong> has been booked.
+              It will appear on your trips calendar once your driver generates their route for that day.
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push('/parent-app/trips')}
+            className="w-full h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl"
+          >
+            View trips calendar
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (

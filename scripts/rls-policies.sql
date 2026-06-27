@@ -200,3 +200,122 @@ CREATE POLICY "Association public read" ON "Association"
 DROP POLICY IF EXISTS "Association admin write" ON "Association";
 CREATE POLICY "Association admin write" ON "Association"
   FOR ALL USING (auth_user_role() = 'ADMIN');
+
+-- ── Notification ──
+ALTER TABLE "Notification" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Notification_own_read" ON "Notification";
+CREATE POLICY "Notification_own_read" ON "Notification"
+  FOR SELECT USING (auth_user_id() = "userId");
+
+DROP POLICY IF EXISTS "Notification_own_update" ON "Notification";
+CREATE POLICY "Notification_own_update" ON "Notification"
+  FOR UPDATE USING (auth_user_id() = "userId")
+  WITH CHECK (auth_user_id() = "userId");
+
+-- ── Report ──
+ALTER TABLE "Report" ENABLE ROW LEVEL SECURITY;
+
+-- Parents can file reports for themselves
+DROP POLICY IF EXISTS "Report_parent_insert" ON "Report";
+CREATE POLICY "Report_parent_insert" ON "Report"
+  FOR INSERT WITH CHECK (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Parents can read only their own reports
+DROP POLICY IF EXISTS "Report_parent_select" ON "Report";
+CREATE POLICY "Report_parent_select" ON "Report"
+  FOR SELECT USING (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Drivers have NO access to report content (no driver policy defined — zero rows returned)
+-- Admin access is handled via service role key which bypasses RLS
+
+-- ── WaitingCharge ──
+ALTER TABLE "WaitingCharge" ENABLE ROW LEVEL SECURITY;
+
+-- Parents can read their own waiting charges
+DROP POLICY IF EXISTS "WaitingCharge_parent_select" ON "WaitingCharge";
+CREATE POLICY "WaitingCharge_parent_select" ON "WaitingCharge"
+  FOR SELECT USING (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Drivers can read waiting charges from their own trips
+DROP POLICY IF EXISTS "WaitingCharge_driver_select" ON "WaitingCharge";
+CREATE POLICY "WaitingCharge_driver_select" ON "WaitingCharge"
+  FOR SELECT USING (
+    "driverId" IN (
+      SELECT "id" FROM "Driver" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- No insert/update policies — writes are service role only
+
+-- ── DriverRating ──
+ALTER TABLE "DriverRating" ENABLE ROW LEVEL SECURITY;
+
+-- Parents: read their own ratings
+DROP POLICY IF EXISTS "DriverRating_parent_select" ON "DriverRating";
+CREATE POLICY "DriverRating_parent_select" ON "DriverRating"
+  FOR SELECT USING (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Parents: insert their own ratings
+DROP POLICY IF EXISTS "DriverRating_parent_insert" ON "DriverRating";
+CREATE POLICY "DriverRating_parent_insert" ON "DriverRating"
+  FOR INSERT WITH CHECK (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Parents: update their own ratings
+DROP POLICY IF EXISTS "DriverRating_parent_update" ON "DriverRating";
+CREATE POLICY "DriverRating_parent_update" ON "DriverRating"
+  FOR UPDATE
+  USING (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  )
+  WITH CHECK (
+    "parentId" IN (
+      SELECT "id" FROM "Parent" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Drivers: read ratings on their own driver record (no isHidden filter — they see all)
+DROP POLICY IF EXISTS "DriverRating_driver_select" ON "DriverRating";
+CREATE POLICY "DriverRating_driver_select" ON "DriverRating"
+  FOR SELECT USING (
+    "driverId" IN (
+      SELECT "id" FROM "Driver" WHERE "userId" = auth_user_id()
+    )
+  );
+
+-- Drivers: update own driver's ratings (e.g. flagging visibility — admin-gated in practice)
+DROP POLICY IF EXISTS "DriverRating_driver_update" ON "DriverRating";
+CREATE POLICY "DriverRating_driver_update" ON "DriverRating"
+  FOR UPDATE
+  USING (
+    "driverId" IN (
+      SELECT "id" FROM "Driver" WHERE "userId" = auth_user_id()
+    )
+  )
+  WITH CHECK (
+    "driverId" IN (
+      SELECT "id" FROM "Driver" WHERE "userId" = auth_user_id()
+    )
+  );

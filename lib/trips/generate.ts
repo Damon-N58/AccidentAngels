@@ -5,69 +5,88 @@ import { TRIP_START_HOURS } from './types'
 
 async function getActiveChildrenWithSchedules(driverId: string, date: string) {
   const dayOfWeek = new Date(date).getDay()
+  const datePrefix = date.slice(0, 10) // YYYY-MM-DD
 
-  const { data: schedules } = await supabase
-    .from('ChildSchedule')
-    .select(`
-      id, childId, daysOfWeek, startDate, endDate,
-      morningPickupEarliest, morningPickupLatest,
-      morningDropoffEarliest, morningDropoffLatest,
-      afternoonPickupEarliest, afternoonPickupLatest,
-      afternoonDropoffEarliest, afternoonDropoffLatest,
-      child:Child!inner(
-        id, name, schoolName, driverId, parentId,
-        pickupAddress, pickupLat, pickupLng,
-        dropoffAddress, dropoffLat, dropoffLng
-      )
-    `)
+  // Step 1: get all active children for this driver
+  const { data: children, error: childErr } = await supabase
+    .from('Child')
+    .select('id, name, schoolName, driverId, parentId, pickupAddress, pickupLat, pickupLng, dropoffAddress, dropoffLat, dropoffLng')
+    .eq('driverId', driverId)
     .eq('isActive', true)
-    .eq('child.isActive', true)
-    .eq('child.driverId', driverId)
-    .lte('startDate', date)
-    .contains('daysOfWeek', [dayOfWeek])
 
+  if (childErr) console.error('[generate] children fetch error:', childErr)
+  if (!children?.length) return []
+
+  const childIds = children.map(c => c.id)
+
+  // Step 2: get all active schedules for those children
+  const { data: schedules, error: schedErr } = await supabase
+    .from('ChildSchedule')
+    .select('id, childId, daysOfWeek, startDate, endDate, morningPickupEarliest, morningPickupLatest, morningDropoffEarliest, morningDropoffLatest, afternoonPickupEarliest, afternoonPickupLatest, afternoonDropoffEarliest, afternoonDropoffLatest')
+    .in('childId', childIds)
+    .eq('isActive', true)
+
+  if (schedErr) console.error('[generate] schedules fetch error:', schedErr)
   if (!schedules?.length) return []
 
-  const childIds = schedules.map(s => s.childId)
+  // Step 3: filter by date + day of week in JavaScript (avoids JSONB cs.{} vs cs.[] issue)
+  const activeSchedules = schedules.filter(s => {
+    // startDate must be on or before today
+    const start = (s.startDate as string).slice(0, 10)
+    if (start > datePrefix) return false
+    // endDate must not have passed
+    if (s.endDate) {
+      const end = (s.endDate as string).slice(0, 10)
+      if (end < datePrefix) return false
+    }
+    // daysOfWeek must include today — handle both JSONB array and plain array
+    const days: number[] = Array.isArray(s.daysOfWeek)
+      ? s.daysOfWeek
+      : (typeof s.daysOfWeek === 'string' ? JSON.parse(s.daysOfWeek) : Object.values(s.daysOfWeek ?? {}))
+    return days.includes(dayOfWeek)
+  })
 
-  // Fetch overrides
+  if (!activeSchedules.length) return []
+
+  // Step 4: fetch SKIP overrides for today
+  const activeChildIds = activeSchedules.map(s => s.childId)
   const { data: overrides } = await supabase
     .from('ScheduleOverride')
-    .select('*')
-    .in('childId', childIds)
-    .eq('date', date)
+    .select('childId, action')
+    .in('childId', activeChildIds)
+    .eq('date', datePrefix)
 
-  const overrideMap = new Map((overrides ?? []).map(o => [o.childId, o]))
+  const skipSet = new Set((overrides ?? []).filter(o => o.action === 'SKIP').map(o => o.childId))
 
-  return schedules
-    .filter(s => {
-      if (s.endDate && s.endDate < date) return false
-      const ov = overrideMap.get(s.childId)
-      return ov?.action !== 'SKIP'
-    })
+  // Step 5: combine
+  const childMap = new Map(children.map(c => [c.id, c]))
+
+  return activeSchedules
+    .filter(s => !skipSet.has(s.childId))
     .map(s => {
-      const c = Array.isArray(s.child) ? s.child[0] : s.child
+      const c = childMap.get(s.childId)!
       return {
-      childId: c.id,
-      childName: c.name,
-      schoolName: c.schoolName,
-      driverId: c.driverId,
-      parentId: c.parentId,
-      pickupAddress: c.pickupAddress,
-      pickupLat: c.pickupLat,
-      pickupLng: c.pickupLng,
-      dropoffAddress: c.dropoffAddress,
-      dropoffLat: c.dropoffLat,
-      dropoffLng: c.dropoffLng,
-      morningPickupEarliest: s.morningPickupEarliest,
-      morningPickupLatest: s.morningPickupLatest,
-      morningDropoffEarliest: s.morningDropoffEarliest,
-      morningDropoffLatest: s.morningDropoffLatest,
-      afternoonPickupEarliest: s.afternoonPickupEarliest,
-      afternoonPickupLatest: s.afternoonPickupLatest,
-      afternoonDropoffEarliest: s.afternoonDropoffEarliest,
-      afternoonDropoffLatest: s.afternoonDropoffLatest,
-    }})
+        childId:                  c.id,
+        childName:                c.name,
+        schoolName:               c.schoolName,
+        driverId:                 c.driverId,
+        parentId:                 c.parentId,
+        pickupAddress:            c.pickupAddress,
+        pickupLat:                c.pickupLat,
+        pickupLng:                c.pickupLng,
+        dropoffAddress:           c.dropoffAddress,
+        dropoffLat:               c.dropoffLat,
+        dropoffLng:               c.dropoffLng,
+        morningPickupEarliest:    s.morningPickupEarliest,
+        morningPickupLatest:      s.morningPickupLatest,
+        morningDropoffEarliest:   s.morningDropoffEarliest,
+        morningDropoffLatest:     s.morningDropoffLatest,
+        afternoonPickupEarliest:  s.afternoonPickupEarliest,
+        afternoonPickupLatest:    s.afternoonPickupLatest,
+        afternoonDropoffEarliest: s.afternoonDropoffEarliest,
+        afternoonDropoffLatest:   s.afternoonDropoffLatest,
+      }
+    })
 }
 
 function buildStopsForType(

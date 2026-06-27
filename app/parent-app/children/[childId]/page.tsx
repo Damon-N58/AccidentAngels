@@ -225,6 +225,22 @@ export default function EditChildPage({
         >
           {saving ? 'Saving…' : 'Save address changes'}
         </Button>
+
+        {/* Schedule setup */}
+        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-3">
+          <div>
+            <p className="font-semibold text-sm text-[#0F1923]">Trip schedule</p>
+            <p className="text-xs text-[#5A6474] mt-0.5">Set which days and times your child travels. Trips are auto-generated from this schedule.</p>
+          </div>
+          <Button
+            onClick={() => router.push(`/parent-app/schedule/${childId}`)}
+            variant="outline"
+            className="w-full h-11 border-[#1A3F7A] text-[#1A3F7A] font-semibold rounded-xl"
+          >
+            Set up trip schedule →
+          </Button>
+        </div>
+
       </div>
     </div>
   )

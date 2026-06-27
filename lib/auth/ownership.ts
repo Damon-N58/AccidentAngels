@@ -9,7 +9,9 @@ export async function verifyChildAccess(
   session: { userId: string; role: string }
 ): Promise<{ id: string; parentId: string; driverId: string } | null> {
   if (session.role === 'ADMIN') {
-    return supabase.from('Child').select('id, parentId, driverId').eq('id', childId).maybeSingle() as any
+    // Await so we return resolved data, not a Promise
+    const { data } = await supabase.from('Child').select('id, parentId, driverId').eq('id', childId).maybeSingle()
+    return data
   }
 
   const { data: child } = await supabase
@@ -36,6 +38,9 @@ export async function verifyChildAccess(
       .eq('userId', session.userId)
       .maybeSingle()
     if (!driver || driver.id !== child.driverId) return null
+  } else if (session.role !== 'PARENT') {
+    // Unrecognised role — deny access
+    return null
   }
 
   return child

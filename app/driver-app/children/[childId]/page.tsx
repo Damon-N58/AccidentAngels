@@ -83,7 +83,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ ch
               {contract && <StatusBadge status={contract.status} />}
             </div>
             {contract ? (
-              <Link href={`/contracts/${contract.id}`}>
+              <Link href={`/driver-app/contracts/${contract.id}`}>
                 <Button variant="outline" className="w-full h-10 text-[#1A3F7A] border-[#1A3F7A]/30">
                   {contract.status === 'PENDING_DRIVER_SIGNATURE' ? 'Sign contract →' : 'View contract →'}
                 </Button>

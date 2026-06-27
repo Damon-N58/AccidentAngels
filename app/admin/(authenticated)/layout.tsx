@@ -1,12 +1,14 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, Building2, CreditCard, ShieldCheck, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, CreditCard, ShieldCheck, Settings, Flag } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth'
+import { Logo } from '@/components/ui/Logo'
 
 const NAV = [
   { href: '/admin/dashboard',      label: 'Dashboard',     Icon: LayoutDashboard },
   { href: '/admin/drivers',        label: 'Drivers',       Icon: ShieldCheck },
   { href: '/admin/associations',   label: 'Associations',  Icon: Building2 },
   { href: '/admin/payments',       label: 'Payments',      Icon: CreditCard },
+  { href: '/admin/reports',        label: 'Reports',       Icon: Flag },
   { href: '/admin/settings',       label: 'Settings',      Icon: Settings },
 ]
 
@@ -18,7 +20,7 @@ export default async function AdminAuthenticatedLayout({ children }: { children:
       {/* Sidebar */}
       <aside className="w-60 bg-[#1A3F7A] flex flex-col shrink-0">
         <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
-          <img src="/logos/wings-icon.svg" alt="Accident Angels" className="w-7 h-7" />
+          <Logo size={32} className="rounded-lg object-contain bg-white p-0.5" />
           <div>
             <p className="text-white font-bold text-sm leading-tight">Accident Angels</p>
             <p className="text-white/50 text-xs">Admin</p>

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { getSession, verifyOtp } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { hasOutstandingBalance } from '@/lib/payments/balance-check'
 import { generateContractPdf } from '@/lib/pdf/contract-generator'
 import { getSupabaseAdmin, contractPdfPath, CONTRACTS_BUCKET } from '@/lib/storage/supabase'
 import { sendSms, smsTemplates } from '@/lib/sms/africas-talking'
-import { createHmac } from 'crypto'
 import { validateRequest, safeParseJson } from '@/lib/request-validation'
 import { checkRateLimit } from '@/lib/rate-limit'
 
@@ -48,23 +48,18 @@ export async function POST(request: Request) {
       pickupAddress, dropoffAddress,
       pickupLat, pickupLng, dropoffLat, dropoffLng,
       driverId, startDate,
-      otp, parentName,
+      parentName,
     } = body as Record<string, any>
-
 
     if (!childName || !schoolName || !pickupAddress || !dropoffAddress) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
-    if (!otp) return NextResponse.json({ error: 'OTP required to sign contract' }, { status: 400 })
 
     const { data: parentUser } = await supabase.from('User').select('*').eq('id', session.userId).maybeSingle()
     if (!parentUser) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
     const { data: parent } = await supabase.from('Parent').select('*').eq('userId', session.userId).maybeSingle()
     if (!parent) return NextResponse.json({ error: 'Parent profile not found' }, { status: 404 })
-
-    const valid = await verifyOtp(parentUser.phone, otp, 'contract_sign')
-    if (!valid) return NextResponse.json({ error: 'Invalid or expired code' }, { status: 401 })
 
     let driver: any = null
     if (driverId) {
@@ -73,6 +68,38 @@ export async function POST(request: Request) {
         .eq('id', driverId).eq('status', 'ACTIVE').maybeSingle()
       if (!d) return NextResponse.json({ error: 'Driver not found or not active' }, { status: 404 })
       driver = d
+    }
+
+    // P1-C: If assigning a driver, check that the parent has no overdue balance
+    // with any of their existing drivers (excluding the new one being assigned)
+    if (driverId) {
+      const { data: existingChildren } = await supabase
+        .from('Child')
+        .select('driverId')
+        .eq('parentId', parent.id)
+        .eq('isActive', true)
+        .not('driverId', 'is', null)
+
+      const existingDriverIds = [
+        ...new Set(
+          (existingChildren ?? [])
+            .map((c: any) => c.driverId)
+            .filter((id: string | null) => id && id !== driverId)
+        ),
+      ] as string[]
+
+      for (const existingDriverId of existingDriverIds) {
+        const { blocked, driverName } = await hasOutstandingBalance(parent.id, existingDriverId)
+        if (blocked) {
+          return NextResponse.json(
+            {
+              error: `Please clear your balance with ${driverName} before switching drivers`,
+              code: 'BALANCE_OUTSTANDING',
+            },
+            { status: 402 }
+          )
+        }
+      }
     }
 
     // Update parent name if provided (first-time onboarding)
@@ -84,9 +111,6 @@ export async function POST(request: Request) {
     const now = new Date().toISOString()
     const ipAddress = request.headers.get('x-forwarded-for') ?? null
     const userAgent = request.headers.get('user-agent') ?? null
-    if (!process.env.NEXTAUTH_SECRET) throw new Error('NEXTAUTH_SECRET environment variable is required')
-    const otpHash = createHmac('sha256', process.env.NEXTAUTH_SECRET).update(otp).digest('hex')
-
     const { data: child, error: childError } = await supabase.from('Child').insert({
       id:             crypto.randomUUID(),
       parentId:       parent.id,
@@ -109,6 +133,27 @@ export async function POST(request: Request) {
     }).select().single()
     if (childError) throw childError
 
+    // Auto-create a default Mon–Fri schedule so trips generate immediately.
+    // Parent can adjust times via the schedule page later.
+    await supabase.from('ChildSchedule').insert({
+      id:                       crypto.randomUUID(),
+      childId:                  child.id,
+      daysOfWeek:               [1, 2, 3, 4, 5],
+      startDate:                (startDate ? new Date(startDate) : new Date()).toISOString().split('T')[0],
+      endDate:                  null,
+      morningPickupEarliest:    '06:30',
+      morningPickupLatest:      '07:15',
+      morningDropoffEarliest:   '07:30',
+      morningDropoffLatest:     '08:00',
+      afternoonPickupEarliest:  '13:45',
+      afternoonPickupLatest:    '14:15',
+      afternoonDropoffEarliest: '14:15',
+      afternoonDropoffLatest:   '15:00',
+      isActive:                 true,
+      createdAt:                now,
+      updatedAt:                now,
+    })
+
     // Skip contract if no driver selected yet
     let contract: any = null
     if (driver) {
@@ -123,7 +168,7 @@ export async function POST(request: Request) {
         terms:                  {},
         status:                 'PENDING_DRIVER_SIGNATURE',
         parentSignedAt:         now,
-        parentSignatureOtpHash: otpHash,
+        parentSignatureOtpHash: null,
         parentIpAddress:        ipAddress,
         parentUserAgent:        userAgent,
         parentPhone:            parentUser.phone,

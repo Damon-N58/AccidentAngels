@@ -48,11 +48,6 @@ export async function POST(request: Request) {
       }).select().single()
       user = created
       isNewUser = true
-    } else if (role && user.role !== role && purpose === 'login') {
-      // User exists but with different role (e.g. tested driver first, now signing in as parent)
-      // Update the role so the session token matches
-      await supabase.from('User').update({ role, updatedAt: new Date().toISOString() }).eq('id', user.id)
-      user.role = role
     }
 
     if (user.role === 'PARENT') {

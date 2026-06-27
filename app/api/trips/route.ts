@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { getOverdueParentIds } from '@/lib/payments/overdue-parents'
 
 export async function GET(request: Request) {
   const session = await getSession(request.headers.get('cookie'))
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
   async function fetchTrips(driverId: string, autoGenerate: boolean) {
     let query = supabase
       .from('Trip')
-      .select('*, stops:TripStop(*, child:Child(name, schoolName))')
+      .select('*, stops:TripStop(*, child:Child(name, schoolName, parentId))')
       .eq('driverId', driverId)
       .eq('date', date)
       .order('createdAt', { ascending: true })
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
       // Re-fetch after generation
       let q2 = supabase
         .from('Trip')
-        .select('*, stops:TripStop(*, child:Child(name, schoolName))')
+        .select('*, stops:TripStop(*, child:Child(name, schoolName, parentId))')
         .eq('driverId', driverId)
         .eq('date', date)
         .order('createdAt', { ascending: true })
@@ -60,7 +61,28 @@ export async function GET(request: Request) {
       .from('Driver').select('id').eq('userId', session.userId).maybeSingle()
     if (!driver) return NextResponse.json({ error: 'Driver not found' }, { status: 404 })
     const trips = await fetchTrips(driver.id, true)
-    return NextResponse.json(trips)
+
+    // Compute the set of overdue parents ONCE for this driver, with graceful degradation
+    let overdueSet = new Set<string>()
+    try { overdueSet = await getOverdueParentIds(driver.id) }
+    catch (err) { console.error('[trips] payment check failed, defaulting PAID:', err) }
+
+    // Annotate each stop with paymentStatus and parentId (DRIVER branch only)
+    const annotated = trips.map((trip: any) => ({
+      ...trip,
+      stops: (trip.stops ?? []).map((stop: any) => {
+        const pid = stop.child?.parentId ?? null
+        return {
+          ...stop,
+          parentId: pid ?? undefined,
+          // Stops without a parentId (e.g. school stops) get no paymentStatus
+          paymentStatus: pid
+            ? (overdueSet.has(pid) ? 'OVERDUE' : 'PAID')
+            : undefined,
+        }
+      }),
+    }))
+    return NextResponse.json(annotated)
   }
 
   if (session.role === 'PARENT') {
@@ -79,7 +101,17 @@ export async function GET(request: Request) {
       const trips = await fetchTrips(did!, false)
       allTrips.push(...trips)
     }
-    return NextResponse.json(allTrips)
+
+    // PRIVACY: strip parentId from child objects and ensure no paymentStatus leaks
+    const stripped = allTrips.map((trip: any) => ({
+      ...trip,
+      stops: (trip.stops ?? []).map((stop: any) => {
+        const { paymentStatus: _ps, parentId: _pid, child, ...rest } = stop
+        const { parentId: _cpid, ...childRest } = child ?? {}
+        return { ...rest, child: child ? childRest : undefined }
+      }),
+    }))
+    return NextResponse.json(stripped)
   }
 
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

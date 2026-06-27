@@ -15,6 +15,7 @@ export default async function ChildrenPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
   if (!session) redirect('/login')
+  if (session.role !== 'DRIVER') redirect('/driver-app/login')
 
   const { data: driver } = await supabase.from('Driver').select('id').eq('userId', session.userId).maybeSingle()
   if (!driver) redirect('/onboarding')
@@ -51,7 +52,7 @@ export default async function ChildrenPage() {
       <DriverTopBar title="Children" />
       <div className="px-4 py-4 space-y-3">
         <div className="flex justify-end">
-          <Link href="/children/add">
+          <Link href="/driver-app/children/add">
             <Button className="h-10 bg-[#1A3F7A] text-white text-sm">+ Add child</Button>
           </Link>
         </div>
@@ -62,7 +63,7 @@ export default async function ChildrenPage() {
           children.map((child: any) => {
             const contract = child.contracts[0]
             return (
-              <Link key={child.id} href={`/children/${child.id}`}>
+              <Link key={child.id} href={`/driver-app/children/${child.id}`}>
                 <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
                   <CardContent className="p-4 flex items-start justify-between gap-3">
                     <div className="min-w-0">
