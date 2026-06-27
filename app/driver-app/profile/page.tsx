@@ -11,7 +11,7 @@ import { User, Car, Building2, LogOut } from 'lucide-react'
 export default async function DriverProfilePage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
-  if (!session) redirect('/login')
+  if (!session) redirect('/driver-app/login')
 
   const { data: user } = await supabase.from('User').select('*').eq('id', session.userId).maybeSingle()
   const { data: driver } = await supabase
@@ -20,7 +20,7 @@ export default async function DriverProfilePage() {
     .eq('userId', session.userId)
     .maybeSingle()
 
-  if (!user || !driver) redirect('/onboarding')
+  if (!user || !driver) redirect('/driver-app/onboarding')
 
   return (
     <div className="min-h-screen bg-[#F8F9FB]">

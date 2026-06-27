@@ -12,10 +12,10 @@ import { CreditCard, Building2, TrendingUp } from 'lucide-react'
 export default async function DriverPaymentsPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
-  if (!session) redirect('/login')
+  if (!session) redirect('/driver-app/login')
 
   const { data: driver } = await supabase.from('Driver').select('*').eq('userId', session.userId).maybeSingle()
-  if (!driver) redirect('/onboarding')
+  if (!driver) redirect('/driver-app/onboarding')
 
   const { data: children } = await supabase
     .from('Child').select('id, name, monthlyFee').eq('driverId', driver.id).eq('isActive', true)

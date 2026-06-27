@@ -296,7 +296,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
     if (!navigator.geolocation) return
     const id = navigator.geolocation.watchPosition(
       pos => setDriverPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {},
+      err => console.warn('[GPS] watchPosition error:', err.code, err.message),
       { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 },
     )
     return () => navigator.geolocation.clearWatch(id)

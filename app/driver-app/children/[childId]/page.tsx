@@ -16,7 +16,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ ch
   const { childId } = await params
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
-  if (!session) redirect('/login')
+  if (!session) redirect('/driver-app/login')
 
   const { data: child } = await supabase
     .from('Child')

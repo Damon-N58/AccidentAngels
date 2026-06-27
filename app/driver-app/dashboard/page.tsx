@@ -12,7 +12,7 @@ import { formatZAR } from '@/lib/utils/cents'
 export default async function DriverDashboardPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
-  if (!session) redirect('/login')
+  if (!session) redirect('/driver-app/login')
   if (session.role !== 'DRIVER') redirect('/driver-app/login')
 
   const { data: driver, error: driverErr } = await supabase
@@ -28,7 +28,7 @@ export default async function DriverDashboardPage() {
     )
   }
 
-  if (!driver) redirect('/onboarding')
+  if (!driver) redirect('/driver-app/onboarding')
 
   const todayStr = new Date().toISOString().split('T')[0]
   let { data: todayTripsData } = await supabase

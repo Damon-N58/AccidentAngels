@@ -94,28 +94,44 @@ function buildStopsForType(
   tripType: 'MORNING' | 'AFTERNOON',
 ): StopToOptimize[] {
   if (tripType === 'MORNING') {
-    return children.map(c => ({
-      childId: c.childId,
-      childName: c.childName,
-      type: 'PICKUP' as const,
-      address: c.pickupAddress,
-      lat: c.pickupLat ?? 0,
-      lng: c.pickupLng ?? 0,
-      windowEarliest: c.morningPickupEarliest ? parseTime(c.morningPickupEarliest) : undefined,
-      windowLatest: c.morningPickupLatest ? parseTime(c.morningPickupLatest) : undefined,
-    }))
+    return children
+      .filter(c => {
+        if (c.pickupLat == null || c.pickupLng == null) {
+          console.warn(`[generate] Skipping child ${c.childId} (${c.childName}): missing pickup coordinates`)
+          return false
+        }
+        return true
+      })
+      .map(c => ({
+        childId: c.childId,
+        childName: c.childName,
+        type: 'PICKUP' as const,
+        address: c.pickupAddress,
+        lat: c.pickupLat!,
+        lng: c.pickupLng!,
+        windowEarliest: c.morningPickupEarliest ? parseTime(c.morningPickupEarliest) : undefined,
+        windowLatest: c.morningPickupLatest ? parseTime(c.morningPickupLatest) : undefined,
+      }))
   } else {
     // Afternoon: pickup at school, dropoff at home
-    const schoolStops = children.map(c => ({
-      childId: c.childId,
-      childName: c.childName,
-      type: 'PICKUP' as const,
-      address: c.dropoffAddress, // school = dropoff address from child record
-      lat: c.dropoffLat ?? 0,
-      lng: c.dropoffLng ?? 0,
-      windowEarliest: c.afternoonPickupEarliest ? parseTime(c.afternoonPickupEarliest) : undefined,
-      windowLatest: c.afternoonPickupLatest ? parseTime(c.afternoonPickupLatest) : undefined,
-    }))
+    const schoolStops = children
+      .filter(c => {
+        if (c.dropoffLat == null || c.dropoffLng == null) {
+          console.warn(`[generate] Skipping child ${c.childId} (${c.childName}): missing school coordinates`)
+          return false
+        }
+        return true
+      })
+      .map(c => ({
+        childId: c.childId,
+        childName: c.childName,
+        type: 'PICKUP' as const,
+        address: c.dropoffAddress, // school = dropoff address from child record
+        lat: c.dropoffLat!,
+        lng: c.dropoffLng!,
+        windowEarliest: c.afternoonPickupEarliest ? parseTime(c.afternoonPickupEarliest) : undefined,
+        windowLatest: c.afternoonPickupLatest ? parseTime(c.afternoonPickupLatest) : undefined,
+      }))
 
     // Deduplicate school stops by lat/lng (same school = same coordinates)
     const seen = new Set<string>()
@@ -126,16 +142,21 @@ function buildStopsForType(
       return true
     })
 
-    const homeStops = children.map(c => ({
-      childId: c.childId,
-      childName: c.childName,
-      type: 'DROPOFF' as const,
-      address: c.pickupAddress, // home = pickup address
-      lat: c.pickupLat ?? 0,
-      lng: c.pickupLng ?? 0,
-      windowEarliest: c.afternoonDropoffEarliest ? parseTime(c.afternoonDropoffEarliest) : undefined,
-      windowLatest: c.afternoonDropoffLatest ? parseTime(c.afternoonDropoffLatest) : undefined,
-    }))
+    const homeStops = children
+      .filter(c => {
+        if (c.pickupLat == null || c.pickupLng == null) return false
+        return true
+      })
+      .map(c => ({
+        childId: c.childId,
+        childName: c.childName,
+        type: 'DROPOFF' as const,
+        address: c.pickupAddress, // home = pickup address
+        lat: c.pickupLat!,
+        lng: c.pickupLng!,
+        windowEarliest: c.afternoonDropoffEarliest ? parseTime(c.afternoonDropoffEarliest) : undefined,
+        windowLatest: c.afternoonDropoffLatest ? parseTime(c.afternoonDropoffLatest) : undefined,
+      }))
 
     return [...uniqueSchoolStops, ...homeStops]
   }

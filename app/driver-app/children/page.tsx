@@ -14,11 +14,11 @@ import { formatZAR } from '@/lib/utils/cents'
 export default async function ChildrenPage() {
   const cookieStore = await cookies()
   const session = await getSession(cookieStore.toString())
-  if (!session) redirect('/login')
+  if (!session) redirect('/driver-app/login')
   if (session.role !== 'DRIVER') redirect('/driver-app/login')
 
   const { data: driver } = await supabase.from('Driver').select('id').eq('userId', session.userId).maybeSingle()
-  if (!driver) redirect('/onboarding')
+  if (!driver) redirect('/driver-app/onboarding')
 
   const { data: childrenRaw } = await supabase
     .from('Child')
