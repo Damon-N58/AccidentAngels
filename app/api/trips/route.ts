@@ -11,35 +11,44 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const rawDate = searchParams.get('date')
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
   const type = searchParams.get('type') as 'MORNING' | 'AFTERNOON' | null
 
-  if (!rawDate) {
-    return NextResponse.json({ error: 'date is required (YYYY-MM-DD)' }, { status: 400 })
+  // Either a single ?date=, or a ?from=&to= range (one request for a whole
+  // calendar month — avoids ~30 separate requests on mobile).
+  const isRange = !!(from && to)
+  if (!rawDate && !isRange) {
+    return NextResponse.json({ error: 'date (YYYY-MM-DD) or from+to range required' }, { status: 400 })
   }
   const date = rawDate
 
+  function applyDateFilter(q: any) {
+    return isRange ? q.gte('date', from).lte('date', to) : q.eq('date', date)
+  }
+
   async function fetchTrips(driverId: string, autoGenerate: boolean) {
-    let query = supabase
-      .from('Trip')
-      .select('*, stops:TripStop(*, child:Child(name, schoolName, parentId))')
-      .eq('driverId', driverId)
-      .eq('date', date)
-      .order('createdAt', { ascending: true })
+    let query = applyDateFilter(
+      supabase
+        .from('Trip')
+        .select('*, stops:TripStop(*, child:Child(name, schoolName, parentId))')
+        .eq('driverId', driverId),
+    ).order('createdAt', { ascending: true })
 
     if (type) query = query.eq('type', type)
 
     const { data: trips } = await query
 
-    // Auto-generate if no trips exist for this date
-    if ((trips ?? []).length === 0 && autoGenerate) {
+    // Auto-generate if no trips exist (single-date mode only — we never
+    // bulk-generate a whole range on a calendar view).
+    if ((trips ?? []).length === 0 && autoGenerate && !isRange) {
       const { generateTripsForDriver } = await import('@/lib/trips/generate')
-      await generateTripsForDriver(driverId, date)
-      // Re-fetch after generation
+      await generateTripsForDriver(driverId, date!)
       let q2 = supabase
         .from('Trip')
         .select('*, stops:TripStop(*, child:Child(name, schoolName, parentId))')
         .eq('driverId', driverId)
-        .eq('date', date)
+        .eq('date', date!)
         .order('createdAt', { ascending: true })
       if (type) q2 = q2.eq('type', type)
       const { data: trips2 } = await q2

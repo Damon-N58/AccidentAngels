@@ -30,39 +30,19 @@ export default function ParentTripsPage() {
     try {
       const start = `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`
       const end = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`
-      const trips: TripData[] = []
 
-      // Fetch each day in range (batching would be ideal but trips API is date-based)
-      const promises = []
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-        promises.push(
-          fetch(`/api/trips?date=${dateStr}`).then(r =>
-            r.ok ? r.json() : []
-          ).catch(() => [] as TripData[])
-        )
-      }
-      const results = await Promise.all(promises)
+      // ONE request for the whole month (was one request per day → ~30 on mobile)
+      const res = await fetch(`/api/trips?from=${start}&to=${end}`)
+      const allTrips: TripData[] = res.ok ? await res.json() : []
+
       const map = new Map<string, TripData[]>()
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-        const dayTrips = results[d - 1] ?? []
-        if (dayTrips.length > 0) map.set(dateStr, dayTrips)
+      for (const trip of allTrips) {
+        const key = trip.date
+        if (!map.has(key)) map.set(key, [])
+        map.get(key)!.push(trip)
       }
       setTripsByDate(map)
-
-      // Load selected date trips
-      const selectedTrips = map.get(selectedDate) ?? []
-      setSelectedTrips(selectedTrips)
-
-      // If selected date not in view, fetch it directly
-      if (selectedDate && !results[parseInt(selectedDate.split('-')[2]) - 1]) {
-        const res = await fetch(`/api/trips?date=${selectedDate}`)
-        if (res.ok) {
-          const data = await res.json()
-          setSelectedTrips(data)
-        }
-      }
+      setSelectedTrips(map.get(selectedDate) ?? [])
     } catch {
       // silently handle — trips are optional
     } finally {
@@ -75,12 +55,6 @@ export default function ParentTripsPage() {
   const handleSelectDate = (dateStr: string) => {
     setSelectedDate(dateStr)
     setSelectedTrips(tripsByDate.get(dateStr) ?? [])
-    // Ensure trips for this date are fetched
-    fetch(`/api/trips?date=${dateStr}`).then(r =>
-      r.ok ? r.json() : []
-    ).then(data => {
-      setSelectedTrips(data)
-    }).catch(() => {})
   }
 
   const cells: (number | null)[] = []
