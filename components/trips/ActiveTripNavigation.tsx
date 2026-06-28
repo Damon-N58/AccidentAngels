@@ -156,6 +156,15 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
 
   const pendingStops = trip.stops.filter(s => s.status === 'PENDING')
   const nextStop: TripStopData | null = pendingStops[0] ?? null
+
+  // Stop semantics depend on direction: MORNING pickup=home/dropoff=school,
+  // AFTERNOON pickup=school/dropoff=home.
+  const isSchoolStop = (s: TripStopData) =>
+    trip.type === 'MORNING' ? s.type === 'DROPOFF' : s.type === 'PICKUP'
+  const stopActionLabel = (s: TripStopData) =>
+    s.type === 'PICKUP'
+      ? (isSchoolStop(s) ? 'Collect at school' : 'Pick up')
+      : (isSchoolStop(s) ? 'Drop at school' : 'Drop home')
   const completedCount = trip.stops.filter(s => s.status === 'COMPLETED').length
   const totalStops = trip.stops.length
   const progressPct = totalStops > 0 ? (completedCount / totalStops) * 100 : 0
@@ -242,7 +251,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
           .bindPopup(`
             <div style="font-family:system-ui;min-width:160px">
               <b style="font-size:13px">${stop.child?.name ?? 'Child'}</b>
-              <div style="font-size:11px;color:#666;margin-top:2px">${stop.type === 'PICKUP' ? '🏠 Pickup' : '🏫 Dropoff'}</div>
+              <div style="font-size:11px;color:#666;margin-top:2px">${isSchoolStop(stop) ? '🏫' : '🏠'} ${stopActionLabel(stop)}</div>
               <div style="font-size:11px;color:#444;margin-top:4px">${stop.address}</div>
               ${overdueHtml}
             </div>
@@ -496,7 +505,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                       ? 'bg-[#1A3F7A]/10 text-[#1A3F7A]'
                       : 'bg-[#0F6E56]/10 text-[#0F6E56]'
                   }`}>
-                    {nextStop.type === 'PICKUP' ? 'Pickup' : 'Dropoff'}
+                    {stopActionLabel(nextStop)}
                   </span>
                   {eta !== null && !hasArrived && (
                     <span className="flex items-center gap-1 text-xs text-[#5A6474]">
@@ -576,8 +585,8 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                     {completing
                       ? 'Confirming…'
                       : nextStop.type === 'PICKUP'
-                        ? 'Confirm pickup'
-                        : 'Confirm dropoff'
+                        ? (isSchoolStop(nextStop) ? 'Confirm collected' : 'Confirm pickup')
+                        : (isSchoolStop(nextStop) ? 'Confirm dropped at school' : 'Confirm dropped home')
                     }
                   </Button>
                 )}
@@ -646,7 +655,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                     <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
                       stop.type === 'PICKUP' ? 'bg-[#1A3F7A]/08 text-[#1A3F7A]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
                     }`}>
-                      {stop.type === 'PICKUP' ? 'Pick' : 'Drop'}
+                      {isSchoolStop(stop) ? '🏫' : '🏠'} {stop.type === 'PICKUP' ? 'Pick' : 'Drop'}
                     </span>
                   </div>
                 ))}

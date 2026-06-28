@@ -94,7 +94,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
 
   if (contractError) return (
     <div className="min-h-screen bg-[#F8F9FB]">
-      <DriverTopBar title="Contract" />
+      <DriverTopBar title="Contract" showBack />
       <div className="p-6 text-center">
         <p className="text-[#E24B4A] font-medium">Failed to load contract</p>
         <p className="text-sm text-[#5A6474] mt-1">{contractError}</p>
@@ -105,14 +105,14 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
 
   if (!contract) return (
     <div className="min-h-screen bg-[#F8F9FB]">
-      <DriverTopBar title="Contract" />
+      <DriverTopBar title="Contract" showBack />
       <div className="p-6 text-center text-[#5A6474]">Loading…</div>
     </div>
   )
 
   return (
     <div className="min-h-screen bg-[#F8F9FB]">
-      <DriverTopBar title="Contract" />
+      <DriverTopBar title="Contract" showBack />
       <div className="px-4 py-4 space-y-4">
         <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
           <CardContent className="p-4 space-y-3">

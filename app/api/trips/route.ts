@@ -96,19 +96,31 @@ export async function GET(request: Request) {
 
     if (driverIds.length === 0) return NextResponse.json([])
 
+    // Driver names so the parent can tell each driver's trips apart (a parent
+    // with children across multiple drivers sees multiple trips per day).
+    const { data: driverRows } = await supabase
+      .from('Driver').select('id, user:User(name)').in('id', driverIds as string[])
+    const driverNameById = new Map(
+      (driverRows ?? []).map((d: any) => [d.id, d.user?.name ?? 'Your driver']),
+    )
+
+    const childIdsForParent = new Set((children ?? []).map((c: any) => c.id))
+
     const allTrips = []
     for (const did of driverIds) {
       const trips = await fetchTrips(did!, false)
+      trips.forEach((t: any) => { t.driverName = driverNameById.get(did) })
       allTrips.push(...trips)
     }
 
-    // PRIVACY: strip parentId from child objects and ensure no paymentStatus leaks
+    // PRIVACY: strip parentId from child objects and ensure no paymentStatus leaks.
+    // Also mark which stops belong to THIS parent's children (for highlighting).
     const stripped = allTrips.map((trip: any) => ({
       ...trip,
       stops: (trip.stops ?? []).map((stop: any) => {
         const { paymentStatus: _ps, parentId: _pid, child, ...rest } = stop
         const { parentId: _cpid, ...childRest } = child ?? {}
-        return { ...rest, child: child ? childRest : undefined }
+        return { ...rest, isMyChild: childIdsForParent.has(stop.childId), child: child ? childRest : undefined }
       }),
     }))
     return NextResponse.json(stripped)

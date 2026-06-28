@@ -209,6 +209,7 @@ export default function ParentTripsPage() {
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-[#0F1923]">
                             {trip.type === 'MORNING' ? 'Morning' : 'Afternoon'} trip
+                            {trip.driverName ? ` · ${trip.driverName}` : ''}
                           </p>
                           <p className="text-xs text-[#5A6474]">
                             {completedStops(trip)} of {trip.stops.length} stops completed

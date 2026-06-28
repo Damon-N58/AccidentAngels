@@ -92,10 +92,15 @@ export default async function DriverDashboardPage() {
     }
   }
 
-  const children = (childrenRaw ?? []).map((child: any) => ({
-    ...child,
-    contracts: latestContractByChildId.has(child.id) ? [latestContractByChildId.get(child.id)] : [],
-  }))
+  // "Active children" = those with a FULLY_SIGNED contract. Children whose
+  // contract is still awaiting a signature appear ONLY in "Pending requests"
+  // above, so they don't show in both lists at once.
+  const children = (childrenRaw ?? [])
+    .map((child: any) => ({
+      ...child,
+      contracts: latestContractByChildId.has(child.id) ? [latestContractByChildId.get(child.id)] : [],
+    }))
+    .filter((child: any) => child.contracts[0]?.status === 'FULLY_SIGNED')
 
   const totalDocs = 6
   const approvedDocs = (complianceDocs ?? []).filter((d: any) => d.status === 'APPROVED').length

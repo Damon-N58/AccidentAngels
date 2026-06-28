@@ -129,6 +129,7 @@ export default function ParentTripDetailPage({
               stop={stop}
               isFirst={i === 0}
               isLast={i === trip.stops.length - 1}
+              tripType={trip.type}
               tripStatus={trip.status}
             />
           ))}

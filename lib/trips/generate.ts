@@ -58,11 +58,18 @@ async function getActiveChildrenWithSchedules(driverId: string, date: string) {
 
   const skipSet = new Set((overrides ?? []).filter(o => o.action === 'SKIP').map(o => o.childId))
 
-  // Step 5: combine
+  // Step 5: combine — dedupe by childId so a child with multiple active
+  // schedule rows only produces ONE set of stops (was causing duplicate stops)
   const childMap = new Map(children.map(c => [c.id, c]))
+  const seenChildIds = new Set<string>()
 
   return activeSchedules
     .filter(s => !skipSet.has(s.childId))
+    .filter(s => {
+      if (seenChildIds.has(s.childId)) return false
+      seenChildIds.add(s.childId)
+      return true
+    })
     .map(s => {
       const c = childMap.get(s.childId)!
       return {
@@ -94,24 +101,43 @@ function buildStopsForType(
   tripType: 'MORNING' | 'AFTERNOON',
 ): StopToOptimize[] {
   if (tripType === 'MORNING') {
-    return children
-      .filter(c => {
-        if (c.pickupLat == null || c.pickupLng == null) {
-          console.warn(`[generate] Skipping child ${c.childId} (${c.childName}): missing pickup coordinates`)
-          return false
-        }
-        return true
-      })
-      .map(c => ({
-        childId: c.childId,
-        childName: c.childName,
-        type: 'PICKUP' as const,
-        address: c.pickupAddress,
-        lat: c.pickupLat!,
-        lng: c.pickupLng!,
-        windowEarliest: c.morningPickupEarliest ? parseTime(c.morningPickupEarliest) : undefined,
-        windowLatest: c.morningPickupLatest ? parseTime(c.morningPickupLatest) : undefined,
-      }))
+    // Morning: pick each child up at home (PICKUP), then drop at school (DROPOFF).
+    // A child must have BOTH home and school coordinates to be routed.
+    const routable = children.filter(c => {
+      if (c.pickupLat == null || c.pickupLng == null) {
+        console.warn(`[generate] Skipping child ${c.childId} (${c.childName}): missing home coordinates`)
+        return false
+      }
+      if (c.dropoffLat == null || c.dropoffLng == null) {
+        console.warn(`[generate] Skipping child ${c.childId} (${c.childName}): missing school coordinates`)
+        return false
+      }
+      return true
+    })
+
+    const pickups = routable.map(c => ({
+      childId: c.childId,
+      childName: c.childName,
+      type: 'PICKUP' as const,
+      address: c.pickupAddress,
+      lat: c.pickupLat!,
+      lng: c.pickupLng!,
+      windowEarliest: c.morningPickupEarliest ? parseTime(c.morningPickupEarliest) : undefined,
+      windowLatest: c.morningPickupLatest ? parseTime(c.morningPickupLatest) : undefined,
+    }))
+
+    const dropoffs = routable.map(c => ({
+      childId: c.childId,
+      childName: c.childName,
+      type: 'DROPOFF' as const,
+      address: c.dropoffAddress, // school
+      lat: c.dropoffLat!,
+      lng: c.dropoffLng!,
+      windowEarliest: c.morningDropoffEarliest ? parseTime(c.morningDropoffEarliest) : undefined,
+      windowLatest: c.morningDropoffLatest ? parseTime(c.morningDropoffLatest) : undefined,
+    }))
+
+    return [...pickups, ...dropoffs]
   } else {
     // Afternoon: pickup at school, dropoff at home
     const schoolStops = children

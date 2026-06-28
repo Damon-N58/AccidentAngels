@@ -74,7 +74,7 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
 
   return (
     <div className="min-h-screen bg-[#F8F9FB]">
-      <ParentTopBar title="Your Driver" />
+      <ParentTopBar title="Your Driver" showBack />
       <div className="px-4 py-5 space-y-4">
         <div className="flex flex-col items-center py-4">
           <div className="w-20 h-20 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center mb-3">

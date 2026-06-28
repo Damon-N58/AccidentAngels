@@ -10,6 +10,7 @@ interface TripStopCardProps {
   isFirst: boolean
   isLast: boolean
   isDriverView?: boolean
+  tripType?: 'MORNING' | 'AFTERNOON'
   tripStatus?: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   onComplete?: (stopId: string, lat?: number, lng?: number) => void
   onMissed?: (stopId: string, reason: string) => void
@@ -38,6 +39,7 @@ export function TripStopCard({
   isFirst,
   isLast,
   isDriverView,
+  tripType,
   tripStatus,
   onComplete,
   onMissed,
@@ -46,6 +48,15 @@ export function TripStopCard({
   const [missedReason, setMissedReason] = useState('')
   const Icon = STATUS_ICON[stop.status]
   const isInteractive = isDriverView && tripStatus === 'IN_PROGRESS' && stop.status === 'PENDING'
+
+  // What this stop actually is depends on the trip direction:
+  //   MORNING   PICKUP = home,   DROPOFF = school
+  //   AFTERNOON PICKUP = school, DROPOFF = home
+  const isSchoolStop = tripType === 'MORNING' ? stop.type === 'DROPOFF' : stop.type === 'PICKUP'
+  const actionLabel =
+    stop.type === 'PICKUP'
+      ? (isSchoolStop ? 'Collect at school' : 'Pick up at home')
+      : (isSchoolStop ? 'Drop at school' : 'Drop at home')
 
   const formatTime = (t: string | null) => {
     if (!t) return '—'
@@ -78,9 +89,9 @@ export function TripStopCard({
               {stop.child?.name ?? 'Child'}
             </p>
             <div className="flex items-center gap-1 text-xs text-[#5A6474] mt-0.5">
-              {stop.type === 'PICKUP' ? <Home className="w-3 h-3" /> : <School className="w-3 h-3" />}
-              <span>{stop.type === 'PICKUP' ? 'Pickup' : 'Dropoff'}</span>
-              {stop.child?.schoolName && (
+              {isSchoolStop ? <School className="w-3 h-3" /> : <Home className="w-3 h-3" />}
+              <span>{actionLabel}</span>
+              {isSchoolStop && stop.child?.schoolName && (
                 <>
                   <span>·</span>
                   <span className="truncate">{stop.child.schoolName}</span>

@@ -65,6 +65,9 @@ export interface TripData {
   cancelledAt: string | null
   cancelReason: string | null
   stops: TripStopData[]
+  /** Set only in the PARENT branch — the driver's name, so trips from
+   *  different drivers can be told apart. */
+  driverName?: string
 }
 
 export interface TripStopData {

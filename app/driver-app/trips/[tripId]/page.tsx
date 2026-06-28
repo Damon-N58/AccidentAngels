@@ -47,11 +47,15 @@ export default function DriverTripDetailPage({
     setStarting(true)
     try {
       const res = await fetch(`/api/trips/${tripId}/start`, { method: 'POST' })
-      if (!res.ok) throw new Error('Failed to start')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error ?? 'Failed to start trip')
+        return
+      }
       toast.success('Trip started — good luck!')
       await fetchTrip()
     } catch {
-      toast.error('Failed to start trip')
+      toast.error('Network error — please try again')
     } finally {
       setStarting(false)
     }
@@ -215,6 +219,7 @@ export default function DriverTripDetailPage({
               isFirst={i === 0}
               isLast={i === trip.stops.length - 1}
               isDriverView={false}
+              tripType={trip.type}
               tripStatus={trip.status}
             />
           ))}

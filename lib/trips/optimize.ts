@@ -1,5 +1,15 @@
 import type { StopToOptimize, OptimizedStop, OptimizationResult } from './types'
 
+const AVG_SPEED_KMH = 30
+const STOP_BUFFER_MIN = 2
+const SCHOOL_CLUSTER_METERS = 1000
+
+interface Pt { lat: number; lng: number }
+
+function toRad(deg: number): number {
+  return (deg * Math.PI) / 180
+}
+
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000
   const dLat = toRad(lat2 - lat1)
@@ -9,203 +19,147 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-function toRad(deg: number): number {
-  return (deg * Math.PI) / 180
+function distBetween(a: Pt, b: Pt): number {
+  return haversineDistance(a.lat, a.lng, b.lat, b.lng)
 }
 
-/**
- * Greedy clustering: groups stops within ~1km of each other.
- * Used to detect children going to the same school.
- */
-function clusterByProximity(stops: StopToOptimize[], thresholdMeters = 1000): StopToOptimize[][] {
-  const clusters: StopToOptimize[][] = []
-  const assigned = new Set<string>()
+function centroid(pts: Pt[]): Pt {
+  const lat = pts.reduce((s, p) => s + p.lat, 0) / pts.length
+  const lng = pts.reduce((s, p) => s + p.lng, 0) / pts.length
+  return { lat, lng }
+}
 
-  for (let i = 0; i < stops.length; i++) {
-    const key = `${stops[i].childId}:${stops[i].type}`
-    if (assigned.has(key)) continue
-
-    const cluster: StopToOptimize[] = [stops[i]]
-    assigned.add(key)
-
-    for (let j = i + 1; j < stops.length; j++) {
-      const jKey = `${stops[j].childId}:${stops[j].type}`
-      if (assigned.has(jKey)) continue
-
-      const dist = haversineDistance(stops[i].lat, stops[i].lng, stops[j].lat, stops[j].lng)
-      if (dist < thresholdMeters) {
-        cluster.push(stops[j])
-        assigned.add(jKey)
-      }
+/** Order items by nearest-neighbor, starting from `from`. Pure — does not mutate input. */
+function nearestNeighborOrder<T extends Pt>(items: T[], from: Pt): T[] {
+  const remaining = [...items]
+  const ordered: T[] = []
+  let cur: Pt = from
+  while (remaining.length > 0) {
+    let bestIdx = 0
+    let bestDist = Infinity
+    for (let i = 0; i < remaining.length; i++) {
+      const d = distBetween(cur, remaining[i])
+      if (d < bestDist) { bestDist = d; bestIdx = i }
     }
-    clusters.push(cluster)
+    const next = remaining.splice(bestIdx, 1)[0]
+    ordered.push(next)
+    cur = next
   }
-
-  return clusters
+  return ordered
 }
+
+interface ChildLegs { pickup: StopToOptimize; dropoff: StopToOptimize }
 
 /**
- * Nearest-neighbor ordering within a group of stops.
- * Assumes avg speed of 30 km/h with 2 min stop buffer.
- */
-function nearestNeighbor(stops: StopToOptimize[]): OptimizedOrder[] {
-  if (stops.length === 0) return []
-
-  const unvisited = [...stops]
-  const result: OptimizedOrder[] = []
-
-  let current = unvisited.shift()!
-  let order = 0
-  let cumulativeMinutes = 0
-  let prevLat = current.lat
-  let prevLng = current.lng
-
-  result.push({
-    childId: current.childId,
-    childName: current.childName,
-    type: current.type,
-    stopOrder: order++,
-    estimatedArrivalMinutes: 0,
-    distanceFromPrevMeters: 0,
-    address: current.address,
-    lat: current.lat,
-    lng: current.lng,
-    notes: current.notes,
-  })
-
-  while (unvisited.length > 0) {
-    let nearestIdx = 0
-    let nearestDist = haversineDistance(prevLat, prevLng, unvisited[0].lat, unvisited[0].lng)
-
-    for (let i = 1; i < unvisited.length; i++) {
-      const dist = haversineDistance(prevLat, prevLng, unvisited[i].lat, unvisited[i].lng)
-      if (dist < nearestDist) {
-        nearestDist = dist
-        nearestIdx = i
-      }
-    }
-
-    const next = unvisited[nearestIdx]
-    unvisited.splice(nearestIdx, 1)
-
-    const travelMinutes = (nearestDist / 1000 / 30) * 60
-    cumulativeMinutes += travelMinutes + 2
-
-    result.push({
-      childId: next.childId,
-      childName: next.childName,
-      type: next.type,
-      stopOrder: order++,
-      estimatedArrivalMinutes: Math.round(cumulativeMinutes),
-      distanceFromPrevMeters: Math.round(nearestDist),
-      address: next.address,
-      lat: next.lat,
-      lng: next.lng,
-      notes: next.notes,
-    })
-
-    prevLat = next.lat
-    prevLng = next.lng
-  }
-
-  return result
-}
-
-interface OptimizedOrder {
-  childId: string
-  childName: string
-  type: 'PICKUP' | 'DROPOFF'
-  stopOrder: number
-  estimatedArrivalMinutes: number
-  distanceFromPrevMeters: number
-  address: string
-  lat: number
-  lng: number
-  notes?: string
-}
-
-/**
- * Main route optimization function.
+ * Route optimization using per-school "milk runs".
  *
- * For MORNING trips:
- *   Phase 1: Pick up all children from home (nearest-neighbor)
- *   Phase 2: Drop off at school clusters (cluster A, then B, etc.)
+ * Children are grouped by the school they share (proximity-clustered). School
+ * clusters are visited in nearest-neighbor order. This avoids the cross-city
+ * backtracking that occurs when you do ALL home pickups before ANY school
+ * dropoff — which is wrong when children attend different, far-apart schools.
  *
- * For AFTERNOON trips:
- *   Phase 1: Pick up at school clusters (cluster A, then B)
- *   Phase 2: Drop off children at home (nearest-neighbor)
+ * MORNING   per school cluster:  pick up homes (nearest-neighbor) → drop at school
+ * AFTERNOON per school cluster:  collect at school → drop homes (nearest-neighbor)
+ *
+ * @param start optional driver start location (e.g. live GPS). When omitted,
+ *              the route begins at the first stop it would naturally reach.
  */
 export function optimizeRoute(
   stops: StopToOptimize[],
   tripType: 'MORNING' | 'AFTERNOON',
+  start?: Pt,
 ): OptimizationResult {
-  const pickups = stops.filter(s => s.type === 'PICKUP')
-  const dropoffs = stops.filter(s => s.type === 'DROPOFF')
+  // Pair stops into per-child legs (each child has one PICKUP and one DROPOFF)
+  const byChild = new Map<string, Partial<ChildLegs>>()
+  for (const s of stops) {
+    const entry = byChild.get(s.childId) ?? {}
+    if (s.type === 'PICKUP') entry.pickup = s
+    else entry.dropoff = s
+    byChild.set(s.childId, entry)
+  }
+  const children = [...byChild.values()].filter(
+    (c): c is ChildLegs => !!c.pickup && !!c.dropoff,
+  )
 
-  const orderedStops: OptimizedOrder[] = []
+  // School = where children converge: dropoff in the morning, pickup in the afternoon.
+  const schoolOf = (c: ChildLegs) => (tripType === 'MORNING' ? c.dropoff : c.pickup)
+  const homeOf = (c: ChildLegs) => (tripType === 'MORNING' ? c.pickup : c.dropoff)
 
-  if (tripType === 'MORNING') {
-    const pickupOrder = nearestNeighbor(pickups)
-    orderedStops.push(...pickupOrder)
-
-    // Group dropoffs (schools) by proximity, order clusters
-    const dropoffClusters = clusterByProximity(dropoffs)
-    const lastPickupMinutes = pickupOrder.length > 0
-      ? pickupOrder[pickupOrder.length - 1].estimatedArrivalMinutes
-      : 0
-
-    let stopOrder = pickupOrder.length
-    let cumulativeFromSchool = lastPickupMinutes + 5 // 5 min buffer arriving at school area
-
-    for (const cluster of dropoffClusters) {
-      const orderedCluster = nearestNeighbor(cluster)
-      for (const stop of orderedCluster) {
-        orderedStops.push({
-          ...stop,
-          stopOrder: stopOrder++,
-          estimatedArrivalMinutes: cumulativeFromSchool + stop.estimatedArrivalMinutes + 5,
-        })
+  // Group children whose schools are within SCHOOL_CLUSTER_METERS of each other.
+  const clusters: ChildLegs[][] = []
+  const assigned = new Set<number>()
+  for (let i = 0; i < children.length; i++) {
+    if (assigned.has(i)) continue
+    const group = [children[i]]
+    assigned.add(i)
+    const s0 = schoolOf(children[i])
+    for (let j = i + 1; j < children.length; j++) {
+      if (assigned.has(j)) continue
+      if (distBetween(s0, schoolOf(children[j])) < SCHOOL_CLUSTER_METERS) {
+        group.push(children[j])
+        assigned.add(j)
       }
     }
-  } else {
-    // AFTERNOON
-    const pickupClusters = clusterByProximity(pickups)
+    clusters.push(group)
+  }
 
-    let stopOrder = 0
-    let cumulativeMinutes = 0
-
-    for (const cluster of pickupClusters) {
-      const orderedCluster = nearestNeighbor(cluster)
-      for (const stop of orderedCluster) {
-        orderedStops.push({
-          ...stop,
-          stopOrder: stopOrder++,
-          estimatedArrivalMinutes: cumulativeMinutes + stop.estimatedArrivalMinutes,
-        })
+  // Visit school clusters in nearest-neighbor order (by school centroid).
+  const clusterInfos = clusters.map(g => ({ group: g, school: centroid(g.map(schoolOf)) }))
+  const orderedClusters: ChildLegs[][] = []
+  {
+    const remaining = [...clusterInfos]
+    let cur: Pt = start ?? (remaining[0]?.school ?? { lat: 0, lng: 0 })
+    while (remaining.length > 0) {
+      let bestIdx = 0
+      let bestDist = Infinity
+      for (let i = 0; i < remaining.length; i++) {
+        const d = distBetween(cur, remaining[i].school)
+        if (d < bestDist) { bestDist = d; bestIdx = i }
       }
-      cumulativeMinutes = orderedStops.length > 0
-        ? orderedStops[orderedStops.length - 1].estimatedArrivalMinutes + 5
-        : 0
-    }
-
-    // Dropoff phase (home deliveries)
-    const dropoffOrder = nearestNeighbor(dropoffs)
-    for (const stop of dropoffOrder) {
-      orderedStops.push({
-        ...stop,
-        stopOrder: stopOrder++,
-        estimatedArrivalMinutes: cumulativeMinutes + stop.estimatedArrivalMinutes,
-      })
+      const picked = remaining.splice(bestIdx, 1)[0]
+      orderedClusters.push(picked.group)
+      cur = picked.school
     }
   }
 
-  const totalDistance = orderedStops.reduce((sum, s) => sum + s.distanceFromPrevMeters, 0)
-  const totalDuration = orderedStops.length > 0
-    ? orderedStops[orderedStops.length - 1].estimatedArrivalMinutes * 60
-    : 0
+  // Build the ordered stop sequence.
+  const sequence: StopToOptimize[] = []
+  let cursor: Pt | null = start ?? null
+  for (const group of orderedClusters) {
+    if (tripType === 'MORNING') {
+      const homes = group.map(homeOf)
+      for (const h of nearestNeighborOrder(homes, cursor ?? homes[0])) {
+        sequence.push(h); cursor = h
+      }
+      const schools = group.map(schoolOf)
+      for (const s of nearestNeighborOrder(schools, cursor ?? schools[0])) {
+        sequence.push(s); cursor = s
+      }
+    } else {
+      const schools = group.map(schoolOf)
+      for (const s of nearestNeighborOrder(schools, cursor ?? schools[0])) {
+        sequence.push(s); cursor = s
+      }
+      const homes = group.map(homeOf)
+      for (const h of nearestNeighborOrder(homes, cursor ?? homes[0])) {
+        sequence.push(h); cursor = h
+      }
+    }
+  }
 
-  return {
-    stops: orderedStops.map((s, i) => ({
+  // Compute cumulative distance + ETA across the whole sequence.
+  const result: OptimizedStop[] = []
+  let prev: Pt | null = start ?? null
+  let cumulativeMin = 0
+  let totalDist = 0
+  sequence.forEach((s, i) => {
+    let dist = 0
+    if (prev) {
+      dist = distBetween(prev, s)
+      cumulativeMin += (dist / 1000 / AVG_SPEED_KMH) * 60 + STOP_BUFFER_MIN
+    }
+    totalDist += dist
+    result.push({
       childId: s.childId,
       childName: s.childName,
       type: s.type,
@@ -213,11 +167,16 @@ export function optimizeRoute(
       lat: s.lat,
       lng: s.lng,
       stopOrder: i,
-      estimatedArrivalMinutes: s.estimatedArrivalMinutes,
-      distanceFromPrevMeters: s.distanceFromPrevMeters,
+      estimatedArrivalMinutes: Math.round(cumulativeMin),
+      distanceFromPrevMeters: Math.round(dist),
       notes: s.notes,
-    })),
-    totalDistanceMeters: totalDistance,
-    totalDurationSeconds: totalDuration,
+    })
+    prev = s
+  })
+
+  return {
+    stops: result,
+    totalDistanceMeters: Math.round(totalDist),
+    totalDurationSeconds: Math.round(cumulativeMin * 60),
   }
 }
