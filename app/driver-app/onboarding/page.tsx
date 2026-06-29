@@ -83,7 +83,7 @@ export default function DriverOnboardingPage() {
             <div
               key={i}
               className={`h-2 rounded-full transition-all ${
-                i === step ? 'w-6 bg-[#1A3F7A]' : i < step ? 'w-2 bg-[#1A3F7A]/40' : 'w-2 bg-[rgba(26,63,122,0.15)]'
+                i === step ? 'w-6 bg-[#ec3d3a]' : i < step ? 'w-2 bg-[#ec3d3a]/40' : 'w-2 bg-[rgba(236,61,58,0.15)]'
               }`}
             />
           ))}
@@ -166,7 +166,7 @@ export default function DriverOnboardingPage() {
 
         {step === 3 && (
           <>
-            <p className="text-sm text-[#5A6474] bg-[#F5A623]/10 rounded-xl p-3">
+            <p className="text-sm text-[#5A6474] bg-[#fdc73e]/10 rounded-xl p-3">
               Your banking details are used for payouts when payments go live. They are stored securely and never shared.
             </p>
             <div className="space-y-2">
@@ -208,7 +208,7 @@ export default function DriverOnboardingPage() {
           <Button
             onClick={nextStep}
             disabled={step === 0 && !details.name}
-            className="h-12 flex-1 bg-[#1A3F7A] text-white hover:bg-[#1A3F7A]/90"
+            className="h-12 flex-1 bg-[#ec3d3a] text-white hover:bg-[#ec3d3a]/90"
           >
             Continue →
           </Button>
@@ -216,7 +216,7 @@ export default function DriverOnboardingPage() {
           <Button
             onClick={handleFinish}
             disabled={loading}
-            className="h-12 flex-1 bg-[#1A3F7A] text-white hover:bg-[#1A3F7A]/90"
+            className="h-12 flex-1 bg-[#ec3d3a] text-white hover:bg-[#ec3d3a]/90"
           >
             {loading ? 'Setting up…' : 'Finish setup →'}
           </Button>

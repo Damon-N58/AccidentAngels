@@ -35,7 +35,7 @@ export default async function ContractsPage() {
         ) : (
           (contracts ?? []).map((contract: any) => (
             <Link key={contract.id} href={`/driver-app/contracts/${contract.id}`}>
-              <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+              <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
                 <CardContent className="p-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-semibold text-sm text-[#0F1923]">{contract.child.name}</p>

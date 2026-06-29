@@ -53,7 +53,7 @@ export default async function ChildrenPage() {
       <div className="px-4 py-4 space-y-3">
         <div className="flex justify-end">
           <Link href="/driver-app/children/add">
-            <Button className="h-10 bg-[#1A3F7A] text-white text-sm">+ Add child</Button>
+            <Button className="h-10 bg-[#ec3d3a] text-white text-sm">+ Add child</Button>
           </Link>
         </div>
 
@@ -64,7 +64,7 @@ export default async function ChildrenPage() {
             const contract = child.contracts[0]
             return (
               <Link key={child.id} href={`/driver-app/children/${child.id}`}>
-                <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+                <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
                   <CardContent className="p-4 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-sm text-[#0F1923]">{child.name}</p>
@@ -72,7 +72,7 @@ export default async function ChildrenPage() {
                       <p className="text-xs text-[#5A6474] mt-0.5">{child.parent.user.name}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      {child.monthlyFee && <span className="text-sm font-bold text-[#1A3F7A]">{formatZAR(child.monthlyFee)}/mo</span>}
+                      {child.monthlyFee && <span className="text-sm font-bold text-[#ec3d3a]">{formatZAR(child.monthlyFee)}/mo</span>}
                       {contract && <StatusBadge status={contract.status} />}
                       <ChevronRight className="w-4 h-4 text-[#5A6474]" />
                     </div>

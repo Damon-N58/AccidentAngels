@@ -117,7 +117,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
       </p>
       <Button
         onClick={() => router.push('/parent-app/login')}
-        className="w-full h-14 bg-[#F5A623] text-[#0F1923] font-semibold rounded-xl mb-3"
+        className="w-full h-14 bg-[#fdc73e] text-[#0F1923] font-semibold rounded-xl mb-3"
       >
         Set up my account →
       </Button>
@@ -128,10 +128,10 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
   return (
     <div className="min-h-screen bg-[#F8F9FB] flex flex-col">
       {/* Header */}
-      <div className="bg-[#1A3F7A] px-6 pt-12 pb-8 text-white">
+      <div className="bg-[#ec3d3a] px-6 pt-12 pb-8 text-white">
         <div className="flex items-center gap-2 mb-4">
           <Logo size={32} className="rounded-lg object-contain bg-white" />
-          <span className="font-bold">Accident Angels</span>
+          <span className="font-bold">GETS</span>
         </div>
         <h1 className="text-xl font-bold mb-1">Transport Agreement</h1>
         <p className="text-white/70 text-sm">{info.driverName} &amp; {info.childName}</p>
@@ -141,7 +141,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
         {(step === 'cover' || step === 'review') && (
           <>
             {/* Summary */}
-            <div className="bg-white rounded-2xl p-4 border border-[rgba(26,63,122,0.10)] space-y-2.5">
+            <div className="bg-white rounded-2xl p-4 border border-[rgba(236,61,58,0.10)] space-y-2.5">
               {[
                 ['Child', info.childName],
                 ['Driver', info.driverName],
@@ -160,7 +160,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
             {/* Expand PDF button */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-center justify-between bg-white rounded-2xl p-4 border border-[rgba(26,63,122,0.10)] text-sm font-medium text-[#1A3F7A]"
+              className="w-full flex items-center justify-between bg-white rounded-2xl p-4 border border-[rgba(236,61,58,0.10)] text-sm font-medium text-[#ec3d3a]"
             >
               <span className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
@@ -188,7 +188,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
                 <Button
                   onClick={requestOtp}
                   disabled={!agreed}
-                  className="w-full h-14 bg-[#F5A623] text-[#0F1923] font-semibold rounded-xl"
+                  className="w-full h-14 bg-[#fdc73e] text-[#0F1923] font-semibold rounded-xl"
                 >
                   Sign agreement →
                 </Button>
@@ -200,7 +200,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
         {step === 'cover' && (
           <Button
             onClick={() => setStep('review')}
-            className="w-full h-14 bg-[#F5A623] text-[#0F1923] font-semibold rounded-xl"
+            className="w-full h-14 bg-[#fdc73e] text-[#0F1923] font-semibold rounded-xl"
           >
             Review agreement →
           </Button>
@@ -218,7 +218,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
             <Button
               onClick={handleSign}
               disabled={otp.length !== 6 || signing}
-              className="w-full h-14 bg-[#F5A623] text-[#0F1923] font-semibold rounded-xl"
+              className="w-full h-14 bg-[#fdc73e] text-[#0F1923] font-semibold rounded-xl"
             >
               {signing ? 'Signing…' : 'Sign & confirm'}
             </Button>

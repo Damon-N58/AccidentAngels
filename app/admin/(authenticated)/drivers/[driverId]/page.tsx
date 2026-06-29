@@ -114,7 +114,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Back */}
-      <a href="/admin/drivers" className="inline-flex items-center gap-1.5 text-sm text-[#1A3F7A] font-medium hover:underline">
+      <a href="/admin/drivers" className="inline-flex items-center gap-1.5 text-sm text-[#ec3d3a] font-medium hover:underline">
         <ChevronLeft className="w-4 h-4" /> All drivers
       </a>
 
@@ -135,7 +135,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
 
       {/* Info cards */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold text-[#5A6474] flex items-center gap-1.5">
               <User className="w-3.5 h-3.5" /> Profile
@@ -154,7 +154,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold text-[#5A6474] flex items-center gap-1.5">
               <Car className="w-3.5 h-3.5" /> Vehicle
@@ -174,7 +174,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold text-[#5A6474] flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" /> Association
@@ -196,13 +196,13 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
           {ALL_TYPES.map(type => {
             const doc = docsMap[type]
             return (
-              <Card key={type} className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+              <Card key={type} className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-4">
                     {/* Status icon */}
                     <div className="mt-0.5">
                       {doc ? (STATUS_ICON[doc.status as keyof typeof STATUS_ICON] ?? STATUS_ICON.PENDING) : (
-                        <div className="w-4 h-4 rounded-full border-2 border-[rgba(26,63,122,0.20)]" />
+                        <div className="w-4 h-4 rounded-full border-2 border-[rgba(236,61,58,0.20)]" />
                       )}
                     </div>
 
@@ -233,7 +233,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
                               href={doc.fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1A3F7A] hover:underline"
+                              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#ec3d3a] hover:underline"
                             >
                               <FileText className="w-3.5 h-3.5" />
                               View document

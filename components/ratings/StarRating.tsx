@@ -38,14 +38,14 @@ export function StarRating({ value, onChange, readonly = false, size = 'md' }: S
             onMouseLeave={() => interactive && setHovered(null)}
             // Remove button chrome when readonly
             className={interactive
-              ? 'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623] rounded'
+              ? 'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#fdc73e] rounded'
               : 'cursor-default pointer-events-none'}
             aria-label={`${star} star${star !== 1 ? 's' : ''}`}
           >
             <Star
               className={sizeClass}
               style={isFilled
-                ? { fill: '#F5A623', stroke: '#F5A623' }
+                ? { fill: '#fdc73e', stroke: '#fdc73e' }
                 : { fill: 'none', stroke: '#D1D5DB' }}
             />
           </button>

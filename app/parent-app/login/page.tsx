@@ -52,9 +52,9 @@ export default function ParentLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="bg-gradient-to-br from-[#1A3F7A] to-[#0F2A52] px-6 pt-16 pb-12 flex flex-col items-center text-center">
-        <Logo size={80} className="mb-5 rounded-2xl object-contain" />
-        <h1 className="text-3xl font-bold text-white mb-2">Angels</h1>
+      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center text-center">
+        <Logo size={80} className="mb-5 rounded-2xl object-contain bg-white p-2" />
+        <h1 className="text-3xl font-bold text-white mb-2">GETS</h1>
         <p className="text-white/70 text-base">Safe transport, every day</p>
       </div>
 
@@ -66,7 +66,7 @@ export default function ParentLoginPage() {
               <p className="text-sm text-[#5A6474]">Use the code below to sign in.</p>
             </div>
 
-            <div className="bg-[#F5A623] rounded-2xl p-6 text-center shadow-sm">
+            <div className="bg-[#fdc73e] rounded-2xl p-6 text-center shadow-sm">
               <p className="text-sm font-semibold text-[#0F1923] mb-2 uppercase tracking-wide">Your login code</p>
               <p className="text-5xl font-bold tracking-[0.25em] text-[#0F1923]">{devCode}</p>
               <p className="text-xs text-[#0F1923]/60 mt-3">Valid for 5 minutes</p>
@@ -74,7 +74,7 @@ export default function ParentLoginPage() {
 
             <Button
               onClick={() => router.push('/parent-app/verify')}
-              className="w-full h-14 text-base font-semibold bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] rounded-xl"
+              className="w-full h-14 text-base font-semibold bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] rounded-xl"
             >
               Continue to verify →
             </Button>
@@ -100,7 +100,7 @@ export default function ParentLoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 text-base font-semibold bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] rounded-xl"
+                className="w-full h-14 text-base font-semibold bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] rounded-xl"
               >
                 {loading ? 'Sending code…' : 'Continue →'}
               </Button>

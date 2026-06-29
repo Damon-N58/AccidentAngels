@@ -21,7 +21,7 @@ function rateLimitedFetch(url: string): Promise<any> {
     new Promise<any>((resolve) => {
       setTimeout(async () => {
         try {
-          const res = await fetch(url, { headers: { 'User-Agent': 'AccidentAngels/1.0' } })
+          const res = await fetch(url, { headers: { 'User-Agent': 'GETS/1.0' } })
           resolve(res.ok ? res.json() : [])
         } catch {
           resolve([])
@@ -122,7 +122,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               autoComplete="off"
-              className="w-full h-11 text-sm border border-[rgba(26,63,122,0.15)] rounded-xl px-3 outline-none focus:border-[#1A3F7A] bg-white"
+              className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a] bg-white"
             />
             {searching && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#5A6474]">Searching…</span>
@@ -133,12 +133,12 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
           </div>
 
           {results.length > 0 && (
-            <div className="bg-white border border-[rgba(26,63,122,0.2)] rounded-xl overflow-hidden shadow-lg max-h-56 overflow-y-auto relative z-20">
+            <div className="bg-white border border-[rgba(236,61,58,0.2)] rounded-xl overflow-hidden shadow-lg max-h-56 overflow-y-auto relative z-20">
               {results.map((r, i) => (
                 <button
                   key={i}
                   onMouseDown={(e) => { e.preventDefault(); selectResult(r) }}
-                  className="w-full text-left px-3 py-3 text-sm text-[#0F1923] hover:bg-[#F0F2F5] border-b border-[rgba(26,63,122,0.06)] last:border-0 transition-colors"
+                  className="w-full text-left px-3 py-3 text-sm text-[#0F1923] hover:bg-[#F0F2F5] border-b border-[rgba(236,61,58,0.06)] last:border-0 transition-colors"
                 >
                   {r.display_name.split(', ').slice(0, 3).join(', ')}
                 </button>
@@ -146,7 +146,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
               {search.trim().length >= 3 && (
                 <button
                   onMouseDown={(e) => { e.preventDefault(); selectFreeText() }}
-                  className="w-full text-left px-3 py-3 text-sm font-medium text-[#1A3F7A] hover:bg-[#F0F2F5] border-t border-[rgba(26,63,122,0.08)]"
+                  className="w-full text-left px-3 py-3 text-sm font-medium text-[#ec3d3a] hover:bg-[#F0F2F5] border-t border-[rgba(236,61,58,0.08)]"
                 >
                   Use &ldquo;{search}&rdquo;
                 </button>
@@ -163,7 +163,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
           <button
             type="button"
             onClick={() => setShowMap(true)}
-            className="w-full h-10 text-xs font-medium text-[#1A3F7A] border border-dashed border-[rgba(26,63,122,0.25)] rounded-xl hover:bg-[#1A3F7A]/05 transition-colors"
+            className="w-full h-10 text-xs font-medium text-[#ec3d3a] border border-dashed border-[rgba(236,61,58,0.25)] rounded-xl hover:bg-[#ec3d3a]/05 transition-colors"
           >
             Drop a pin on the map instead
           </button>

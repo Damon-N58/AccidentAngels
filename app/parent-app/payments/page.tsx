@@ -27,17 +27,17 @@ export default async function ParentPaymentsPage() {
     <div className="min-h-screen bg-[#F8F9FB]">
       <ParentTopBar title="Payments" />
       <div className="px-4 py-4 space-y-4">
-        <div className="bg-[#F5A623]/10 border border-[#F5A623]/30 rounded-xl p-3">
+        <div className="bg-[#fdc73e]/10 border border-[#fdc73e]/30 rounded-xl p-3">
           <p className="text-sm font-medium text-[#0F1923]">Payments not yet live</p>
           <p className="text-xs text-[#5A6474] mt-0.5">Set up your payment method now. No charges until payments go live.</p>
         </div>
 
         {totalMonthly > 0 && (
-          <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+          <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm font-medium text-[#0F1923]">Monthly transport</p>
-                <p className="text-xl font-bold text-[#1A3F7A]">{formatZAR(totalMonthly)}</p>
+                <p className="text-xl font-bold text-[#ec3d3a]">{formatZAR(totalMonthly)}</p>
               </div>
               {activeChildren.map((c: any) => (
                 <div key={c.id} className="flex justify-between text-xs text-[#5A6474] mt-1">
@@ -50,7 +50,7 @@ export default async function ParentPaymentsPage() {
         )}
 
         {parent.isPaymentSetup ? (
-          <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+          <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="font-semibold text-sm text-[#0F1923]">Payment method</p>
@@ -75,7 +75,7 @@ export default async function ParentPaymentsPage() {
           </div>
         )}
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4 text-center py-8">
             <p className="text-sm text-[#5A6474]">Your payment history will appear here.</p>
           </CardContent>

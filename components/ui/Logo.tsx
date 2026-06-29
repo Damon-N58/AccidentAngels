@@ -10,7 +10,7 @@ export function Logo({ size = 56, className = '' }: LogoProps) {
   return (
     <Image
       src={logoSrc}
-      alt="Accident Angels"
+      alt="GETS"
       width={size}
       height={size}
       className={className}

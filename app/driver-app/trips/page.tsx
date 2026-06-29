@@ -49,7 +49,7 @@ export default function DriverTripsPage() {
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          className="w-full h-10 text-sm border border-[rgba(26,63,122,0.15)] rounded-xl px-3 outline-none focus:border-[#1A3F7A]"
+          className="w-full h-10 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a]"
         />
 
         {error && (
@@ -62,20 +62,20 @@ export default function DriverTripsPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2].map(i => (
-              <div key={i} className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-5 animate-pulse">
+              <div key={i} className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-5 animate-pulse">
                 <div className="h-4 bg-[#E8EAED] rounded w-1/3 mb-3" />
                 <div className="h-3 bg-[#E8EAED] rounded w-1/2" />
               </div>
             ))}
           </div>
         ) : trips.length === 0 && !error ? (
-          <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-6 text-center space-y-1">
+          <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-6 text-center space-y-1">
             <CalendarDays className="w-8 h-8 text-[#5A6474] mx-auto mb-2" />
             <p className="text-sm font-medium text-[#0F1923]">No trips for this date</p>
             <p className="text-xs text-[#5A6474]">
               Trips are auto-generated from children&apos;s schedules.
             </p>
-            <p className="text-xs text-[#F5A623] font-medium pt-1">
+            <p className="text-xs text-[#fdc73e] font-medium pt-1">
               Ask the parent to set up a schedule under their child&apos;s profile, then trips will appear here automatically.
             </p>
           </div>
@@ -84,11 +84,11 @@ export default function DriverTripsPage() {
             {/* Morning trip */}
             {morning && (
               <button onClick={() => router.push(`/driver-app/trips/${morning.id}`)} className="w-full text-left">
-                <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
+                <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 rounded-full bg-[#F5A623]/10 flex items-center justify-center">
-                        <Sun className="w-5 h-5 text-[#F5A623]" />
+                      <div className="w-9 h-9 rounded-full bg-[#fdc73e]/10 flex items-center justify-center">
+                        <Sun className="w-5 h-5 text-[#fdc73e]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm text-[#0F1923]">Morning school run</p>
@@ -131,11 +131,11 @@ export default function DriverTripsPage() {
             {/* Afternoon trip */}
             {afternoon && (
               <button onClick={() => router.push(`/driver-app/trips/${afternoon.id}`)} className="w-full text-left">
-                <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
+                <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center">
-                        <Moon className="w-5 h-5 text-[#1A3F7A]" />
+                      <div className="w-9 h-9 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center">
+                        <Moon className="w-5 h-5 text-[#ec3d3a]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm text-[#0F1923]">Afternoon school run</p>

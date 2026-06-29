@@ -18,11 +18,11 @@ export default async function AdminAuthenticatedLayout({ children }: { children:
   return (
     <div className="flex min-h-screen bg-[#F8F9FB]">
       {/* Sidebar */}
-      <aside className="w-60 bg-[#1A3F7A] flex flex-col shrink-0">
+      <aside className="w-60 bg-[#ec3d3a] flex flex-col shrink-0">
         <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
           <Logo size={32} className="rounded-lg object-contain bg-white p-0.5" />
           <div>
-            <p className="text-white font-bold text-sm leading-tight">Accident Angels</p>
+            <p className="text-white font-bold text-sm leading-tight">GETS</p>
             <p className="text-white/50 text-xs">Admin</p>
           </div>
         </div>

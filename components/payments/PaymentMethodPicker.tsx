@@ -46,14 +46,14 @@ export function PaymentMethodPicker() {
             className={cn(
               'w-full text-left rounded-2xl p-4 border-2 transition-colors',
               selected === opt.id
-                ? 'border-[#1A3F7A] bg-[#1A3F7A]/04'
-                : 'border-[rgba(26,63,122,0.15)] bg-white'
+                ? 'border-[#ec3d3a] bg-[#ec3d3a]/04'
+                : 'border-[rgba(236,61,58,0.15)] bg-white'
             )}
           >
             <div className="flex items-start gap-3">
               <div className={cn(
                 'w-10 h-10 rounded-full flex items-center justify-center shrink-0',
-                selected === opt.id ? 'bg-[#1A3F7A] text-white' : 'bg-[#1A3F7A]/10 text-[#1A3F7A]'
+                selected === opt.id ? 'bg-[#ec3d3a] text-white' : 'bg-[#ec3d3a]/10 text-[#ec3d3a]'
               )}>
                 {opt.icon}
               </div>
@@ -61,7 +61,7 @@ export function PaymentMethodPicker() {
                 <div className="flex items-center gap-2">
                   <p className="font-semibold text-sm text-[#0F1923]">{opt.title}</p>
                   {opt.recommended && (
-                    <span className="text-xs bg-[#F5A623]/20 text-[#F5A623] px-1.5 py-0.5 rounded font-medium">
+                    <span className="text-xs bg-[#fdc73e]/20 text-[#fdc73e] px-1.5 py-0.5 rounded font-medium">
                       Popular
                     </span>
                   )}
@@ -77,7 +77,7 @@ export function PaymentMethodPicker() {
           </button>
 
           {selected === opt.id && (
-            <div className="mt-2 rounded-2xl border border-[rgba(26,63,122,0.15)] bg-white p-4">
+            <div className="mt-2 rounded-2xl border border-[rgba(236,61,58,0.15)] bg-white p-4">
               {opt.id === 'PAYSTACK_CARD' && <PaystackCardSetup />}
               {(opt.id === 'CAPITEC_PAY_VRP' || opt.id === 'DEBICHECK') && (
                 <p className="text-sm text-center text-[#5A6474] py-4">

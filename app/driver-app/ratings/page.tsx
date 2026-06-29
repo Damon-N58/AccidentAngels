@@ -18,7 +18,7 @@ function InlineStars({ score, size = 'sm' }: { score: number; size?: 'sm' | 'md'
           className={cls}
           style={
             s <= Math.round(score)
-              ? { fill: '#F5A623', stroke: '#F5A623' }
+              ? { fill: '#fdc73e', stroke: '#fdc73e' }
               : { fill: 'none', stroke: '#D1D5DB' }
           }
         />
@@ -57,7 +57,7 @@ export default async function MyRatingsPage() {
       <div className="px-4 pt-4 pb-8 space-y-4">
 
         {/* Aggregate banner */}
-        <div className="bg-[#1A3F7A] rounded-2xl p-5 text-white text-center">
+        <div className="bg-[#ec3d3a] rounded-2xl p-5 text-white text-center">
           <p className="text-5xl font-bold tracking-tight mb-1">
             {driver.ratingAvg != null ? Number(driver.ratingAvg).toFixed(1) : '—'}
           </p>
@@ -71,7 +71,7 @@ export default async function MyRatingsPage() {
                     className="w-6 h-6"
                     style={
                       s <= Math.round(Number(driver.ratingAvg))
-                        ? { fill: '#F5A623', stroke: '#F5A623' }
+                        ? { fill: '#fdc73e', stroke: '#fdc73e' }
                         : { fill: 'none', stroke: 'rgba(255,255,255,0.4)' }
                     }
                   />
@@ -102,7 +102,7 @@ export default async function MyRatingsPage() {
         {ratingList.map((r: any) => (
           <div
             key={r.id}
-            className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-2"
+            className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-2"
           >
             {/* Score row */}
             <div className="flex items-center justify-between gap-2">

@@ -39,15 +39,15 @@ export default async function DriverPaymentsPage() {
     <div className="min-h-screen bg-[#F8F9FB]">
       <DriverTopBar title="Payments" />
       <div className="px-4 py-4 space-y-4">
-        <div className="bg-[#F5A623]/10 border border-[#F5A623]/30 rounded-xl p-3">
+        <div className="bg-[#fdc73e]/10 border border-[#fdc73e]/30 rounded-xl p-3">
           <p className="text-sm text-[#0F1923] font-medium">Payments not yet live</p>
           <p className="text-xs text-[#5A6474] mt-0.5">Your earnings below are a preview. Actual payouts will begin once payments go live.</p>
         </div>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Building2 className="w-4 h-4 text-[#1A3F7A]" />
+              <Building2 className="w-4 h-4 text-[#ec3d3a]" />
               <span className="font-semibold text-sm text-[#0F1923]">Banking details (for payouts)</span>
             </div>
             <Separator className="mb-3" />
@@ -86,10 +86,10 @@ export default async function DriverPaymentsPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-[#1A3F7A]" />
+              <TrendingUp className="w-4 h-4 text-[#ec3d3a]" />
               <span className="font-semibold text-sm text-[#0F1923]">Earnings preview</span>
             </div>
             <Separator className="mb-3" />
@@ -108,7 +108,7 @@ export default async function DriverPaymentsPage() {
                 <Separator className="mb-3" />
                 <div className="flex justify-between text-sm font-bold">
                   <span className="text-[#0F1923]">Gross total</span>
-                  <span className="text-[#1A3F7A]">{formatZAR(totalGross)}</span>
+                  <span className="text-[#ec3d3a]">{formatZAR(totalGross)}</span>
                 </div>
                 <p className="text-xs text-[#5A6474] mt-3 italic">Fee splits will be confirmed before payments go live.</p>
               </>
@@ -116,7 +116,7 @@ export default async function DriverPaymentsPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-[#5A6474]" />
             <p className="text-sm text-[#5A6474]">Your first payout will appear here once payments go live.</p>

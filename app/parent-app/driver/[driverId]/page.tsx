@@ -77,16 +77,16 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
       <ParentTopBar title="Your Driver" showBack />
       <div className="px-4 py-5 space-y-4">
         <div className="flex flex-col items-center py-4">
-          <div className="w-20 h-20 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center mb-3">
+          <div className="w-20 h-20 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center mb-3">
             {driver.profilePhotoUrl ? (
               <img src={driver.profilePhotoUrl} alt={driver.user.name} className="w-20 h-20 rounded-full object-cover" />
             ) : (
-              <User className="w-9 h-9 text-[#1A3F7A]" />
+              <User className="w-9 h-9 text-[#ec3d3a]" />
             )}
           </div>
           <h2 className="text-xl font-bold text-[#0F1923]">{driver.user.name}</h2>
           {driver.getsRegistrationNumber && (
-            <span className="mt-1 text-xs bg-[#1A3F7A]/10 text-[#1A3F7A] px-2.5 py-0.5 rounded-full font-medium">
+            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[#ec3d3a] px-2.5 py-0.5 rounded-full font-medium">
               GETS: {driver.getsRegistrationNumber}
             </span>
           )}
@@ -103,10 +103,10 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
           </div>
         )}
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Car className="w-4 h-4 text-[#1A3F7A]" />
+              <Car className="w-4 h-4 text-[#ec3d3a]" />
               <span className="font-semibold text-sm text-[#0F1923]">Vehicle</span>
             </div>
             <div className="space-y-1.5">
@@ -124,7 +124,7 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <p className="font-semibold text-sm text-[#0F1923] mb-3">Compliance verification</p>
             <div className="grid grid-cols-2 gap-2">
@@ -163,20 +163,20 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
 
         {/* Public parent reviews (anonymised, non-hidden) */}
         {reviews.length > 0 && (
-          <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+          <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
             <CardContent className="p-4">
               <p className="font-semibold text-sm text-[#0F1923] mb-3">Parent reviews</p>
               <div className="space-y-3">
                 {reviews.map((r: any) => (
-                  <div key={r.id} className="border-t border-[rgba(26,63,122,0.06)] first:border-t-0 pt-3 first:pt-0">
+                  <div key={r.id} className="border-t border-[rgba(236,61,58,0.06)] first:border-t-0 pt-3 first:pt-0">
                     <div className="flex items-center gap-1 mb-1">
                       {[1, 2, 3, 4, 5].map(i => (
                         <Star
                           key={i}
                           className="w-3.5 h-3.5"
                           style={{
-                            fill: i <= r.score ? '#F5A623' : 'none',
-                            stroke: i <= r.score ? '#F5A623' : '#D1D5DB',
+                            fill: i <= r.score ? '#fdc73e' : 'none',
+                            stroke: i <= r.score ? '#fdc73e' : '#D1D5DB',
                           }}
                         />
                       ))}

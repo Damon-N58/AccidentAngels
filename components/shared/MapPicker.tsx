@@ -63,10 +63,10 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
         className: '',
         html: `<div style="
           width: 32px; height: 32px;
-          background: #1A3F7A;
+          background: #ec3d3a;
           border: 3px solid white;
           border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px #1A3F7A;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px #ec3d3a;
           display: flex; align-items: center; justify-content: center;
           font-size: 14px; color: white; font-weight: bold;
         ">P</div>`,
@@ -111,7 +111,7 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-        { headers: { 'User-Agent': 'AccidentAngels/1.0' } }
+        { headers: { 'User-Agent': 'GETS/1.0' } }
       )
       const data = await res.json()
       onConfirm(data.display_name ?? `${lat.toFixed(6)}, ${lng.toFixed(6)}`, lat, lng)
@@ -124,7 +124,7 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
     <div className="space-y-3">
       <div
         ref={mapRef}
-        className="w-full h-64 rounded-xl border border-[rgba(26,63,122,0.15)]"
+        className="w-full h-64 rounded-xl border border-[rgba(236,61,58,0.15)]"
         style={{ minHeight: '16rem' }}
       />
       {!ready && (
@@ -137,14 +137,14 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 h-11 border border-[rgba(26,63,122,0.15)] text-[#5A6474] font-medium rounded-xl text-sm hover:bg-[#F8F9FB]"
+          className="flex-1 h-11 border border-[rgba(236,61,58,0.15)] text-[#5A6474] font-medium rounded-xl text-sm hover:bg-[#F8F9FB]"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={handleConfirm}
-          className="flex-1 h-11 bg-[#1A3F7A] text-white font-semibold rounded-xl text-sm hover:bg-[#1A3F7A]/90"
+          className="flex-1 h-11 bg-[#ec3d3a] text-white font-semibold rounded-xl text-sm hover:bg-[#ec3d3a]/90"
         >
           Confirm pin location
         </button>

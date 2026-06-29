@@ -135,7 +135,7 @@ export default async function DriverDashboardPage() {
         {todayTrips.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Navigation className="w-4 h-4 text-[#1A3F7A]" />
+              <Navigation className="w-4 h-4 text-[#ec3d3a]" />
               <h3 className="text-sm font-semibold text-[#0F1923]">Today&apos;s trips</h3>
             </div>
             <div className="space-y-2">
@@ -143,14 +143,14 @@ export default async function DriverDashboardPage() {
                 const completed = trip.stops.filter((s: any) => s.status === 'COMPLETED').length
                 return (
                   <Link key={trip.id} href={`/driver-app/trips/${trip.id}`}>
-                    <Card className="rounded-xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
+                    <Card className="rounded-xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                          trip.type === 'MORNING' ? 'bg-[#F5A623]/10' : 'bg-[#1A3F7A]/10'
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
                         }`}>
                           {trip.type === 'MORNING'
-                            ? <Sun className="w-4 h-4 text-[#F5A623]" />
-                            : <Moon className="w-4 h-4 text-[#1A3F7A]" />}
+                            ? <Sun className="w-4 h-4 text-[#fdc73e]" />
+                            : <Moon className="w-4 h-4 text-[#ec3d3a]" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[#0F1923]">
@@ -160,7 +160,7 @@ export default async function DriverDashboardPage() {
                         </div>
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                           trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                          trip.status === 'IN_PROGRESS' ? 'bg-[#1A3F7A]/10 text-[#1A3F7A]' :
+                          trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]' :
                           'bg-[#F8F9FB] text-[#5A6474]'
                         }`}>
                           {trip.status === 'COMPLETED' ? 'Done' :
@@ -201,7 +201,7 @@ export default async function DriverDashboardPage() {
                         </div>
                         <div className="flex flex-col items-end gap-1.5 shrink-0">
                           {contract.monthlyAmountCents > 0 && (
-                            <span className="text-sm font-bold text-[#1A3F7A]">{formatZAR(contract.monthlyAmountCents)}/mo</span>
+                            <span className="text-sm font-bold text-[#ec3d3a]">{formatZAR(contract.monthlyAmountCents)}/mo</span>
                           )}
                           <span className="text-xs font-semibold text-[#F59E0B]">Tap to accept →</span>
                         </div>
@@ -220,7 +220,7 @@ export default async function DriverDashboardPage() {
         </div>
 
         {children.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-6 text-center">
+          <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-6 text-center">
             <p className="text-sm font-medium text-[#0F1923]">No active children yet</p>
             <p className="text-xs text-[#5A6474] mt-1">
               A parent needs to assign you as their driver first.
@@ -232,7 +232,7 @@ export default async function DriverDashboardPage() {
               const contract = child.contracts[0]
               return (
                 <Link key={child.id} href={`/driver-app/children/${child.id}`}>
-                  <Card className="rounded-2xl border border-[rgba(26,63,122,0.10)] shadow-none">
+                  <Card className="rounded-2xl border border-[rgba(236,61,58,0.10)] shadow-none">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -244,7 +244,7 @@ export default async function DriverDashboardPage() {
                         </div>
                         <div className="flex flex-col items-end gap-1.5 shrink-0">
                           {child.monthlyFee && (
-                            <span className="text-sm font-bold text-[#1A3F7A]">{formatZAR(child.monthlyFee)}/mo</span>
+                            <span className="text-sm font-bold text-[#ec3d3a]">{formatZAR(child.monthlyFee)}/mo</span>
                           )}
                           {contract && <StatusBadge status={contract.status} />}
                         </div>

@@ -30,8 +30,8 @@ export function PaystackCardSetup() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 bg-[#1A3F7A]/04 rounded-xl p-3">
-        <Lock className="w-4 h-4 text-[#1A3F7A] mt-0.5 shrink-0" />
+      <div className="flex items-start gap-3 bg-[#ec3d3a]/04 rounded-xl p-3">
+        <Lock className="w-4 h-4 text-[#ec3d3a] mt-0.5 shrink-0" />
         <p className="text-xs text-[#0F1923]">
           You&apos;ll be redirected to a secure Paystack page to enter your card details.
           A R0.50 verification charge is made and immediately refunded.
@@ -40,7 +40,7 @@ export function PaystackCardSetup() {
       <Button
         onClick={handleSetup}
         disabled={loading}
-        className="w-full h-12 bg-[#1A3F7A] text-white font-semibold rounded-xl flex items-center gap-2"
+        className="w-full h-12 bg-[#ec3d3a] text-white font-semibold rounded-xl flex items-center gap-2"
       >
         <CreditCard className="w-4 h-4" />
         {loading ? 'Redirecting…' : 'Add debit / credit card'}

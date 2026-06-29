@@ -96,7 +96,7 @@ export default function ParentTripsPage() {
         </div>
 
         {/* Calendar grid */}
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-3">
             <div className="grid grid-cols-7 gap-1 text-center" role="grid" aria-label="Calendar">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
@@ -114,15 +114,15 @@ export default function ParentTripsPage() {
                     onClick={() => handleSelectDate(dateStr)}
                     className={`relative h-11 min-h-[44px] text-sm rounded-lg transition-colors flex items-center justify-center ${
                       isSelected
-                        ? 'bg-[#1A3F7A] text-white'
+                        ? 'bg-[#ec3d3a] text-white'
                         : isToday
-                          ? 'ring-2 ring-[#1A3F7A] ring-offset-1 bg-white text-[#0F1923]'
+                          ? 'ring-2 ring-[#ec3d3a] ring-offset-1 bg-white text-[#0F1923]'
                           : 'text-[#5A6474] hover:bg-[#F8F9FB]'
                     }`}
                   >
                     {day}
                     {hasTrips && !isSelected && (
-                      <span className="absolute bottom-1 w-1 h-1 rounded-full bg-[#F5A623]" />
+                      <span className="absolute bottom-1 w-1 h-1 rounded-full bg-[#fdc73e]" />
                     )}
                   </button>
                 )
@@ -135,7 +135,7 @@ export default function ParentTripsPage() {
         <Button
           onClick={() => router.push('/parent-app/trips/book')}
           variant="outline"
-          className="w-full h-11 border border-[rgba(26,63,122,0.15)] text-[#1A3F7A] font-semibold rounded-xl"
+          className="w-full h-11 border border-[rgba(236,61,58,0.15)] text-[#ec3d3a] font-semibold rounded-xl"
         >
           <Plus className="w-4 h-4 mr-2" />
           Book a one-off trip
@@ -150,14 +150,14 @@ export default function ParentTripsPage() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2].map(i => (
-                <div key={i} className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 animate-pulse">
+                <div key={i} className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 animate-pulse">
                   <div className="h-4 bg-[#E8EAED] rounded w-1/3 mb-2" />
                   <div className="h-3 bg-[#E8EAED] rounded w-1/2" />
                 </div>
               ))}
             </div>
           ) : selectedTrips.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-6 text-center">
+            <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-6 text-center">
               <CalendarDays className="w-8 h-8 text-[#5A6474] mx-auto mb-2" />
               <p className="text-sm font-medium text-[#0F1923]">No trips</p>
               <p className="text-xs text-[#5A6474] mt-1">No trips scheduled for this day.</p>
@@ -170,15 +170,15 @@ export default function ParentTripsPage() {
                   onClick={() => router.push(`/parent-app/trips/${trip.id}`)}
                   className="w-full text-left"
                 >
-                  <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
+                  <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          trip.type === 'MORNING' ? 'bg-[#F5A623]/10' : 'bg-[#1A3F7A]/10'
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
                         }`}>
                           {trip.type === 'MORNING'
-                            ? <Sun className="w-4 h-4 text-[#F5A623]" />
-                            : <Moon className="w-4 h-4 text-[#1A3F7A]" />}
+                            ? <Sun className="w-4 h-4 text-[#fdc73e]" />
+                            : <Moon className="w-4 h-4 text-[#ec3d3a]" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-[#0F1923]">
@@ -191,7 +191,7 @@ export default function ParentTripsPage() {
                         </div>
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
                           trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                          trip.status === 'IN_PROGRESS' ? 'bg-[#1A3F7A]/10 text-[#1A3F7A]' :
+                          trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]' :
                           trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                           'bg-[#F8F9FB] text-[#5A6474]'
                         }`}>

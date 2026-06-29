@@ -130,7 +130,7 @@ export default function ParentOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-gradient-to-br from-[#1A3F7A] to-[#0F2A52] px-6 pt-12 pb-10 flex flex-col items-center text-center">
+      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-12 pb-10 flex flex-col items-center text-center">
         <Logo size={56} className="mb-4 rounded-2xl object-contain bg-white p-1" />
         <h1 className="text-xl font-bold text-white">Get started</h1>
         <p className="text-white/70 text-sm mt-1">Step {step + 1} of {STEPS.length}</p>
@@ -196,7 +196,7 @@ export default function ParentOnboardingPage() {
                   setPickupLng(lng)
                 }}
               />
-              <div className="border-t border-[rgba(26,63,122,0.08)] pt-4">
+              <div className="border-t border-[rgba(236,61,58,0.08)] pt-4">
                 <AddressPicker
                   label="Dropoff address (school)"
                   placeholder="Search for the school address"
@@ -228,15 +228,15 @@ export default function ParentOnboardingPage() {
                         onClick={() => { setSelectedDriver(d); setSkipDriver(false) }}
                         className={`w-full text-left rounded-2xl border p-4 transition-all ${
                           isSelected
-                            ? 'border-[#1A3F7A] bg-[#1A3F7A]/05 ring-1 ring-[#1A3F7A]'
-                            : 'border-[rgba(26,63,122,0.12)] bg-white hover:border-[#1A3F7A]/30'
+                            ? 'border-[#ec3d3a] bg-[#ec3d3a]/05 ring-1 ring-[#ec3d3a]'
+                            : 'border-[rgba(236,61,58,0.12)] bg-white hover:border-[#ec3d3a]/30'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
                             {d.profilePhotoUrl
                               ? <img src={d.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                              : <User className="w-5 h-5 text-[#1A3F7A]" />
+                              : <User className="w-5 h-5 text-[#ec3d3a]" />
                             }
                           </div>
                           <div className="flex-1 min-w-0">
@@ -254,7 +254,7 @@ export default function ParentOnboardingPage() {
                               <span className="text-xs text-[#0F6E56] font-medium">{d.approvedDocsCount}/6 docs verified</span>
                             </div>
                           </div>
-                          {isSelected && <CheckCircle2 className="w-5 h-5 text-[#1A3F7A] shrink-0 mt-0.5" />}
+                          {isSelected && <CheckCircle2 className="w-5 h-5 text-[#ec3d3a] shrink-0 mt-0.5" />}
                         </div>
                       </button>
                     )
@@ -265,8 +265,8 @@ export default function ParentOnboardingPage() {
                     onClick={() => { setSelectedDriver(null); setSkipDriver(true) }}
                     className={`w-full text-center rounded-2xl border-2 border-dashed p-4 transition-all ${
                       skipDriver
-                        ? 'border-[#F5A623] bg-[#F5A623]/05'
-                        : 'border-[rgba(26,63,122,0.15)] hover:border-[#F5A623]/40'
+                        ? 'border-[#fdc73e] bg-[#fdc73e]/05'
+                        : 'border-[rgba(236,61,58,0.15)] hover:border-[#fdc73e]/40'
                     }`}
                   >
                     <p className="font-semibold text-sm text-[#0F1923]">Select later</p>
@@ -279,7 +279,7 @@ export default function ParentOnboardingPage() {
 
           {step === 4 && (
             <div className="space-y-5">
-              <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-2">
+              <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-2">
                 {[
                   ['Parent',   name],
                   ['Child',    child.name],
@@ -288,24 +288,24 @@ export default function ParentOnboardingPage() {
                   ['Dropoff',  dropoffAddr],
                   ['Driver',   selectedDriver?.user.name ?? 'To be assigned'],
                 ].map(([label, val]) => (
-                  <div key={label} className="flex justify-between text-sm py-1 border-b border-[rgba(26,63,122,0.05)] last:border-0">
+                  <div key={label} className="flex justify-between text-sm py-1 border-b border-[rgba(236,61,58,0.05)] last:border-0">
                     <span className="text-[#5A6474]">{label}</span>
                     <span className="font-medium text-[#0F1923] text-right max-w-[55%] truncate">{val}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-[#1A3F7A]/05 rounded-xl p-3 text-xs text-[#5A6474]">
+              <div className="bg-[#ec3d3a]/05 rounded-xl p-3 text-xs text-[#5A6474]">
                 {selectedDriver
-                  ? 'By signing you agree to the Accident Angels transport agreement. The driver will countersign to activate service.'
-                  : 'By signing you agree to the Accident Angels transport agreement. You can assign a driver later from your dashboard.'}
+                  ? 'By signing you agree to the GETS transport agreement. The driver will countersign to activate service.'
+                  : 'By signing you agree to the GETS transport agreement. You can assign a driver later from your dashboard.'}
               </div>
 
               {!otpSent ? (
                 <Button
                   onClick={sendOtp}
                   disabled={loading}
-                  className="w-full h-12 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] font-semibold rounded-xl"
+                  className="w-full h-12 bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] font-semibold rounded-xl"
                 >
                   {loading ? 'Sending code…' : 'Send code to sign →'}
                 </Button>
@@ -316,7 +316,7 @@ export default function ParentOnboardingPage() {
                   <Button
                     onClick={handleSubmit}
                     disabled={otp.length !== 6 || loading}
-                    className="w-full h-12 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] font-semibold rounded-xl"
+                    className="w-full h-12 bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] font-semibold rounded-xl"
                   >
                     {loading ? 'Submitting…' : 'Sign & send to driver →'}
                   </Button>
@@ -334,7 +334,7 @@ export default function ParentOnboardingPage() {
             <Button
               onClick={() => setStep(s => s + 1)}
               disabled={!canAdvance()}
-              className="h-12 flex-1 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold"
+              className="h-12 flex-1 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
             >
               Continue →
             </Button>

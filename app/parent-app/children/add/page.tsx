@@ -114,7 +114,7 @@ export default function AddChildPage() {
         <div className="flex gap-1.5 justify-center mb-2">
           {STEPS.map((_, i) => (
             <div key={i} className={`h-1.5 rounded-full transition-all ${
-              i === step ? 'w-6 bg-[#F5A623]' : i < step ? 'w-3 bg-[#F5A623]/40' : 'w-3 bg-[rgba(26,63,122,0.15)]'
+              i === step ? 'w-6 bg-[#fdc73e]' : i < step ? 'w-3 bg-[#fdc73e]/40' : 'w-3 bg-[rgba(236,61,58,0.15)]'
             }`} />
           ))}
         </div>
@@ -154,7 +154,7 @@ export default function AddChildPage() {
               lng={pickupLng}
               onChange={(addr, lat, lng) => { setPickupAddr(addr); setPickupLat(lat); setPickupLng(lng) }}
             />
-            <div className="border-t border-[rgba(26,63,122,0.08)] pt-4">
+            <div className="border-t border-[rgba(236,61,58,0.08)] pt-4">
               <AddressPicker
                 label="Dropoff address (school)"
                 placeholder="Search for the school address"
@@ -179,14 +179,14 @@ export default function AddChildPage() {
                   return (
                     <button key={d.id} onClick={() => { setSelectedDriver(d); setSkipDriver(false) }}
                       className={`w-full text-left rounded-2xl border p-4 transition-all ${
-                        isSelected ? 'border-[#F5A623] bg-[#F5A623]/05 ring-1 ring-[#F5A623]'
-                          : 'border-[rgba(26,63,122,0.12)] bg-white hover:border-[#F5A623]/40'
+                        isSelected ? 'border-[#fdc73e] bg-[#fdc73e]/05 ring-1 ring-[#fdc73e]'
+                          : 'border-[rgba(236,61,58,0.12)] bg-white hover:border-[#fdc73e]/40'
                       }`}>
                       <div className="flex items-start justify-between gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
                           {d.profilePhotoUrl
                             ? <img src={d.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                            : <User className="w-5 h-5 text-[#1A3F7A]" />}
+                            : <User className="w-5 h-5 text-[#ec3d3a]" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-[#0F1923] text-sm">{d.user.name}</p>
@@ -203,7 +203,7 @@ export default function AddChildPage() {
                             <span className="text-xs text-[#0F6E56] font-medium">{d.approvedDocsCount}/6 verified</span>
                           </div>
                         </div>
-                        {isSelected && <CheckCircle2 className="w-5 h-5 text-[#F5A623] shrink-0 mt-0.5" />}
+                        {isSelected && <CheckCircle2 className="w-5 h-5 text-[#fdc73e] shrink-0 mt-0.5" />}
                       </div>
                     </button>
                   )
@@ -212,7 +212,7 @@ export default function AddChildPage() {
                 <button
                   onClick={() => { setSelectedDriver(null); setSkipDriver(true) }}
                   className={`w-full text-center rounded-2xl border-2 border-dashed p-4 transition-all ${
-                    skipDriver ? 'border-[#F5A623] bg-[#F5A623]/05' : 'border-[rgba(26,63,122,0.15)] hover:border-[#F5A623]/40'
+                    skipDriver ? 'border-[#fdc73e] bg-[#fdc73e]/05' : 'border-[rgba(236,61,58,0.15)] hover:border-[#fdc73e]/40'
                   }`}
                 >
                   <p className="font-semibold text-sm text-[#0F1923]">Select later</p>
@@ -231,7 +231,7 @@ export default function AddChildPage() {
         <Button
           onClick={handleNext}
           disabled={!canAdvance() || loading}
-          className="h-12 flex-1 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold"
+          className="h-12 flex-1 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
         >
           {loading ? 'Adding child…' : step === 2 ? 'Add child →' : 'Continue →'}
         </Button>
