@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { encrypt } from '@/lib/auth/encryption'
 import { supabase } from '@/lib/supabase'
 import { validateAndParseJson } from '@/lib/request-validation'
+import { onboardDriver } from '@/lib/driver/onboardDriver'
 
 export async function POST(request: Request) {
   try {
@@ -21,31 +21,10 @@ export async function POST(request: Request) {
 
     await supabase.from('User').update({ name: details.name.trim(), updatedAt: now }).eq('id', session.userId)
 
-    const { data: existing } = await supabase.from('Driver').select('id').eq('userId', session.userId).maybeSingle()
-    if (existing) {
-      return NextResponse.json({ error: 'Driver profile already exists' }, { status: 409 })
+    const result = await onboardDriver(session.userId, { details, vehicle, associationId, banking })
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status })
     }
-
-    await supabase.from('Driver').insert({
-      id:                     crypto.randomUUID(),
-      userId:                 session.userId,
-      associationId:          associationId || null,
-      getsRegistrationNumber: details.getsNumber?.trim() || null,
-      vehicleMake:            vehicle.make?.trim() || null,
-      vehicleModel:           vehicle.model?.trim() || null,
-      vehicleYear:            vehicle.year ? parseInt(vehicle.year) : null,
-      vehicleRegistration:    vehicle.registration?.trim() || null,
-      vehicleColour:          vehicle.colour?.trim() || null,
-      vehicleCapacity:        vehicle.capacity ? parseInt(vehicle.capacity) : null,
-      bankName:               banking.bankName?.trim() || null,
-      bankAccountNumber:      banking.accountNumber?.trim() ? encrypt(banking.accountNumber.trim()) : null,
-      bankBranchCode:         banking.branchCode?.trim() ? encrypt(banking.branchCode.trim()) : null,
-      bankAccountName:        banking.accountName?.trim() ? encrypt(banking.accountName.trim()) : null,
-      status:                 'PENDING_COMPLIANCE',
-      isVerifiedByAdmin:      false,
-      createdAt:              now,
-      updatedAt:              now,
-    })
 
     return NextResponse.json({ ok: true })
   } catch (err) {
