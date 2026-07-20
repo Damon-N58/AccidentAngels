@@ -168,6 +168,12 @@ export interface PaystackSplitPayload {
  * Only parties WITH a subaccount code and a positive amount are routed at the
  * gateway; everything else settles to the main (integrator) account for manual
  * disbursement via the Payout table. Returns null if nothing to route.
+ *
+ * NOTE: if `bearerSubAccount` also appears in `subaccounts`, Paystack deducts
+ * the gateway fee from that party's allocation on top of the split engine's
+ * own gateway deduction (double-charge). Callers must pass a bearer that is NOT
+ * a routed party, or the main account (the default). The billing cron uses the
+ * default (main account bears the fee).
  */
 export function buildPaystackSplit(
   lines: SplitLine[],

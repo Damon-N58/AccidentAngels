@@ -7,7 +7,9 @@ import { randomUUID } from 'crypto'
 
 async function requireAdmin(request: Request) {
   const session = await getSession(request.headers.get('cookie'))
-  if (!session || (session.role !== 'ADMIN' && session.role !== 'ASSOCIATION_ADMIN')) return null
+  // Platform-wide split config is ADMIN-only — an ASSOCIATION_ADMIN must not be
+  // able to redirect subaccounts or zero out the platform fee.
+  if (!session || session.role !== 'ADMIN') return null
   return session
 }
 
@@ -109,6 +111,10 @@ export async function POST(request: Request) {
         const numeric = Number(value ?? 0)
         if (!Number.isFinite(numeric) || numeric < 0) {
           return NextResponse.json({ error: 'value must be a non-negative number' }, { status: 400 })
+        }
+        // A single PERCENT share above 100% (10000 bps) can never balance.
+        if (calcType === 'PERCENT' && numeric > 10000) {
+          return NextResponse.json({ error: 'percentage cannot exceed 100% (10000 bps)' }, { status: 400 })
         }
         const { data, error } = await supabase
           .from('SplitShare')

@@ -171,9 +171,17 @@ export async function POST(request: Request) {
         legacyTccSplitCents,
       )
       if (!computed.ok) {
+        // Terminal: a bad scheme won't fix itself on retry. Clear nextRetryAt
+        // and mark FAILED so the cron stops re-picking this row every run.
         await supabase
           .from('Transaction')
-          .update({ failureReason: `split error: ${computed.error}`, lastAttemptAt: nowIso, updatedAt: nowIso })
+          .update({
+            status: 'FAILED',
+            failureReason: `split error: ${computed.error}`,
+            nextRetryAt: null,
+            lastAttemptAt: nowIso,
+            updatedAt: nowIso,
+          })
           .eq('id', tx.id)
         failed++
         continue
@@ -233,7 +241,6 @@ export async function POST(request: Request) {
   let offset = 0
   const BATCH_SIZE = 50
   let batchContracts: any[] = []
-  let totalProcessed = 0
 
   do {
     const { data: contracts } = await supabase
@@ -242,7 +249,6 @@ export async function POST(request: Request) {
       .eq('status', 'FULLY_SIGNED')
       .range(offset, offset + BATCH_SIZE - 1)
     batchContracts = contracts ?? []
-    totalProcessed += batchContracts.length
 
     for (const contract of batchContracts) {
       const { data: child } = await supabase.from('Child').select('isActive').eq('id', contract.childId).maybeSingle()
@@ -274,7 +280,11 @@ export async function POST(request: Request) {
 
       const reference = `bill_${contract.id}_${billingYear}${String(billingMonth).padStart(2, '0')}_${randomUUID().slice(0, 8)}`
 
-      const { data: tx } = await supabase
+      // A misconfigured scheme must never charge the parent — record the row
+      // straight to FAILED. Clamp financial columns so we never persist a
+      // negative amount from an over-allocated split.
+      const safeLegacy = { ...computed.legacy, driverNetCents: Math.max(0, computed.legacy.driverNetCents) }
+      const { data: tx, error: insertErr } = await supabase
         .from('Transaction')
         .insert({
           id: randomUUID(),
@@ -284,23 +294,25 @@ export async function POST(request: Request) {
           billingMonth,
           billingYear,
           grossAmountCents,
-          ...computed.legacy,
+          ...safeLegacy,
           paymentMethodType: contract.parent.paymentMethodType,
-          status: 'PENDING',
+          status: computed.ok ? 'PENDING' : 'FAILED',
+          failureReason: computed.ok ? null : `split error: ${computed.error}`,
           providerReference: reference,
-          attemptCount: 0,
+          attemptCount: computed.ok ? 0 : 1,
+          lastAttemptAt: computed.ok ? null : nowIso,
           createdAt: nowIso,
           updatedAt: nowIso,
         })
         .select()
         .single()
 
-      // A misconfigured scheme must never charge the parent.
+      if (insertErr || !tx) {
+        console.error(`[billing] insert failed for contract ${contract.id}:`, insertErr)
+        failed++
+        continue
+      }
       if (!computed.ok) {
-        await supabase
-          .from('Transaction')
-          .update({ status: 'FAILED', failureReason: `split error: ${computed.error}`, attemptCount: 1, lastAttemptAt: nowIso, updatedAt: nowIso })
-          .eq('id', tx.id)
         failed++
         continue
       }
@@ -364,7 +376,8 @@ export async function POST(request: Request) {
     }
 
     offset += BATCH_SIZE
-  } while (totalProcessed < offset)
+    // Keep paging while the batch came back full; a short batch is the last page.
+  } while (batchContracts.length === BATCH_SIZE)
 
   return NextResponse.json({ ok: true, charged, failed, retried, scheme: scheme?.name ?? 'legacy-fallback' })
 }
