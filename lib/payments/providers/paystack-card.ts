@@ -67,6 +67,10 @@ export class PaystackCardProvider implements PaymentProvider {
           email:              parent.paystackAuthorizationEmail,
           amount:             params.amountCents,
           reference:          params.reference,
+          // Inline multi-party split — routes each party's cut to its
+          // subaccount; the rest settles to the main account. Omitted when
+          // no party has a subaccount configured yet (params.split == null).
+          ...(params.split ? { split: params.split } : {}),
           metadata: {
             parentId:     params.parentId,
             childId:      params.childId,

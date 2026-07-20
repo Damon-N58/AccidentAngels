@@ -70,6 +70,19 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum SplitPartyKind {
+  FIXED       // org-level party with its own paystackSubAccountCode
+  DRIVER      // resolved per-transaction from Driver.paystackSubAccountCode
+  ASSOCIATION // resolved per-transaction from the driver's Association
+}
+
+enum SplitCalcType {
+  PERCENT          // value = basis points of gross (10000 = 100%)
+  FLAT             // value = cents
+  REMAINDER        // gets whatever is left (one per scheme)
+  ASSOCIATION_LEVY // reads the driver's Association.monthlyLevy
+}
+
 // ─── MODELS ───────────────────────────────────────────────────
 
 model User {
@@ -362,6 +375,66 @@ model PlatformConfig {
   description     String?
   updatedAt       DateTime @updatedAt
   updatedByUserId String?
+}
+
+// ─── Payment splits — configurable multi-party revenue splitting ──────────
+model SplitParty {
+  id                     String         @id @default(cuid())
+  key                    String         @unique
+  label                  String
+  kind                   SplitPartyKind @default(FIXED)
+  paystackSubAccountCode String?
+  isActive               Boolean        @default(true)
+  sortOrder              Int            @default(0)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  shares SplitShare[]
+}
+
+model SplitScheme {
+  id                String    @id @default(cuid())
+  name              String
+  isActive          Boolean   @default(false)
+  gatewayPercentBps Int       @default(150)
+  gatewayFlatCents  Int       @default(200)
+  notes             String?
+  createdByUserId   String?
+  createdAt         DateTime  @default(now())
+  activatedAt       DateTime?
+
+  shares SplitShare[]
+}
+
+model SplitShare {
+  id        String        @id @default(cuid())
+  schemeId  String
+  partyId   String
+  calcType  SplitCalcType
+  value     Int           @default(0)
+  sortOrder Int           @default(0)
+
+  scheme SplitScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  party  SplitParty  @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@unique([schemeId, partyId])
+  @@index([schemeId])
+}
+
+model TransactionSplit {
+  id                     String         @id @default(cuid())
+  transactionId          String
+  schemeId               String?
+  partyId                String?
+  partyKey               String
+  partyLabel             String
+  partyKind              SplitPartyKind
+  calcType               SplitCalcType
+  resolvedSubAccountCode String?
+  amountCents            Int
+  createdAt              DateTime       @default(now())
+
+  @@index([transactionId])
 }
 
 model Notification {
