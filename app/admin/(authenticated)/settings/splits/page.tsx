@@ -69,6 +69,7 @@ export default function AdminSplitsPage() {
   const [parties, setParties] = useState<Party[]>([])
   const [shares, setShares] = useState<Share[]>([])
   const [preview, setPreview] = useState<Preview | null>(null)
+  const [banks, setBanks] = useState<{ name: string; code: string }[]>([])
   const [sampleGross, setSampleGross] = useState(50000)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -84,6 +85,36 @@ export default function AdminSplitsPage() {
   }, [sampleGross])
 
   useEffect(() => { load() }, [load])
+
+  // Bank list for the payout-account picker (loaded once).
+  useEffect(() => {
+    fetch('/api/admin/paystack?resource=banks')
+      .then(r => (r.ok ? r.json() : []))
+      .then(d => setBanks(Array.isArray(d) ? d : []))
+      .catch(() => setBanks([]))
+  }, [])
+
+  async function createPayoutAccount(party: Party, bankCode: string, accountNumber: string) {
+    setBusy(true)
+    try {
+      const res = await fetch('/api/admin/paystack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'createSubAccount', targetType: 'party', targetId: party.id,
+          displayName: party.label, bankCode, accountNumber,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to create payout account')
+      toast.success(`Payout account created for ${party.label}`)
+      await load()
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function post(payload: Record<string, unknown>, successMsg: string) {
     setBusy(true)
@@ -244,6 +275,10 @@ export default function AdminSplitsPage() {
                   }}
                   className="h-8 mt-1 text-xs font-mono"
                 />
+                {/* Create a payout account programmatically (no Paystack dashboard needed) */}
+                {p.kind === 'FIXED' && !p.paystackSubAccountCode && (
+                  <PayoutAccountForm party={p} banks={banks} disabled={busy} onCreate={createPayoutAccount} />
+                )}
               </div>
               {p.kind === 'FIXED' && (
                 <Button
@@ -260,6 +295,60 @@ export default function AdminSplitsPage() {
             post({ action: 'upsertParty', key, label, kind: 'FIXED', sortOrder: 50 }, `${label} added`)} />
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+function PayoutAccountForm({
+  party, banks, disabled, onCreate,
+}: {
+  party: Party
+  banks: { name: string; code: string }[]
+  disabled: boolean
+  onCreate: (party: Party, bankCode: string, accountNumber: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [bankCode, setBankCode] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-1.5 text-xs font-medium text-[#1A3F7A] hover:underline"
+      >
+        + Create payout account
+      </button>
+    )
+  }
+
+  return (
+    <div className="mt-2 space-y-2 rounded-lg bg-[#F8F9FB] p-2.5">
+      <select
+        value={bankCode}
+        onChange={e => setBankCode(e.target.value)}
+        className="w-full h-9 rounded-lg border border-[rgba(26,63,122,0.15)] bg-white px-2 text-sm text-[#0F1923]"
+      >
+        <option value="">{banks.length ? 'Select bank…' : 'Loading banks…'}</option>
+        {banks.map(b => <option key={b.code} value={b.code}>{b.name}</option>)}
+      </select>
+      <Input
+        value={accountNumber}
+        onChange={e => setAccountNumber(e.target.value)}
+        placeholder="Bank account number"
+        className="h-9"
+        inputMode="numeric"
+      />
+      <div className="flex gap-2">
+        <Button
+          size="sm" disabled={disabled || !bankCode || accountNumber.trim().length < 6}
+          onClick={() => onCreate(party, bankCode, accountNumber.trim())}
+          className="h-8 flex-1 bg-[#0F6E56] text-white hover:bg-[#0F6E56]/90"
+        >
+          Create for {party.label}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setOpen(false)} className="h-8">Cancel</Button>
+      </div>
     </div>
   )
 }
