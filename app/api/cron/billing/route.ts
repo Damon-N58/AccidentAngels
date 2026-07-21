@@ -88,8 +88,9 @@ function computeCharge(
     }
   }
 
-  // ── Legacy fallback: identical to the original hard-coded split ──
-  const gatewayFeeCents = gatewayFeeFor(ctx.grossCents, 150, 200)
+  // ── Fallback when no scheme is active (migration not yet run) ──
+  // Gateway fee = Paystack ZA local 2.9% + R1, +15% VAT = 3.335% + R1.15.
+  const gatewayFeeCents = gatewayFeeFor(ctx.grossCents, 334, 115)
   const driverNetCents =
     ctx.grossCents - gatewayFeeCents - legacyPlatformFeeCents - ctx.associationLevyCents - legacyTccSplitCents
   return {

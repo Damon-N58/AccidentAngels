@@ -38,13 +38,13 @@ const driverRemainder = share({
 
 // gatewayFeeFor ---------------------------------------------------------------
 describe('gatewayFeeFor', () => {
-  it('matches the legacy 1.5% + R2 formula', () => {
-    // legacy: Math.round(gross * 0.015) + 200
-    expect(gatewayFeeFor(50000, 150, 200)).toBe(Math.round(50000 * 0.015) + 200)
-    expect(gatewayFeeFor(50000, 150, 200)).toBe(950)
+  it('computes the Paystack ZA fee (2.9% + R1 + 15% VAT = 334 bps + 115c)', () => {
+    // On a R500 gross: 3.34% of 50000 = 1670c, + 115c flat = 1785c (R17.85)
+    expect(gatewayFeeFor(50000, 334, 115)).toBe(Math.round((50000 * 334) / 10000) + 115)
+    expect(gatewayFeeFor(50000, 334, 115)).toBe(1785)
   })
   it('zero-rate gateway is just the flat fee', () => {
-    expect(gatewayFeeFor(50000, 0, 200)).toBe(200)
+    expect(gatewayFeeFor(50000, 0, 115)).toBe(115)
   })
 })
 

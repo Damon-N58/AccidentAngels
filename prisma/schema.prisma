@@ -396,8 +396,8 @@ model SplitScheme {
   id                String    @id @default(cuid())
   name              String
   isActive          Boolean   @default(false)
-  gatewayPercentBps Int       @default(150)
-  gatewayFlatCents  Int       @default(200)
+  gatewayPercentBps Int       @default(334) // Paystack ZA 2.9% + 15% VAT = 3.335%
+  gatewayFlatCents  Int       @default(115) // R1 + 15% VAT = R1.15
   notes             String?
   createdByUserId   String?
   createdAt         DateTime  @default(now())

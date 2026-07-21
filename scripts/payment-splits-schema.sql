@@ -43,8 +43,9 @@ CREATE TABLE IF NOT EXISTS "SplitScheme" (
   "id"                TEXT PRIMARY KEY,
   "name"              TEXT NOT NULL,
   "isActive"          BOOLEAN NOT NULL DEFAULT FALSE,
-  "gatewayPercentBps" INTEGER NOT NULL DEFAULT 150,
-  "gatewayFlatCents"  INTEGER NOT NULL DEFAULT 200,
+  -- Paystack ZA local fee 2.9% + R1, +15% VAT = 3.335% + R1.15 (VAT-inclusive).
+  "gatewayPercentBps" INTEGER NOT NULL DEFAULT 334,
+  "gatewayFlatCents"  INTEGER NOT NULL DEFAULT 115,
   "notes"             TEXT,
   "createdByUserId"   TEXT,
   "createdAt"         TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -117,9 +118,9 @@ INSERT INTO "SplitParty" ("id", "key", "label", "kind", "sortOrder")
   VALUES ('splitparty_insurance', 'insurance', 'Insurance', 'FIXED', 40)
   ON CONFLICT ("key") DO NOTHING;
 
-INSERT INTO "SplitScheme" ("id", "name", "isActive", "activatedAt", "notes")
-  VALUES ('splitscheme_default', 'Default scheme', TRUE, now(),
-          'Auto-seeded from legacy hard-coded split. Edit shares in Admin > Settings > Splits.')
+INSERT INTO "SplitScheme" ("id", "name", "isActive", "gatewayPercentBps", "gatewayFlatCents", "activatedAt", "notes")
+  VALUES ('splitscheme_default', 'Default scheme', TRUE, 334, 115, now(),
+          'Auto-seeded. Gateway fee = Paystack ZA 2.9% + R1 + 15% VAT. Edit shares in Admin > Settings > Splits.')
   ON CONFLICT ("id") DO NOTHING;
 
 -- Association -> dynamic monthlyLevy (matches legacy associationLevyCents)
