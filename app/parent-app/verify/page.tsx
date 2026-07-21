@@ -82,7 +82,7 @@ export default function ParentVerifyPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-gradient-to-br from-[#1A3F7A] to-[#0F2A52] px-6 pt-16 pb-12 flex flex-col items-center">
+      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center">
         <Logo size={64} className="rounded-2xl object-contain bg-white p-1" />
       </div>
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">
@@ -91,7 +91,7 @@ export default function ParentVerifyPage() {
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
         {devCode && (
-          <div className="mb-4 px-4 py-3 bg-[#F5A623]/15 border border-[#F5A623]/40 rounded-xl text-center">
+          <div className="mb-4 px-4 py-3 bg-[#fdc73e]/15 border border-[#fdc73e]/40 rounded-xl text-center">
             <p className="text-xs text-[#0F1923] font-medium mb-0.5">Your code (SMS unavailable)</p>
             <p className="text-2xl font-bold tracking-[0.3em] text-[#0F1923]">{devCode}</p>
           </div>
@@ -100,14 +100,14 @@ export default function ParentVerifyPage() {
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || loading}
-          className="w-full h-14 font-semibold bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] rounded-xl mb-4"
+          className="w-full h-14 font-semibold bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] rounded-xl mb-4"
         >
           {loading ? 'Verifying…' : 'Verify'}
         </Button>
         <div className="text-center">
           {resendTimer > 0
             ? <p className="text-sm text-[#5A6474]">Resend in {resendTimer}s</p>
-            : <button onClick={handleResend} className="text-sm font-medium text-[#1A3F7A]">Resend code</button>
+            : <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">Resend code</button>
           }
         </div>
       </div>

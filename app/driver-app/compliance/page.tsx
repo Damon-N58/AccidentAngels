@@ -37,10 +37,10 @@ export default async function DriverCompliancePage() {
     <div className="min-h-screen bg-[#F8F9FB]">
       <DriverTopBar title="Compliance" />
       <div className="px-4 py-4 space-y-4">
-        <div className="bg-white rounded-2xl p-4 border border-[rgba(26,63,122,0.10)]">
+        <div className="bg-white rounded-2xl p-4 border border-[rgba(236,61,58,0.10)]">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-semibold text-[#0F1923]">Documents approved</span>
-            <span className="text-sm font-bold text-[#1A3F7A]">{approved} / {DOC_TYPES.length}</span>
+            <span className="text-sm font-bold text-[#ec3d3a]">{approved} / {DOC_TYPES.length}</span>
           </div>
           <Progress value={pct} className="h-2" />
           {approved === DOC_TYPES.length && (

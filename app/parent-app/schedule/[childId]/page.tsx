@@ -125,7 +125,7 @@ export default function ParentChildSchedulePage({
         )}
 
         {/* Explanation banner */}
-        <div className="bg-[#1A3F7A]/05 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
+        <div className="bg-[#ec3d3a]/05 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
           <p className="font-semibold text-[#0F1923]">How this works</p>
           <p>Set the days your child needs transport and the time windows for pickup and dropoff. Your driver will see the daily schedule and route on their app.</p>
           <p className="text-xs text-[#5A6474] mt-2">One-off schedule changes (e.g. skipping a day) can be done from the trips page.</p>
@@ -138,7 +138,7 @@ export default function ParentChildSchedulePage({
         </div>
 
         {/* Morning window */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <p className="font-semibold text-sm text-[#0F1923]">Morning pickup from home</p>
           <TimeWindowPicker
             label="Pickup window"
@@ -155,7 +155,7 @@ export default function ParentChildSchedulePage({
         </div>
 
         {/* Afternoon window */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <p className="font-semibold text-sm text-[#0F1923]">Afternoon pickup from school</p>
           <TimeWindowPicker
             label="Pickup window"
@@ -174,7 +174,7 @@ export default function ParentChildSchedulePage({
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl text-base"
+          className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-base"
         >
           {saving ? 'Saving…' : schedule ? 'Update schedule' : 'Save schedule'}
         </Button>

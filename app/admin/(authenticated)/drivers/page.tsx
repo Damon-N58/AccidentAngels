@@ -73,8 +73,8 @@ export default async function AdminDriversPage({
               href={s ? `/admin/drivers?status=${s}` : '/admin/drivers'}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 (status ?? '') === s
-                  ? 'bg-[#1A3F7A] text-white'
-                  : 'bg-white border border-[rgba(26,63,122,0.15)] text-[#5A6474] hover:border-[#1A3F7A]/30'
+                  ? 'bg-[#ec3d3a] text-white'
+                  : 'bg-white border border-[rgba(236,61,58,0.15)] text-[#5A6474] hover:border-[#ec3d3a]/30'
               }`}
             >
               {s || 'All'}
@@ -83,11 +83,11 @@ export default async function AdminDriversPage({
         </div>
       </div>
 
-      <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+      <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[rgba(26,63,122,0.08)]">
+              <tr className="border-b border-[rgba(236,61,58,0.08)]">
                 {['Driver', 'Phone', 'Association', 'Vehicle', 'Docs', 'Status', ''].map(h => (
                   <th key={h} className="text-left text-xs font-medium text-[#5A6474] px-4 py-3">{h}</th>
                 ))}
@@ -101,7 +101,7 @@ export default async function AdminDriversPage({
                 const approved = (d.complianceDocs ?? []).filter((c: any) => c.status === 'APPROVED').length
                 const review   = (d.complianceDocs ?? []).filter((c: any) => c.status === 'UNDER_REVIEW').length
                 return (
-                  <tr key={d.id} className="border-b border-[rgba(26,63,122,0.05)] hover:bg-[#F8F9FB]">
+                  <tr key={d.id} className="border-b border-[rgba(236,61,58,0.05)] hover:bg-[#F8F9FB]">
                     <td className="px-4 py-3 font-medium text-[#0F1923]">{d.user.name || '—'}</td>
                     <td className="px-4 py-3 text-[#5A6474]">{d.user.phone}</td>
                     <td className="px-4 py-3 text-[#5A6474]">{d.association?.name ?? '—'}</td>
@@ -116,7 +116,7 @@ export default async function AdminDriversPage({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/drivers/${d.id}`} className="text-xs font-semibold text-[#1A3F7A] hover:underline">
+                      <Link href={`/admin/drivers/${d.id}`} className="text-xs font-semibold text-[#ec3d3a] hover:underline">
                         Review →
                       </Link>
                     </td>

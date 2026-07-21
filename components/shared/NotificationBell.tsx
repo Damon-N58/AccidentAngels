@@ -94,7 +94,7 @@ export function NotificationBell() {
 
       {/* Slide-in sheet from the right */}
       <SheetContent side="right" className="w-full sm:max-w-sm p-0 flex flex-col">
-        <SheetHeader className="px-4 pt-5 pb-3 border-b border-[rgba(26,63,122,0.10)]">
+        <SheetHeader className="px-4 pt-5 pb-3 border-b border-[rgba(236,61,58,0.10)]">
           <SheetTitle className="text-[#0F1923] font-bold text-base">
             Notifications
           </SheetTitle>
@@ -106,7 +106,7 @@ export function NotificationBell() {
               <p className="text-sm text-[#5A6474]">No notifications</p>
             </div>
           ) : (
-            <ul className="divide-y divide-[rgba(26,63,122,0.08)]">
+            <ul className="divide-y divide-[rgba(236,61,58,0.08)]">
               {notifications.map(n => (
                 <li
                   key={n.id}
@@ -114,7 +114,7 @@ export function NotificationBell() {
                   className={`px-4 py-3.5 cursor-pointer transition-colors ${
                     n.isRead
                       ? 'bg-white hover:bg-[#F8F9FB]'
-                      : 'bg-[#1A3F7A]/[0.06] border-l-2 border-l-[#1A3F7A] hover:bg-[#1A3F7A]/[0.10]'
+                      : 'bg-[#ec3d3a]/[0.06] border-l-2 border-l-[#ec3d3a] hover:bg-[#ec3d3a]/[0.10]'
                   }`}
                 >
                   <p className="text-sm font-semibold text-[#0F1923] leading-snug">

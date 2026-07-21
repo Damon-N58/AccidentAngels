@@ -73,7 +73,7 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
         const bg =
           stop.status === 'COMPLETED' ? '#0F6E56' :
           stop.status === 'MISSED'    ? '#E24B4A' :
-          stop.type === 'PICKUP'      ? '#1A3F7A' : '#0F6E56'
+          stop.type === 'PICKUP'      ? '#ec3d3a' : '#0F6E56'
         const glyph =
           stop.status === 'COMPLETED' ? '✓' :
           stop.status === 'MISSED'    ? '✕' :
@@ -99,7 +99,7 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
 
       // Draw route polyline
       if (latLngs.length >= 2) {
-        const routeColor = tripStatus === 'IN_PROGRESS' ? '#1A3F7A' : tripStatus === 'COMPLETED' ? '#0F6E56' : '#5A6474'
+        const routeColor = tripStatus === 'IN_PROGRESS' ? '#ec3d3a' : tripStatus === 'COMPLETED' ? '#0F6E56' : '#5A6474'
         L.polyline(latLngs, {
           color: routeColor,
           weight: 3,
@@ -113,7 +113,7 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
         L.marker(start, {
           icon: L.divIcon({
             className: '',
-            html: '<div style="background:#F5A623;color:#0F1923;font-size:10px;font-weight:bold;padding:2px 6px;border-radius:4px;border:1px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);white-space:nowrap;">START</div>',
+            html: '<div style="background:#fdc73e;color:#0F1923;font-size:10px;font-weight:bold;padding:2px 6px;border-radius:4px;border:1px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);white-space:nowrap;">START</div>',
             iconSize: [0, 0],
             iconAnchor: [0, 0],
           }),
@@ -160,11 +160,11 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-[rgba(26,63,122,0.10)] shadow-sm">
+    <div className="rounded-2xl overflow-hidden border border-[rgba(236,61,58,0.10)] shadow-sm">
       <div ref={mapRef} className="w-full h-64" />
-      <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-white text-xs text-[#5A6474] border-t border-[rgba(26,63,122,0.06)]">
+      <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-white text-xs text-[#5A6474] border-t border-[rgba(236,61,58,0.06)]">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-[#1A3F7A] inline-block" /> Pickup
+          <span className="w-3 h-3 rounded-full bg-[#ec3d3a] inline-block" /> Pickup
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-[#0F6E56] inline-block" /> Dropoff

@@ -80,7 +80,7 @@ export default function DriverVerifyPage() {
   useEffect(() => { if (otp.length === 6 && !loading) handleVerify() }, [otp, loading])
 
   return (
-    <div className="min-h-screen bg-[#1A3F7A] flex flex-col">
+    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
         <Logo size={64} className="mb-4 rounded-2xl object-contain bg-white p-1" />
       </div>
@@ -92,7 +92,7 @@ export default function DriverVerifyPage() {
         </p>
 
         {devCode && (
-          <div className="mb-4 px-4 py-3 bg-[#F5A623]/15 border border-[#F5A623]/40 rounded-xl text-center">
+          <div className="mb-4 px-4 py-3 bg-[#fdc73e]/15 border border-[#fdc73e]/40 rounded-xl text-center">
             <p className="text-xs text-[#0F1923] font-medium mb-0.5">Your code (SMS unavailable)</p>
             <p className="text-2xl font-bold tracking-[0.3em] text-[#0F1923]">{devCode}</p>
           </div>
@@ -105,7 +105,7 @@ export default function DriverVerifyPage() {
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || loading}
-          className="w-full h-14 text-base font-semibold bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white rounded-xl mb-4"
+          className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl mb-4"
         >
           {loading ? 'Verifying…' : 'Verify'}
         </Button>
@@ -114,7 +114,7 @@ export default function DriverVerifyPage() {
           {resendTimer > 0 ? (
             <p className="text-sm text-[#5A6474]">Resend code in {resendTimer}s</p>
           ) : (
-            <button onClick={handleResend} className="text-sm font-medium text-[#1A3F7A]">
+            <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">
               Resend code
             </button>
           )}

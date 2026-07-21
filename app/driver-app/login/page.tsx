@@ -51,10 +51,10 @@ export default function DriverLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A3F7A] flex flex-col">
+    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
-        <Logo size={80} className="mb-4 rounded-2xl object-contain" />
-        <h1 className="text-2xl font-bold text-white">Angels Driver</h1>
+        <Logo size={80} className="mb-4 rounded-2xl object-contain bg-white p-2" />
+        <h1 className="text-2xl font-bold text-white">GETS Driver</h1>
         <p className="text-white/70 text-sm mt-1">Your compliance dashboard</p>
       </div>
 
@@ -66,7 +66,7 @@ export default function DriverLoginPage() {
               <p className="text-sm text-[#5A6474]">Use the code below to sign in.</p>
             </div>
 
-            <div className="bg-[#F5A623] rounded-2xl p-6 text-center shadow-sm">
+            <div className="bg-[#fdc73e] rounded-2xl p-6 text-center shadow-sm">
               <p className="text-sm font-semibold text-[#0F1923] mb-2 uppercase tracking-wide">Your login code</p>
               <p className="text-5xl font-bold tracking-[0.25em] text-[#0F1923]">{devCode}</p>
               <p className="text-xs text-[#0F1923]/60 mt-3">Valid for 5 minutes</p>
@@ -74,7 +74,7 @@ export default function DriverLoginPage() {
 
             <Button
               onClick={() => router.push('/driver-app/verify')}
-              className="w-full h-14 text-base font-semibold bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white rounded-xl"
+              className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl"
             >
               Continue to verify →
             </Button>
@@ -102,7 +102,7 @@ export default function DriverLoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 text-base font-semibold bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white rounded-xl"
+                className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl"
               >
                 {loading ? 'Sending code…' : 'Get code →'}
               </Button>

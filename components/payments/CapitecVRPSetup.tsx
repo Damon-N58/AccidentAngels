@@ -54,8 +54,8 @@ export function CapitecVRPSetup() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 bg-[#1A3F7A]/04 rounded-xl p-3">
-        <Smartphone className="w-5 h-5 text-[#1A3F7A] mt-0.5 shrink-0" />
+      <div className="flex items-start gap-3 bg-[#ec3d3a]/04 rounded-xl p-3">
+        <Smartphone className="w-5 h-5 text-[#ec3d3a] mt-0.5 shrink-0" />
         <p className="text-xs text-[#0F1923]">
           We&apos;ll send a payment approval request to your Capitec app. Open the app within 5 minutes to approve.
         </p>
@@ -63,7 +63,7 @@ export function CapitecVRPSetup() {
 
       {countdown > 0 ? (
         <div className="text-center py-4">
-          <p className="text-3xl font-bold text-[#1A3F7A] tabular-nums">
+          <p className="text-3xl font-bold text-[#ec3d3a] tabular-nums">
             {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}
           </p>
           <p className="text-xs text-[#5A6474] mt-1">Open your Capitec app now to approve</p>
@@ -77,7 +77,7 @@ export function CapitecVRPSetup() {
           <Button
             onClick={handleSetup}
             disabled={loading || phone.length < 9}
-            className="w-full h-12 bg-[#1A3F7A] text-white font-semibold rounded-xl"
+            className="w-full h-12 bg-[#ec3d3a] text-white font-semibold rounded-xl"
           >
             {loading ? 'Sending request…' : 'Set up Capitec Pay'}
           </Button>

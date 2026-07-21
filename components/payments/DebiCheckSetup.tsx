@@ -66,7 +66,7 @@ export function DebiCheckSetup() {
         <Label>SA ID number</Label>
         <Input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="0000000000000" className="h-12" inputMode="numeric" />
       </div>
-      <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 bg-[#1A3F7A] text-white font-semibold rounded-xl">
+      <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 bg-[#ec3d3a] text-white font-semibold rounded-xl">
         {loading ? 'Submitting…' : 'Set up debit order'}
       </Button>
     </div>

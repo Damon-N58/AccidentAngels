@@ -114,11 +114,11 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
     <div className="min-h-screen bg-[#F8F9FB]">
       <DriverTopBar title="Contract" showBack />
       <div className="px-4 py-4 space-y-4">
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#1A3F7A]" />
+                <FileText className="w-4 h-4 text-[#ec3d3a]" />
                 <span className="font-semibold text-sm">Contract details</span>
               </div>
               <StatusBadge status={contract.status as any} />
@@ -138,7 +138,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
         </Card>
 
         {/* Signatures */}
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4 space-y-3">
             <p className="font-semibold text-sm">Signatures</p>
             {[
@@ -162,7 +162,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
 
         {contract.status === 'PENDING_DRIVER_SIGNATURE' && (
           <div className="fixed bottom-20 left-4 right-4">
-            <Button onClick={requestOtp} className="w-full h-14 bg-[#1A3F7A] text-white text-base font-semibold rounded-xl shadow-lg">
+            <Button onClick={requestOtp} className="w-full h-14 bg-[#ec3d3a] text-white text-base font-semibold rounded-xl shadow-lg">
               <PenLine className="w-5 h-5 mr-2" /> Sign this contract
             </Button>
           </div>
@@ -181,7 +181,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
           <Button
             onClick={handleSign}
             disabled={otp.length !== 6 || signing}
-            className="w-full h-14 mt-6 bg-[#1A3F7A] text-white text-base font-semibold rounded-xl"
+            className="w-full h-14 mt-6 bg-[#ec3d3a] text-white text-base font-semibold rounded-xl"
           >
             {signing ? 'Signing…' : 'Sign & submit'}
           </Button>

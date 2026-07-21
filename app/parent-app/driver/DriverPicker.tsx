@@ -83,7 +83,7 @@ export function ParentDriverPicker({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-4 text-left"
@@ -98,7 +98,7 @@ export function ParentDriverPicker({
       </button>
 
       {open && (
-        <div className="px-4 pb-4 border-t border-[rgba(26,63,122,0.06)] pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-[rgba(236,61,58,0.06)] pt-3 space-y-2">
           {loading ? (
             <div className="text-center py-6 text-sm text-[#5A6474]">Loading drivers…</div>
           ) : drivers.length === 0 ? (
@@ -113,13 +113,13 @@ export function ParentDriverPicker({
                   key={d.id}
                   onClick={() => assignDriver(d.id)}
                   disabled={assigning !== null}
-                  className="w-full text-left rounded-xl border border-[rgba(26,63,122,0.12)] p-3 hover:border-[#1A3F7A]/30 transition-colors disabled:opacity-50"
+                  className="w-full text-left rounded-xl border border-[rgba(236,61,58,0.12)] p-3 hover:border-[#ec3d3a]/30 transition-colors disabled:opacity-50"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
                       {d.profilePhotoUrl
                         ? <img src={d.profilePhotoUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
-                        : <User className="w-4 h-4 text-[#1A3F7A]" />}
+                        : <User className="w-4 h-4 text-[#ec3d3a]" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
@@ -127,12 +127,12 @@ export function ParentDriverPicker({
                         <div className="flex items-center gap-1.5 shrink-0">
                           {/* Amber "Recommended" badge on top-ranked qualifying driver */}
                           {showRecommended && (
-                            <span className="inline-flex items-center gap-0.5 bg-[#F5A623]/15 text-[#B97A00] text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
-                              <Star className="w-2.5 h-2.5 fill-[#F5A623] stroke-[#F5A623]" />
+                            <span className="inline-flex items-center gap-0.5 bg-[#fdc73e]/15 text-[#B97A00] text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                              <Star className="w-2.5 h-2.5 fill-[#fdc73e] stroke-[#fdc73e]" />
                               Recommended
                             </span>
                           )}
-                          {assigning === d.id && <span className="text-xs text-[#1A3F7A]">Assigning…</span>}
+                          {assigning === d.id && <span className="text-xs text-[#ec3d3a]">Assigning…</span>}
                         </div>
                       </div>
                       {vehicle && (
@@ -148,7 +148,7 @@ export function ParentDriverPicker({
                           <span className="text-xs text-[#5A6474]">({d.ratingCount})</span>
                         </div>
                         {d.distanceKm != null && (
-                          <span className="text-[10px] bg-[#1A3F7A]/08 text-[#1A3F7A] px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="text-[10px] bg-[#ec3d3a]/08 text-[#ec3d3a] px-1.5 py-0.5 rounded-full font-medium">
                             ~{d.distanceKm} km
                           </span>
                         )}

@@ -25,8 +25,8 @@ export function PhoneInput({ value, onChange, disabled, placeholder = '082 000 0
   }
 
   return (
-    <div className={cn('flex items-center border-2 rounded-xl overflow-hidden bg-white', 'border-[rgba(26,63,122,0.20)] focus-within:border-[#1A3F7A]', className)}>
-      <span className="px-3 py-3 text-[#5A6474] font-medium text-sm bg-[#F8F9FB] border-r border-[rgba(26,63,122,0.12)] select-none">
+    <div className={cn('flex items-center border-2 rounded-xl overflow-hidden bg-white', 'border-[rgba(236,61,58,0.20)] focus-within:border-[#ec3d3a]', className)}>
+      <span className="px-3 py-3 text-[#5A6474] font-medium text-sm bg-[#F8F9FB] border-r border-[rgba(236,61,58,0.12)] select-none">
         +27
       </span>
       <Input

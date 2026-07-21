@@ -126,7 +126,7 @@ export default function AdminReportsPage() {
 
       {/* Page header */}
       <div className="flex items-center gap-3 mb-1">
-        <Flag className="w-5 h-5 text-[#1A3F7A]" />
+        <Flag className="w-5 h-5 text-[#ec3d3a]" />
         <h1 className="text-2xl font-bold text-[#0F1923]">Safety Reports</h1>
       </div>
       <p className="text-sm text-[#5A6474] mb-6">Parent-filed safety concerns</p>
@@ -139,8 +139,8 @@ export default function AdminReportsPage() {
             onClick={() => setActiveTab(tab.value)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               activeTab === tab.value
-                ? 'bg-[#1A3F7A] text-white'
-                : 'bg-white border border-[rgba(26,63,122,0.15)] text-[#5A6474] hover:border-[#1A3F7A]/30'
+                ? 'bg-[#ec3d3a] text-white'
+                : 'bg-white border border-[rgba(236,61,58,0.15)] text-[#5A6474] hover:border-[#ec3d3a]/30'
             }`}
           >
             {tab.label}
@@ -171,7 +171,7 @@ export default function AdminReportsPage() {
             })
 
             return (
-              <Card key={report.id} className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+              <Card key={report.id} className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
                 <CardContent className="p-5">
 
                   {/* Top row: category badge + status badge + date */}
@@ -209,7 +209,7 @@ export default function AdminReportsPage() {
                   {/* Review toggle button */}
                   <button
                     onClick={() => toggleExpand(report.id, report)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#1A3F7A] hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#ec3d3a] hover:underline"
                   >
                     {isExpanded ? (
                       <><ChevronUp className="w-3.5 h-3.5" /> Close</>
@@ -220,7 +220,7 @@ export default function AdminReportsPage() {
 
                   {/* ── Inline review panel ─────────────────────────────── */}
                   {isExpanded && (
-                    <div className="mt-4 pt-4 border-t border-[rgba(26,63,122,0.08)] space-y-3">
+                    <div className="mt-4 pt-4 border-t border-[rgba(236,61,58,0.08)] space-y-3">
 
                       {/* Full description (already unclamped above, but label helps) */}
                       <div>
@@ -239,7 +239,7 @@ export default function AdminReportsPage() {
                             ...prev,
                             [report.id]: e.target.value as ReportStatus,
                           }))}
-                          className="w-full text-sm border border-[rgba(26,63,122,0.20)] rounded-lg px-3 py-2 bg-white text-[#0F1923] focus:outline-none focus:ring-2 focus:ring-[#1A3F7A]/30"
+                          className="w-full text-sm border border-[rgba(236,61,58,0.20)] rounded-lg px-3 py-2 bg-white text-[#0F1923] focus:outline-none focus:ring-2 focus:ring-[#ec3d3a]/30"
                         >
                           <option value="OPEN">Open</option>
                           <option value="UNDER_REVIEW">Under Review</option>
@@ -269,7 +269,7 @@ export default function AdminReportsPage() {
                         size="sm"
                         disabled={saving === report.id}
                         onClick={() => handleSave(report.id)}
-                        className="bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white h-9"
+                        className="bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white h-9"
                       >
                         {saving === report.id ? 'Saving…' : 'Save'}
                       </Button>

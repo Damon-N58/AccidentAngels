@@ -101,9 +101,9 @@ function WaitingTimerCard({ arrivedAt }: { arrivedAt: string }) {
     <div className={`rounded-2xl px-4 py-3 border flex items-center gap-3 ${
       inGrace
         ? 'bg-[#0F6E56]/08 border-[#0F6E56]/25'
-        : 'bg-[#F5A623]/12 border-[#F5A623]/40'
+        : 'bg-[#fdc73e]/12 border-[#fdc73e]/40'
     }`}>
-      <Timer className={`w-5 h-5 shrink-0 ${inGrace ? 'text-[#0F6E56]' : 'text-[#F5A623]'}`} />
+      <Timer className={`w-5 h-5 shrink-0 ${inGrace ? 'text-[#0F6E56]' : 'text-[#fdc73e]'}`} />
       <div className="flex-1 min-w-0">
         {inGrace ? (
           <>
@@ -116,7 +116,7 @@ function WaitingTimerCard({ arrivedAt }: { arrivedAt: string }) {
           </>
         ) : (
           <>
-            <p className="text-sm font-semibold text-[#F5A623]">
+            <p className="text-sm font-semibold text-[#fdc73e]">
               Waiting — {formatElapsed(elapsedSec)}
             </p>
             <p className="text-xs text-[#5A6474]">
@@ -221,7 +221,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
         const isNext = stop.id === nextStop?.id
         const isDone = stop.status === 'COMPLETED'
         const isMissed = stop.status === 'MISSED'
-        const bg = isDone ? '#0F6E56' : isMissed ? '#E24B4A' : isNext ? '#1A3F7A' : '#94A3B8'
+        const bg = isDone ? '#0F6E56' : isMissed ? '#E24B4A' : isNext ? '#ec3d3a' : '#94A3B8'
         const scale = isNext ? '1.25' : '1'
         const border = paymentBorder(stop.paymentStatus)
         const icon = L.divIcon({
@@ -343,7 +343,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
         // Shadow line
         L.polyline(coords, { color: 'rgba(0,0,0,0.15)', weight: 8, lineCap: 'round' }).addTo(routeLayer)
         // Main route line
-        L.polyline(coords, { color: '#1A3F7A', weight: 5, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayer)
+        L.polyline(coords, { color: '#ec3d3a', weight: 5, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayer)
         // Animated dash on top
         L.polyline(coords, {
           color: 'white',
@@ -477,8 +477,8 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
 
             {/* Arrival proximity alert (only before driver has tapped Arrived) */}
             {nearStop && !hasArrived && (
-              <div className="flex items-center gap-2 bg-[#F5A623]/15 border border-[#F5A623]/40 rounded-xl px-3 py-2.5">
-                <AlertTriangle className="w-4 h-4 text-[#F5A623] shrink-0" />
+              <div className="flex items-center gap-2 bg-[#fdc73e]/15 border border-[#fdc73e]/40 rounded-xl px-3 py-2.5">
+                <AlertTriangle className="w-4 h-4 text-[#fdc73e] shrink-0" />
                 <p className="text-sm font-semibold text-[#0F1923]">You're nearby — ready to mark arrived?</p>
               </div>
             )}
@@ -491,10 +491,10 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
             {/* Stop info */}
             <div className="flex items-start gap-3">
               <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-                nextStop.type === 'PICKUP' ? 'bg-[#1A3F7A]/10' : 'bg-[#0F6E56]/10'
+                nextStop.type === 'PICKUP' ? 'bg-[#ec3d3a]/10' : 'bg-[#0F6E56]/10'
               }`}>
                 {nextStop.type === 'PICKUP'
-                  ? <Car className="w-5 h-5 text-[#1A3F7A]" />
+                  ? <Car className="w-5 h-5 text-[#ec3d3a]" />
                   : <CheckCircle2 className="w-5 h-5 text-[#0F6E56]" />
                 }
               </div>
@@ -502,7 +502,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                     nextStop.type === 'PICKUP'
-                      ? 'bg-[#1A3F7A]/10 text-[#1A3F7A]'
+                      ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]'
                       : 'bg-[#0F6E56]/10 text-[#0F6E56]'
                   }`}>
                     {stopActionLabel(nextStop)}
@@ -514,13 +514,13 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                     </span>
                   )}
                   {!driverPos && (
-                    <span className="text-xs text-[#F5A623]">Getting location…</span>
+                    <span className="text-xs text-[#fdc73e]">Getting location…</span>
                   )}
                 </div>
                 <p className="font-bold text-[#0F1923] text-base mt-0.5">{nextStop.child?.name ?? 'Child'}</p>
                 <p className="text-sm text-[#5A6474] mt-0.5 leading-snug">{nextStop.address}</p>
                 {nextStop.notes && (
-                  <p className="text-xs text-[#F5A623] mt-1">⚠ {nextStop.notes}</p>
+                  <p className="text-xs text-[#fdc73e] mt-1">⚠ {nextStop.notes}</p>
                 )}
                 {/* Payment chip — only when paymentStatus is defined */}
                 {nextStop.paymentStatus === 'OVERDUE' && (
@@ -544,7 +544,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
               </div>
               <div className="h-2 bg-[#E8EAED] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#1A3F7A] rounded-full transition-all duration-500"
+                  className="h-full bg-[#ec3d3a] rounded-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -558,7 +558,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   href={nextStop.lat && nextStop.lng ? googleMapsUrl(nextStop.lat, nextStop.lng) : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 h-12 rounded-xl border-2 border-[#1A3F7A] text-[#1A3F7A] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#1A3F7A]/05"
+                  className="flex-1 h-12 rounded-xl border-2 border-[#ec3d3a] text-[#ec3d3a] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#ec3d3a]/05"
                 >
                   <Navigation2 className="w-4 h-4" />
                   Navigate
@@ -579,7 +579,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   <Button
                     onClick={handleConfirm}
                     disabled={completing}
-                    className="flex-[1.5] h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl text-sm"
+                    className="flex-[1.5] h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-sm"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1.5" />
                     {completing
@@ -599,12 +599,12 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   placeholder="Reason for missing this stop"
                   value={missedReason}
                   onChange={e => setMissedReason(e.target.value)}
-                  className="w-full h-11 text-sm border border-[rgba(26,63,122,0.2)] rounded-xl px-3 outline-none focus:border-[#E24B4A]"
+                  className="w-full h-11 text-sm border border-[rgba(236,61,58,0.2)] rounded-xl px-3 outline-none focus:border-[#E24B4A]"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowMissed(false); setMissedReason('') }}
-                    className="flex-1 h-11 text-sm text-[#5A6474] border border-[rgba(26,63,122,0.15)] rounded-xl"
+                    className="flex-1 h-11 text-sm text-[#5A6474] border border-[rgba(236,61,58,0.15)] rounded-xl"
                   >
                     Cancel
                   </button>
@@ -632,7 +632,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
 
             {/* Expanded: remaining stops list */}
             {sheetExpanded && pendingStops.length > 1 && (
-              <div className="border-t border-[rgba(26,63,122,0.08)] pt-4 space-y-3">
+              <div className="border-t border-[rgba(236,61,58,0.08)] pt-4 space-y-3">
                 <p className="text-xs font-semibold text-[#5A6474] uppercase tracking-wide">Upcoming stops</p>
                 {pendingStops.slice(1).map((stop, i) => (
                   <div key={stop.id} className="flex items-center gap-3">
@@ -653,7 +653,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                       <p className="text-xs text-[#5A6474] truncate">{stop.address}</p>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                      stop.type === 'PICKUP' ? 'bg-[#1A3F7A]/08 text-[#1A3F7A]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
+                      stop.type === 'PICKUP' ? 'bg-[#ec3d3a]/08 text-[#ec3d3a]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
                     }`}>
                       {isSchoolStop(stop) ? '🏫' : '🏠'} {stop.type === 'PICKUP' ? 'Pick' : 'Drop'}
                     </span>

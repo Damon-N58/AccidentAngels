@@ -13,7 +13,7 @@ export function TripProgressBar({ completedStops, totalStops, status }: TripProg
 
   const barColor =
     status === 'COMPLETED' ? 'bg-[#0F6E56]' :
-    status === 'IN_PROGRESS' ? 'bg-[#1A3F7A]' :
+    status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]' :
     'bg-[#5A6474]'
 
   return (

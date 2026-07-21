@@ -89,17 +89,17 @@ export function OverrideCalendar({
               onClick={() => onToggleDate(dateStr)}
               className={cn(
                 'relative h-9 text-sm rounded-lg transition-colors flex items-center justify-center',
-                isToday && 'ring-2 ring-[#1A3F7A] ring-offset-1',
+                isToday && 'ring-2 ring-[#ec3d3a] ring-offset-1',
                 override === 'SKIP' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                 override === 'ADD' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                isScheduledDay && !isPast ? 'bg-[#1A3F7A]/10 text-[#0F1923]' :
+                isScheduledDay && !isPast ? 'bg-[#ec3d3a]/10 text-[#0F1923]' :
                 'text-[#5A6474] hover:bg-[#F8F9FB]',
                 isPast && 'opacity-40 cursor-not-allowed',
               )}
             >
               {day}
               {isScheduledDay && !override && (
-                <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-[#1A3F7A]" />
+                <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-[#ec3d3a]" />
               )}
             </button>
           )

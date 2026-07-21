@@ -72,11 +72,11 @@ export default function AdminSettingsPage() {
       <div className={`rounded-xl p-4 flex items-start gap-3 ${
         paymentsLive
           ? 'bg-[#0F6E56]/10 border border-[#0F6E56]/30'
-          : 'bg-[#F5A623]/10 border border-[#F5A623]/30'
+          : 'bg-[#fdc73e]/10 border border-[#fdc73e]/30'
       }`}>
         {paymentsLive
           ? <CheckCircle2 className="w-5 h-5 text-[#0F6E56] mt-0.5 shrink-0" />
-          : <AlertTriangle className="w-5 h-5 text-[#F5A623] mt-0.5 shrink-0" />}
+          : <AlertTriangle className="w-5 h-5 text-[#fdc73e] mt-0.5 shrink-0" />}
         <div>
           <p className="font-semibold text-sm text-[#0F1923]">
             {paymentsLive ? 'Payments are LIVE — parents are being charged' : 'Payments are OFF — no charges firing'}
@@ -90,7 +90,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Config rows */}
-      <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+      <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
         <CardHeader>
           <CardTitle className="text-base font-semibold text-[#0F1923]">Configuration</CardTitle>
         </CardHeader>
@@ -108,7 +108,7 @@ export default function AdminSettingsPage() {
                     <select
                       value={values[config.key] ?? 'false'}
                       onChange={e => setValues(prev => ({ ...prev, [config.key]: e.target.value }))}
-                      className="flex-1 h-10 rounded-lg border border-[rgba(26,63,122,0.15)] bg-white px-3 text-sm text-[#0F1923]"
+                      className="flex-1 h-10 rounded-lg border border-[rgba(236,61,58,0.15)] bg-white px-3 text-sm text-[#0F1923]"
                     >
                       <option value="false">false</option>
                       <option value="true">true</option>
@@ -124,7 +124,7 @@ export default function AdminSettingsPage() {
                     size="sm"
                     onClick={() => save(config.key)}
                     disabled={saving === config.key}
-                    className="h-10 bg-[#1A3F7A] text-white hover:bg-[#1A3F7A]/90"
+                    className="h-10 bg-[#ec3d3a] text-white hover:bg-[#ec3d3a]/90"
                   >
                     <Save className="w-4 h-4 mr-1.5" />
                     Save

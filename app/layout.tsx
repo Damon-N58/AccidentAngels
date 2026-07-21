@@ -1,18 +1,22 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
+})
 
 export const metadata: Metadata = {
-  title: 'Accident Angels',
-  description: 'Safe scholar transport, every day.',
+  title: 'GETS — Gauteng Education Transport Service',
+  description: 'Transporting our future, with their future in mind.',
   manifest: '/driver/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Accident Angels',
+    title: 'GETS',
   },
 }
 
@@ -21,12 +25,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#1A3F7A',
+  themeColor: '#ec3d3a',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-ZA" className={`${geist.variable} h-full`}>
+    <html lang="en-ZA" className={`${poppins.variable} h-full`}>
       <body className="min-h-full bg-[#F8F9FB] antialiased">
         {children}
         <Toaster position="top-center" richColors />

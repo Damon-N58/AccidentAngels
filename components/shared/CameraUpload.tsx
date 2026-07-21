@@ -72,12 +72,12 @@ export function CameraUpload({
   return (
     <div className={cn(
       'border-2 border-dashed rounded-xl p-6',
-      'border-[rgba(26,63,122,0.25)] bg-[rgba(26,63,122,0.02)]',
+      'border-[rgba(236,61,58,0.25)] bg-[rgba(236,61,58,0.02)]',
       'flex flex-col items-center gap-4',
       disabled && 'opacity-50 pointer-events-none'
     )}>
-      <div className="w-14 h-14 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center">
-        <Camera className="w-7 h-7 text-[#1A3F7A]" />
+      <div className="w-14 h-14 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center">
+        <Camera className="w-7 h-7 text-[#ec3d3a]" />
       </div>
 
       <div className="text-center">
@@ -93,7 +93,7 @@ export function CameraUpload({
         <Button
           type="button"
           onClick={() => cameraRef.current?.click()}
-          className="flex-1 h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white"
+          className="flex-1 h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white"
         >
           <Camera className="w-4 h-4 mr-2" />
           {label}

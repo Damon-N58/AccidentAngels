@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A3F7A] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#ec3d3a] flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Logo size={64} className="mx-auto mb-4 rounded-2xl object-contain bg-white p-1" />
@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
               <Button
                 onClick={sendOtp}
                 disabled={loading || phone.length < 5}
-                className="w-full h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl"
+                className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl"
               >
                 {loading ? 'Sending code…' : 'Sign in →'}
               </Button>
@@ -95,14 +95,14 @@ export default function AdminLoginPage() {
               </p>
               <OtpInput value={otp} onChange={setOtp} disabled={loading} />
               {devCode && (
-                <p className="text-xs text-center text-[#5A6474] bg-[#F5A623]/10 rounded-lg p-2">
+                <p className="text-xs text-center text-[#5A6474] bg-[#fdc73e]/10 rounded-lg p-2">
                   Dev OTP: {devCode}
                 </p>
               )}
               <Button
                 onClick={handleVerify}
                 disabled={otp.length !== 6 || loading}
-                className="w-full h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl"
+                className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl"
               >
                 {loading ? 'Verifying…' : 'Verify →'}
               </Button>
