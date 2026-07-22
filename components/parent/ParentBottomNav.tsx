@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, User, CreditCard, Navigation } from 'lucide-react'
+import { Home, User, CreditCard, Navigation, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -10,6 +10,7 @@ const NAV = [
   { href: '/parent-app/driver',    label: 'My Driver',  Icon: User,       phase2: false },
   { href: '/parent-app/payments',  label: 'Payments',   Icon: CreditCard, phase2: false },
   { href: '/parent-app/trips',     label: 'Trips',      Icon: Navigation, phase2: false },
+  { href: '/parent-app/profile',   label: 'Profile',    Icon: UserCircle, phase2: false },
 ]
 
 export function ParentBottomNav() {

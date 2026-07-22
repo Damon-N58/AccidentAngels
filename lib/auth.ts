@@ -101,7 +101,7 @@ export async function verifyParentSigningToken(
 
 export async function getSession(cookieHeader: string | null): Promise<{ userId: string; role: string } | null> {
   if (!cookieHeader) return null
-  const match = cookieHeader.match(/session=([^;]+)/)
+  const match = cookieHeader.match(/\bsession=([^;]+)/)
   if (!match) return null
   return verifySessionToken(match[1])
 }

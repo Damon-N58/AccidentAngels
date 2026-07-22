@@ -37,22 +37,30 @@ export async function POST(request: Request) {
     const userAgent = request.headers.get('user-agent') ?? undefined
     const code = await createOtp(normalized, purpose, ipAddress, userAgent)
 
-    let smsFailed = false
-    try {
-      await sendSms(normalized, smsTemplates.otp(code))
-    } catch (smsErr) {
-      console.warn('[send-otp] SMS failed:', smsErr)
-      smsFailed = true
+    // USE_SMS_AUTH is the single switch for whether login relies on real SMS delivery.
+    // The code is NEVER returned in the API response, in either mode.
+    // false -> skip SMS entirely, log the code to the server console (local/demo use).
+    // true  -> send for real — if the send fails, the request fails too, rather than
+    //          falling back to exposing the code.
+    const useSmsAuth = process.env.USE_SMS_AUTH === 'true'
+
+    if (!useSmsAuth) {
+      console.log(`[OTP] ${normalized} (${purpose}): ${code}`)
+      return NextResponse.json({ ok: true })
     }
 
-    // Return devCode when SMS is not delivering to real phones:
-    // - dev mode, explicit DEMO_MODE flag, AT sandbox username, or SMS threw an error
-    const isSandbox = process.env.AT_USERNAME === 'sandbox'
-    const showCode = process.env.NODE_ENV === 'development'
-      || process.env.DEMO_MODE === 'true'
-      || isSandbox
-      || smsFailed
-    return NextResponse.json({ ok: true, smsFailed, ...(showCode && { devCode: code }) })
+    try {
+      const result = await sendSms(normalized, smsTemplates.otp(code))
+      if (!result.success) {
+        console.error('[send-otp] SMS delivery failed:', result.error)
+        return NextResponse.json({ error: 'Failed to send code. Please try again.' }, { status: 502 })
+      }
+    } catch (smsErr) {
+      console.error('[send-otp] SMS failed:', smsErr)
+      return NextResponse.json({ error: 'Failed to send code. Please try again.' }, { status: 502 })
+    }
+
+    return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[send-otp]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

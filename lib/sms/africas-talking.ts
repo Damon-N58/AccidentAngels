@@ -4,9 +4,6 @@ export interface SmsResult {
   error?: string
 }
 
-// In dev/test, log to console instead of sending
-const DEV_MODE = process.env.NODE_ENV !== 'production' || process.env.AT_API_KEY === undefined
-
 async function sendViaPlatform(to: string, message: string): Promise<SmsResult> {
   const apiKey    = process.env.AT_API_KEY!
   const username  = process.env.AT_USERNAME!
@@ -44,9 +41,9 @@ async function sendViaPlatform(to: string, message: string): Promise<SmsResult> 
 }
 
 export async function sendSms(to: string, message: string): Promise<SmsResult> {
-  if (DEV_MODE) {
+  if (!process.env.AT_API_KEY) {
     console.log(`[SMS DEV] To: ${to}\n${message}`)
-    return { success: true, messageId: 'dev-mode' }
+    return { success: true, messageId: 'no-credentials' }
   }
   return sendViaPlatform(to, message)
 }
