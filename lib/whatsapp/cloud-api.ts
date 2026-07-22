@@ -5,7 +5,9 @@ export interface WhatsappResult {
 }
 
 const API_VERSION = 'v22.0'
-const DEV_MODE = process.env.WHATSAPP_ACCESS_TOKEN === undefined || process.env.WHATSAPP_PHONE_NUMBER_ID === undefined
+const DEV_MODE = process.env.OTP_MODE === 'dev'
+  || process.env.WHATSAPP_ACCESS_TOKEN === undefined
+  || process.env.WHATSAPP_PHONE_NUMBER_ID === undefined
 
 // Meta expects digits only, no leading '+'
 function toWhatsappId(phone: string): string {
