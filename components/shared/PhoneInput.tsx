@@ -52,36 +52,48 @@ export function PhoneInput({ value, onChange, disabled, className }: PhoneInputP
     focus(Math.min(pasted.length, DIGIT_COUNT - 1))
   }
 
+  const cells = [
+    <div
+      key="locked-0"
+      aria-hidden
+      className="w-7 h-10 flex items-center justify-center text-base font-bold border-b-2 border-[rgba(236,61,58,0.20)] text-[#5A6474] select-none shrink-0"
+    >
+      0
+    </div>,
+    ...digits.map((d, i) => (
+      <input
+        key={i}
+        ref={(el) => { inputs.current[i] = el }}
+        type="text"
+        inputMode="numeric"
+        pattern="\d*"
+        maxLength={1}
+        value={d}
+        onChange={(e) => handleChange(i, e)}
+        onKeyDown={(e) => handleKeyDown(i, e)}
+        onPaste={handlePaste}
+        disabled={disabled}
+        className={cn(
+          'w-7 h-10 shrink-0 text-center text-base font-bold border-b-2 bg-transparent',
+          'focus:outline-none focus:ring-0',
+          'transition-colors',
+          d ? 'border-[#ec3d3a] text-[#ec3d3a]' : 'border-[rgba(236,61,58,0.20)] text-[#0F1923]',
+          'focus:border-[#ec3d3a]',
+          disabled && 'opacity-50 cursor-not-allowed'
+        )}
+      />
+    )),
+  ]
+
+  // Group like "079 786 7872": 3 + 3 + 4
+  const groups = [cells.slice(0, 3), cells.slice(3, 6), cells.slice(6, 10)]
+
   return (
-    <div className={cn('flex gap-1 justify-center', className)}>
-      <div
-        aria-hidden
-        className="w-7 h-10 flex items-center justify-center text-base font-bold rounded-lg border-2 border-[rgba(236,61,58,0.20)] bg-[#F8F9FB] text-[#5A6474] select-none shrink-0"
-      >
-        0
-      </div>
-      {digits.map((d, i) => (
-        <input
-          key={i}
-          ref={(el) => { inputs.current[i] = el }}
-          type="text"
-          inputMode="numeric"
-          pattern="\d*"
-          maxLength={1}
-          value={d}
-          onChange={(e) => handleChange(i, e)}
-          onKeyDown={(e) => handleKeyDown(i, e)}
-          onPaste={handlePaste}
-          disabled={disabled}
-          className={cn(
-            'w-7 h-10 shrink-0 text-center text-base font-bold rounded-lg border-2 bg-white',
-            'focus:outline-none focus:ring-0',
-            'transition-colors',
-            d ? 'border-[#ec3d3a] text-[#ec3d3a]' : 'border-[rgba(236,61,58,0.20)] text-[#0F1923]',
-            'focus:border-[#ec3d3a]',
-            disabled && 'opacity-50 cursor-not-allowed'
-          )}
-        />
+    <div className={cn('flex gap-3 justify-center', className)}>
+      {groups.map((group, gi) => (
+        <div key={gi} className="flex gap-1">
+          {group}
+        </div>
       ))}
     </div>
   )
