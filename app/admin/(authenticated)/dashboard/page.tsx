@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, ShieldCheck, FileText } from 'lucide-react'
@@ -53,7 +54,7 @@ export default async function AdminDashboardPage() {
           <p className="text-sm font-medium text-[#0F1923]">
             {pendingReview} compliance document{pendingReview !== 1 ? 's' : ''} awaiting review
           </p>
-          <a href="/admin/drivers" className="text-sm font-semibold text-[#ec3d3a] ml-auto">Review →</a>
+          <Link href="/admin/drivers" className="text-sm font-semibold text-[#ec3d3a] ml-auto">Review →</Link>
         </div>
       )}
 
