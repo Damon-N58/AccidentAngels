@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import 'leaflet/dist/leaflet.css'
+import { Map, MapMarker, MarkerContent, type MapRef } from '@/components/ui/map'
 
 interface MapPickerProps {
   initialLat?: number
@@ -11,125 +11,62 @@ interface MapPickerProps {
 }
 
 export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPickerProps) {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<any>(null)
-  const markerRef = useRef<any>(null)
-  const [ready, setReady] = useState(false)
+  const mapRef = useRef<MapRef>(null)
+  const [position, setPosition] = useState({
+    lat: initialLat ?? -26.2041,
+    lng: initialLng ?? 28.0473,
+  })
+  const [confirming, setConfirming] = useState(false)
 
+  // If no initial position was given, center on the user's current location once available.
   useEffect(() => {
-    let cancelled = false
-    mapInstanceRef.current = null
-    markerRef.current = null
-
-    const init = async () => {
-      // Wait for the next animation frame so the container has layout
-      await new Promise(r => requestAnimationFrame(r))
-
-      if (!mapRef.current || cancelled) return
-      const container = mapRef.current
-
-      // Container must have non-zero dimensions
-      if (container.offsetWidth === 0 || container.offsetHeight === 0) {
-        await new Promise(r => setTimeout(r, 100))
-        if (!mapRef.current || cancelled) return
-        if (mapRef.current.offsetWidth === 0 || mapRef.current.offsetHeight === 0) return
-      }
-
-      const L = await import('leaflet')
-
-      if (cancelled || !mapRef.current) return
-
-      // Wipe stale state
-      mapRef.current.innerHTML = ''
-      ;(mapRef.current as any)._leaflet_id = undefined
-
-      const startLat = initialLat ?? -26.2041
-      const startLng = initialLng ?? 28.0473
-
-      const map = L.map(mapRef.current, {
-        center: [startLat, startLng],
-        zoom: 15,
-        zoomControl: true,
-      })
-
-      map.invalidateSize()
-
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map)
-
-      const pinIcon = L.divIcon({
-        className: '',
-        html: `<div style="
-          width: 32px; height: 32px;
-          background: #ec3d3a;
-          border: 3px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px #ec3d3a;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; color: white; font-weight: bold;
-        ">P</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      })
-
-      const marker = L.marker([startLat, startLng], { draggable: true, icon: pinIcon }).addTo(map)
-      markerRef.current = marker
-
-      if (initialLat == null && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const c: [number, number] = [pos.coords.latitude, pos.coords.longitude]
-            map.setView(c, 15)
-            marker.setLatLng(c)
-          },
-          () => {},
-          { enableHighAccuracy: true, timeout: 10000 }
-        )
-      }
-
-      mapInstanceRef.current = map
-      setReady(true)
-    }
-
-    init()
-
-    return () => {
-      cancelled = true
-      try { mapInstanceRef.current?.remove() } catch {}
-      mapInstanceRef.current = null
-      markerRef.current = null
-    }
+    if (initialLat != null || initialLng != null || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const next = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setPosition(next)
+        mapRef.current?.flyTo({ center: [next.lng, next.lat], zoom: 15 })
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
   }, [initialLat, initialLng])
 
   async function handleConfirm() {
-    const pos = markerRef.current?.getLatLng()
-    if (!pos) return
-
-    const { lat, lng } = pos
+    setConfirming(true)
+    const { lat, lng } = position
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-        { headers: { 'User-Agent': 'GETS/1.0' } }
+        { headers: { 'User-Agent': 'GETS/1.0' } },
       )
       const data = await res.json()
       onConfirm(data.display_name ?? `${lat.toFixed(6)}, ${lng.toFixed(6)}`, lat, lng)
     } catch {
       onConfirm(`${lat.toFixed(6)}, ${lng.toFixed(6)}`, lat, lng)
+    } finally {
+      setConfirming(false)
     }
   }
 
   return (
     <div className="space-y-3">
-      <div
-        ref={mapRef}
-        className="w-full h-64 rounded-xl border border-[rgba(236,61,58,0.15)]"
-        style={{ minHeight: '16rem' }}
-      />
-      {!ready && (
-        <div className="text-xs text-[#5A6474] text-center">Initialising map…</div>
-      )}
+      <div className="w-full h-64 rounded-xl overflow-hidden border border-[rgba(236,61,58,0.15)]">
+        <Map ref={mapRef} center={[position.lng, position.lat]} zoom={15}>
+          <MapMarker
+            longitude={position.lng}
+            latitude={position.lat}
+            draggable
+            onDragEnd={(lngLat) => setPosition({ lat: lngLat.lat, lng: lngLat.lng })}
+          >
+            <MarkerContent>
+              <div className="w-8 h-8 rounded-full bg-[#ec3d3a] border-[3px] border-white shadow-lg flex items-center justify-center text-white text-sm font-bold">
+                P
+              </div>
+            </MarkerContent>
+          </MapMarker>
+        </Map>
+      </div>
       <p className="text-xs text-[#5A6474] text-center">
         Drag the pin to your exact location, then tap Confirm
       </p>
@@ -144,9 +81,10 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
         <button
           type="button"
           onClick={handleConfirm}
-          className="flex-1 h-11 bg-[#ec3d3a] text-white font-semibold rounded-xl text-sm hover:bg-[#ec3d3a]/90"
+          disabled={confirming}
+          className="flex-1 h-11 bg-[#ec3d3a] text-white font-semibold rounded-xl text-sm hover:bg-[#ec3d3a]/90 disabled:opacity-60"
         >
-          Confirm pin location
+          {confirming ? 'Confirming…' : 'Confirm pin location'}
         </button>
       </div>
     </div>
