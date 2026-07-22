@@ -1,43 +1,88 @@
 'use client'
 
-import { ChangeEvent } from 'react'
-import { Input } from '@/components/ui/input'
+import { useRef, KeyboardEvent, ClipboardEvent, ChangeEvent } from 'react'
 import { cn } from '@/lib/utils'
 
 interface PhoneInputProps {
   value: string
   onChange: (value: string) => void
   disabled?: boolean
-  placeholder?: string
   className?: string
 }
 
-export function PhoneInput({ value, onChange, disabled, placeholder = '082 000 0000', className }: PhoneInputProps) {
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value.replace(/\D/g, '').replace(/^27/, '0').slice(0, 10)
-    onChange(raw)
+const DIGIT_COUNT = 9 // digits after the fixed leading 0
+
+export function PhoneInput({ value, onChange, disabled, className }: PhoneInputProps) {
+  const inputs = useRef<(HTMLInputElement | null)[]>([])
+  const trailing = value.startsWith('0') ? value.slice(1) : value
+  const digits = Array.from({ length: DIGIT_COUNT }, (_, i) => trailing[i] ?? '')
+
+  function focus(idx: number) {
+    inputs.current[Math.max(0, Math.min(DIGIT_COUNT - 1, idx))]?.focus()
   }
 
-  function format(digits: string): string {
-    if (digits.length <= 3) return digits
-    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`
-    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+  function emit(next: string[]) {
+    onChange('0' + next.join(''))
+  }
+
+  function handleChange(idx: number, e: ChangeEvent<HTMLInputElement>) {
+    const char = e.target.value.replace(/\D/g, '').slice(-1)
+    const next = [...digits]
+    next[idx] = char
+    emit(next)
+    if (char) focus(idx + 1)
+  }
+
+  function handleKeyDown(idx: number, e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Backspace' && !digits[idx]) {
+      focus(idx - 1)
+    }
+    if (e.key === 'ArrowLeft') focus(idx - 1)
+    if (e.key === 'ArrowRight') focus(idx + 1)
+  }
+
+  function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault()
+    let pasted = e.clipboardData.getData('text').replace(/\D/g, '')
+    if (pasted.startsWith('27') && pasted.length >= 11) pasted = pasted.slice(2)
+    else if (pasted.startsWith('0')) pasted = pasted.slice(1)
+    pasted = pasted.slice(0, DIGIT_COUNT)
+    const next = Array.from({ length: DIGIT_COUNT }, (_, i) => pasted[i] ?? '')
+    emit(next)
+    focus(Math.min(pasted.length, DIGIT_COUNT - 1))
   }
 
   return (
-    <div className={cn('flex items-center border-2 rounded-xl overflow-hidden bg-white', 'border-[rgba(236,61,58,0.20)] focus-within:border-[#ec3d3a]', className)}>
-      <span className="px-3 py-3 text-[#5A6474] font-medium text-sm bg-[#F8F9FB] border-r border-[rgba(236,61,58,0.12)] select-none">
-        +27
-      </span>
-      <Input
-        type="tel"
-        inputMode="numeric"
-        value={format(value)}
-        onChange={handleChange}
-        disabled={disabled}
-        placeholder={placeholder}
-        className="border-0 ring-0 focus-visible:ring-0 focus-visible:border-0 h-12 text-base rounded-none bg-white"
-      />
+    <div className={cn('flex gap-1 justify-center', className)}>
+      <div
+        aria-hidden
+        className="w-7 h-10 flex items-center justify-center text-base font-bold rounded-lg border-2 border-[rgba(236,61,58,0.20)] bg-[#F8F9FB] text-[#5A6474] select-none shrink-0"
+      >
+        0
+      </div>
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => { inputs.current[i] = el }}
+          type="text"
+          inputMode="numeric"
+          pattern="\d*"
+          maxLength={1}
+          value={d}
+          onChange={(e) => handleChange(i, e)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={handlePaste}
+          disabled={disabled}
+          className={cn(
+            'w-7 h-10 shrink-0 text-center text-base font-bold rounded-lg border-2 bg-white',
+            'focus:outline-none focus:ring-0',
+            'transition-colors',
+            d ? 'border-[#ec3d3a] text-[#ec3d3a]' : 'border-[rgba(236,61,58,0.20)] text-[#0F1923]',
+            'focus:border-[#ec3d3a]',
+            disabled && 'opacity-50 cursor-not-allowed'
+          )}
+        />
+      ))}
     </div>
   )
 }

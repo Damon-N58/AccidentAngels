@@ -71,7 +71,7 @@ export default function DriverLoginPage() {
         </form>
 
         <p className="text-xs text-[#5A6474] text-center mt-8">
-          A 6-digit code will be sent to your number via SMS.
+          A 6-digit code will be sent to your number via WhatsApp.
           <br />By continuing you agree to our Terms of Service.
         </p>
       </div>

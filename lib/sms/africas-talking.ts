@@ -53,9 +53,6 @@ export async function sendSms(to: string, message: string): Promise<SmsResult> {
 
 // Pre-built message templates
 export const smsTemplates = {
-  otp: (code: string) =>
-    `Your GETS code is: ${code}\nValid for 5 minutes. Do not share this code.`,
-
   driverInvite: (parentName: string, driverName: string, appUrl: string) =>
     `Hi ${parentName}, ${driverName} has registered your child on GETS. Sign their transport agreement here: ${appUrl}`,
 

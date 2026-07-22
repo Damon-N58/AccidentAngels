@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createOtp, getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
-import { sendSms, smsTemplates } from '@/lib/sms/africas-talking'
+import { sendWhatsappOtp } from '@/lib/whatsapp/cloud-api'
 import { normalizeSAPhone, isValidSAPhone } from '@/lib/utils/validators'
 import { checkRateLimit } from '@/lib/rate-limit'
 
@@ -37,15 +37,19 @@ export async function POST(request: Request) {
     const userAgent = request.headers.get('user-agent') ?? undefined
     const code = await createOtp(normalized, purpose, ipAddress, userAgent)
 
-    let smsFailed = false
+    let whatsappFailed = false
     try {
-      await sendSms(normalized, smsTemplates.otp(code))
-    } catch (smsErr) {
-      console.warn('[send-otp] SMS failed:', smsErr)
-      smsFailed = true
+      const result = await sendWhatsappOtp(normalized, code)
+      if (!result.success) {
+        console.warn('[send-otp] WhatsApp send failed:', result.error)
+        whatsappFailed = true
+      }
+    } catch (waErr) {
+      console.warn('[send-otp] WhatsApp send failed:', waErr)
+      whatsappFailed = true
     }
 
-    return NextResponse.json({ ok: true, smsFailed })
+    return NextResponse.json({ ok: true, whatsappFailed })
   } catch (err) {
     console.error('[send-otp]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
