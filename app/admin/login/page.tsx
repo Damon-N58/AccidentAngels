@@ -15,7 +15,6 @@ export default function AdminLoginPage() {
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
-  const [devCode, setDevCode] = useState('')
 
   async function sendOtp() {
     if (!phone.trim()) { toast.error('Enter your phone number'); return }
@@ -28,7 +27,6 @@ export default function AdminLoginPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to send code')
-      if (data.devCode) setDevCode(data.devCode)
       setStep('otp')
     } catch (err) {
       toast.error((err as Error).message)
@@ -94,11 +92,6 @@ export default function AdminLoginPage() {
                 Enter the code sent to {phone}
               </p>
               <OtpInput value={otp} onChange={setOtp} disabled={loading} />
-              {devCode && (
-                <p className="text-xs text-center text-[#5A6474] bg-[#fdc73e]/10 rounded-lg p-2">
-                  Dev OTP: {devCode}
-                </p>
-              )}
               <Button
                 onClick={handleVerify}
                 disabled={otp.length !== 6 || loading}
