@@ -13,7 +13,6 @@ export default function ParentVerifyPage() {
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(30)
   const [phone, setPhone] = useState('')
-  const [devCode, setDevCode] = useState('')
   const router = useRouter()
   const verifyingRef = useRef(false)
   const succeededRef = useRef(false)
@@ -22,8 +21,6 @@ export default function ParentVerifyPage() {
     const p = sessionStorage.getItem('otp_phone')
     if (!p) { router.replace('/parent-app/login'); return }
     setPhone(p)
-    const code = sessionStorage.getItem('otp_dev_code')
-    if (code) setDevCode(code)
   }, [router])
 
   useEffect(() => {
@@ -50,7 +47,6 @@ export default function ParentVerifyPage() {
       succeededRef.current = true
       sessionStorage.removeItem('otp_phone')
       sessionStorage.removeItem('otp_role')
-      sessionStorage.removeItem('otp_dev_code')
 
       router.push(data.isNewUser ? '/parent-app/onboarding' : '/parent-app/dashboard')
     } catch (err) {
@@ -90,12 +86,6 @@ export default function ParentVerifyPage() {
         <p className="text-sm text-[#5A6474] mb-8">
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
-        {devCode && (
-          <div className="mb-4 px-4 py-3 bg-[#fdc73e]/15 border border-[#fdc73e]/40 rounded-xl text-center">
-            <p className="text-xs text-[#0F1923] font-medium mb-0.5">Your code (SMS unavailable)</p>
-            <p className="text-2xl font-bold tracking-[0.3em] text-[#0F1923]">{devCode}</p>
-          </div>
-        )}
         <div className="mb-8"><OtpInput value={otp} onChange={setOtp} disabled={loading} /></div>
         <Button
           onClick={handleVerify}

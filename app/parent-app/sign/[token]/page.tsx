@@ -54,10 +54,6 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to send code')
-      if (data.devCode) {
-        toast(`Dev OTP: ${data.devCode}`, { duration: 20000, description: 'Auto-hides in 20s' })
-        setTimeout(() => toast.dismiss(), 20000)
-      }
       setStep('sign')
     } catch (err) {
       toast.error((err as Error).message)
