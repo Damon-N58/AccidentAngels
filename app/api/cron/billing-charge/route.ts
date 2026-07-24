@@ -4,6 +4,7 @@ import { getPaymentProvider } from '@/lib/payments'
 import { getActiveSplitScheme } from '@/lib/payments/splits'
 import { computeCharge, recordSplits } from '@/lib/payments/compute-charge'
 import { scheduleRetry } from '@/lib/payments/retry'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const maxDuration = 300
 
@@ -11,11 +12,6 @@ const CRON_SECRET = process.env.CRON_SECRET
 const CONCURRENCY = 6 // gateway calls in flight at once
 const CLAIM_BATCH = 60 // rows claimed per loop
 const TIME_BUDGET_MS = 240_000 // stop before the 300s hard limit and continue later
-
-function isCronAuthorized(request: Request): boolean {
-  if (!CRON_SECRET) return false
-  return request.headers.get('authorization') === `Bearer ${CRON_SECRET}`
-}
 
 async function getConfig(key: string): Promise<string | null> {
   const { data } = await supabase.from('PlatformConfig').select('value').eq('key', key).maybeSingle()

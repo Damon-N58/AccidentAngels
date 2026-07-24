@@ -2,16 +2,10 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { verifyTransaction } from '@/lib/payments/paystack-admin'
 import { scheduleRetry } from '@/lib/payments/retry'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 // Charges are external HTTP; give the run room to work through a batch.
 export const maxDuration = 300
-
-const CRON_SECRET = process.env.CRON_SECRET
-
-function isCronAuthorized(request: Request): boolean {
-  if (!CRON_SECRET) return false
-  return request.headers.get('authorization') === `Bearer ${CRON_SECRET}`
-}
 
 /**
  * Reconciliation sweep. For charges that are stuck in a non-terminal state

@@ -68,6 +68,37 @@ export async function PATCH(
   return NextResponse.json(data)
 }
 
+/**
+ * Child departure — stop transport AND stop billing. Deactivates the child and
+ * CANCELS their active contracts, so the monthly billing enqueue (which only
+ * bills FULLY_SIGNED contracts for active children) no longer charges the
+ * parent. Kept simple: no proration/refund of the current month (top-up model).
+ */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ childId: string }> },
+) {
+  const session = await getSession(request.headers.get('cookie'))
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { childId } = await params
+  const child = await verifyChildAccess(childId, session)
+  if (!child) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const now = new Date().toISOString()
+
+  await supabase.from('Child').update({ isActive: false, updatedAt: now }).eq('id', childId)
+
+  // Cancel any live contract so it drops out of billing immediately.
+  await supabase
+    .from('Contract')
+    .update({ status: 'CANCELLED', updatedAt: now })
+    .eq('childId', childId)
+    .in('status', ['DRAFT', 'PENDING_DRIVER_SIGNATURE', 'PENDING_PARENT_SIGNATURE', 'FULLY_SIGNED'])
+
+  return NextResponse.json({ success: true, cancelled: true })
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ childId: string }> },

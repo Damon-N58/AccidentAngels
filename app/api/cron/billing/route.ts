@@ -2,17 +2,11 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getActiveSplitScheme } from '@/lib/payments/splits'
 import { computeCharge } from '@/lib/payments/compute-charge'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { randomUUID } from 'crypto'
 
 // Enqueue is fast (no external charges) but can span thousands of contracts.
 export const maxDuration = 300
-
-const CRON_SECRET = process.env.CRON_SECRET
-
-function isCronAuthorized(request: Request): boolean {
-  if (!CRON_SECRET) return false
-  return request.headers.get('authorization') === `Bearer ${CRON_SECRET}`
-}
 
 async function getConfig(key: string): Promise<string | null> {
   const { data } = await supabase.from('PlatformConfig').select('value').eq('key', key).maybeSingle()
