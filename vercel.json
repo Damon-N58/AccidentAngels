@@ -9,6 +9,14 @@
       "schedule": "0 5 1 * *"
     },
     {
+      "path": "/api/cron/billing-charge",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "0 7 * * *"
+    },
+    {
       "path": "/api/trips/generate-all",
       "schedule": "0 21 * * *"
     }

@@ -12,19 +12,38 @@ async function paystackRequest<T>(
   path: string,
   body?: Record<string, unknown>,
 ): Promise<T> {
-  const res = await fetch(`${PAYSTACK_BASE}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  const data = await res.json()
-  if (!res.ok || !data.status) {
-    throw new Error(data.message ?? `Paystack error: HTTP ${res.status}`)
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 20_000)
+  try {
+    const res = await fetch(`${PAYSTACK_BASE}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    })
+    const data = await res.json()
+    if (!res.ok || !data.status) {
+      throw new Error(data.message ?? `Paystack error: HTTP ${res.status}`)
+    }
+    return data.data as T
+  } finally {
+    clearTimeout(timer)
   }
-  return data.data as T
+}
+
+/** Authoritative status of a charge — used by the reconciliation cron. */
+export interface VerifyResult {
+  status: string // 'success' | 'failed' | 'abandoned' | 'pending' | ...
+  amount: number
+  reference: string
+  id: number
+}
+
+export async function verifyTransaction(reference: string): Promise<VerifyResult> {
+  return paystackRequest<VerifyResult>('GET', `/transaction/verify/${encodeURIComponent(reference)}`)
 }
 
 export interface PaystackBank {
