@@ -5,12 +5,23 @@ import { useRouter } from 'next/navigation'
 import { DriverTopBar } from '@/components/driver/DriverTopBar'
 import { TripStopCard } from '@/components/trips/TripStopCard'
 import { TripProgressBar } from '@/components/trips/TripProgressBar'
-import { TripMap } from '@/components/trips/TripMap'
-import { ActiveTripNavigation } from '@/components/trips/ActiveTripNavigation'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Navigation, Play } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TripData } from '@/lib/trips/types'
+
+// Maps pull in maplibre-gl (~800KB). Load them only when this screen renders
+// (never in the initial/server bundle) so the rest of the app stays light on
+// low-end phones and slow networks.
+const TripMap = dynamic(() => import('@/components/trips/TripMap').then((m) => m.TripMap), {
+  ssr: false,
+  loading: () => <div className="h-64 w-full rounded-2xl bg-muted animate-pulse" aria-label="Loading map…" />,
+})
+const ActiveTripNavigation = dynamic(
+  () => import('@/components/trips/ActiveTripNavigation').then((m) => m.ActiveTripNavigation),
+  { ssr: false, loading: () => <div className="h-40 w-full rounded-2xl bg-muted animate-pulse" /> },
+)
 
 export default function DriverTripDetailPage({
   params,
