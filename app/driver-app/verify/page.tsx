@@ -82,7 +82,7 @@ export default function DriverVerifyPage() {
       </div>
 
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
         <p className="text-sm text-[#5A6474] mb-8">
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
@@ -103,7 +103,7 @@ export default function DriverVerifyPage() {
           {resendTimer > 0 ? (
             <p className="text-sm text-[#5A6474]">Resend code in {resendTimer}s</p>
           ) : (
-            <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">
+            <button onClick={handleResend} className="text-sm font-semibold text-[var(--brand-ink)]">
               Resend code
             </button>
           )}

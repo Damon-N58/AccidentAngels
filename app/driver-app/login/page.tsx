@@ -50,7 +50,7 @@ export default function DriverLoginPage() {
       </div>
 
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Sign in</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Sign in</h2>
         <p className="text-sm text-[#5A6474] mb-8">Enter your mobile number to get a code</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -70,7 +70,7 @@ export default function DriverLoginPage() {
           </Button>
         </form>
 
-        <p className="text-xs text-[#5A6474] text-center mt-8">
+        <p className="text-sm text-[#5A6474] text-center mt-8">
           A 6-digit code will be sent to your number via WhatsApp.
           <br />By continuing you agree to our Terms of Service.
         </p>

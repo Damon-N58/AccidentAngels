@@ -50,7 +50,7 @@ export default function ParentLoginPage() {
       </div>
 
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Welcome back</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Welcome back</h2>
         <p className="text-sm text-[#5A6474] mb-8">Enter your number to sign in</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -68,7 +68,7 @@ export default function ParentLoginPage() {
           </Button>
         </form>
 
-        <p className="text-xs text-[#5A6474] text-center mt-8">
+        <p className="text-sm text-[#5A6474] text-center mt-8">
           New here? Sign up to add your child and choose a driver.
         </p>
       </div>

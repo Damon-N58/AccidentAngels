@@ -82,7 +82,7 @@ export default function ParentVerifyPage() {
         <Logo size={64} className="rounded-2xl object-contain bg-white p-1" />
       </div>
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
         <p className="text-sm text-[#5A6474] mb-8">
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
@@ -97,7 +97,7 @@ export default function ParentVerifyPage() {
         <div className="text-center">
           {resendTimer > 0
             ? <p className="text-sm text-[#5A6474]">Resend in {resendTimer}s</p>
-            : <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">Resend code</button>
+            : <button onClick={handleResend} className="text-sm font-semibold text-[var(--brand-ink)]">Resend code</button>
           }
         </div>
       </div>
