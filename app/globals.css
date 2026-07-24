@@ -59,6 +59,10 @@
   --aa-text:        #0F1923;
   --aa-text-muted:  #5A6474;
   --aa-border:      rgba(236,61,58,0.10);
+  /* Accessible red for text/icons on white. Brand red #ec3d3a is only ~3.97:1
+     (fails WCAG AA for body text); this darker tone is ~5.3:1. Use for red text,
+     not large fills. */
+  --brand-ink:      #c1272d;
 
   /* ── shadcn tokens mapped to AA palette ──────────────── */
   --background: #F8F9FB;
@@ -140,6 +144,21 @@
     @apply font-sans;
     /* Prevent rubber-band scroll bounce on iOS */
     overscroll-behavior: none;
+  }
+  /* Clear, consistent keyboard focus for low-vision / assistive users. */
+  :where(a, button, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid var(--brand-ink);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Respect reduced-motion — no distracting animation on cheap phones. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
   .maplibregl-popup-content {
     @apply bg-transparent! shadow-none! p-0! rounded-none!;
