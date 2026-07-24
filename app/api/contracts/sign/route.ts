@@ -61,7 +61,7 @@ export async function POST(request: Request) {
 
     // Rate limit by IP
     const rateKey = `contract-sign:${ipAddress ?? 'unknown'}`
-    if (!checkRateLimit(rateKey, 10, 300_000)) {
+    if (!(await checkRateLimit(rateKey, 10, 300_000))) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
     }
 

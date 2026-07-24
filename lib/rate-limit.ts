@@ -1,26 +1,34 @@
-const store = new Map<string, number[]>()
+import { supabase } from './supabase'
 
-// Prune stale entries every 5 minutes
-let lastPrune = Date.now()
-function maybePrune() {
-  if (Date.now() - lastPrune < 300_000) return
-  lastPrune = Date.now()
-  const cutoff = Date.now() - 60_000
-  for (const [key, timestamps] of store) {
-    const fresh = timestamps.filter(t => t > cutoff)
-    if (fresh.length === 0) store.delete(key)
-    else store.set(key, fresh)
+/**
+ * Distributed, fixed-window rate limiter backed by Postgres (see
+ * scripts/payment-scale.sql -> check_rate_limit). Works across serverless
+ * instances, unlike an in-process Map.
+ *
+ * Fail-open: if the backing store is briefly unavailable we allow the request
+ * (availability for rural users on flaky networks matters, and the limiter is
+ * defence-in-depth, not the only auth gate). Errors are logged.
+ *
+ * NOTE: this is now async — callers must `await` it.
+ */
+export async function checkRateLimit(
+  key: string,
+  maxAttempts: number,
+  windowMs: number,
+): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc('check_rate_limit', {
+      p_key: key,
+      p_max: maxAttempts,
+      p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
+    })
+    if (error) {
+      console.error('[rate-limit] rpc error, failing open:', error.message)
+      return true
+    }
+    return data === true
+  } catch (err) {
+    console.error('[rate-limit] failing open:', err)
+    return true
   }
-}
-
-export function checkRateLimit(key: string, maxAttempts: number, windowMs: number): boolean {
-  maybePrune()
-  const now = Date.now()
-  const window = now - windowMs
-  const timestamps = store.get(key) ?? []
-  const withinWindow = timestamps.filter(t => t > window)
-  if (withinWindow.length >= maxAttempts) return false
-  withinWindow.push(now)
-  store.set(key, withinWindow)
-  return true
 }

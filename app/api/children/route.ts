@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const body = await safeParseJson(request)
     if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
 
-    if (!checkRateLimit(`children:${session.userId}`, 5, 600_000)) {
+    if (!(await checkRateLimit(`children:${session.userId}`, 5, 600_000))) {
       return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
     }
 
