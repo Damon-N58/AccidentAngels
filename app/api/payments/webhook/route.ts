@@ -85,6 +85,36 @@ export async function POST(request: Request) {
       }
     }
 
+    // Reversal events: refund or dispute/chargeback. Kept deliberately simple —
+    // we mark the charge REFUNDED and drop its split ledger so reconciliation /
+    // payouts don't treat it as paid. (Top-up model: no active clawback of
+    // already-settled subaccount funds — revisit if that changes.)
+    if (
+      event.event === 'refund.processed' ||
+      event.event === 'charge.dispute.create' ||
+      event.event === 'charge.dispute.resolve'
+    ) {
+      const ref =
+        event.data?.transaction_reference ??
+        event.data?.reference ??
+        event.data?.transaction?.reference
+      if (ref) {
+        const { data: transaction } = await supabase
+          .from('Transaction')
+          .select('id, status')
+          .eq('providerReference', ref)
+          .maybeSingle()
+        if (transaction && transaction.status !== 'REFUNDED') {
+          await supabase
+            .from('Transaction')
+            .update({ status: 'REFUNDED', failureReason: `reversed: ${event.event}`, updatedAt: now })
+            .eq('id', transaction.id)
+          await supabase.from('TransactionSplit').delete().eq('transactionId', transaction.id)
+          console.warn(`[webhook] transaction ${transaction.id} marked REFUNDED via ${event.event}`)
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[payments/webhook]', err)
