@@ -188,6 +188,26 @@ export async function POST(request: Request) {
         continue
       }
 
+      // Atomically CLAIM the row before charging so an overlapping cron run
+      // cannot charge the same arrear twice. Setting nextRetryAt=null removes it
+      // from the due set; only one concurrent UPDATE matches (status +
+      // nextRetryAt<=now), the loser gets zero rows and skips.
+      const { data: claimed } = await supabase
+        .from('Transaction')
+        .update({ nextRetryAt: null, updatedAt: nowIso })
+        .eq('id', tx.id)
+        .eq('status', 'RETRY_SCHEDULED')
+        .lte('nextRetryAt', nowIso)
+        .select('id')
+      if (!claimed || claimed.length === 0) continue
+
+      // Deterministic per-attempt reference: Paystack rejects a re-used
+      // reference, our idempotency guard against a double charge when a prior
+      // attempt's response was lost. Persist it before charging so the webhook
+      // can match this attempt.
+      const retryRef = `retry_${tx.id}_${tx.attemptCount + 1}`
+      await supabase.from('Transaction').update({ providerReference: retryRef }).eq('id', tx.id)
+
       const provider = getPaymentProvider(tx.parent.paymentMethodType)
       const result = await provider.chargeMandate({
         parentId: tx.parentId,
@@ -196,7 +216,7 @@ export async function POST(request: Request) {
         amountCents: tx.grossAmountCents,
         billingMonth: tx.billingMonth,
         billingYear: tx.billingYear,
-        reference: `retry_${tx.id}_${Date.now()}`,
+        reference: retryRef,
         split: computed.paystackSplit ?? undefined,
       })
 
@@ -215,8 +235,12 @@ export async function POST(request: Request) {
           })
           .eq('id', tx.id)
         if (scheme && computed.split) {
-          await supabase.from('TransactionSplit').delete().eq('transactionId', tx.id)
-          await recordSplits(tx.id, scheme, computed.split, nowIso)
+          try {
+            await supabase.from('TransactionSplit').delete().eq('transactionId', tx.id)
+            await recordSplits(tx.id, scheme, computed.split, nowIso)
+          } catch (splitErr) {
+            console.error(`[billing] split-record failed for retried tx ${tx.id} (already SUCCESS):`, splitErr)
+          }
         }
         retried++
       } else {
@@ -248,6 +272,7 @@ export async function POST(request: Request) {
       .from('Contract')
       .select('*, parent:Parent(*), driver:Driver(paystackSubAccountCode, association:Association(*))')
       .eq('status', 'FULLY_SIGNED')
+      .order('id', { ascending: true }) // stable order — without it offset paging can skip/duplicate rows
       .range(offset, offset + BATCH_SIZE - 1)
     batchContracts = contracts ?? []
 
@@ -279,7 +304,9 @@ export async function POST(request: Request) {
         legacyTccSplitCents,
       )
 
-      const reference = `bill_${contract.id}_${billingYear}${String(billingMonth).padStart(2, '0')}_${randomUUID().slice(0, 8)}`
+      // Deterministic reference (no random suffix): a re-run of the same month
+      // reuses it, so Paystack de-duplicates instead of charging again.
+      const reference = `bill_${contract.id}_${billingYear}${String(billingMonth).padStart(2, '0')}`
 
       // A misconfigured scheme must never charge the parent — record the row
       // straight to FAILED. Clamp financial columns so we never persist a
@@ -309,6 +336,10 @@ export async function POST(request: Request) {
         .single()
 
       if (insertErr || !tx) {
+        // 23505 = unique violation on (parentId, childId, billingMonth, billingYear):
+        // another concurrent run already billed this child this month. This is the
+        // race-safe double-charge guard — skip silently, it is not a failure.
+        if ((insertErr as { code?: string } | null)?.code === '23505') continue
         console.error(`[billing] insert failed for contract ${contract.id}:`, insertErr)
         failed++
         continue
@@ -342,8 +373,16 @@ export async function POST(request: Request) {
               updatedAt: nowIso,
             })
             .eq('id', tx.id)
-          if (scheme && computed.split) await recordSplits(tx.id, scheme, computed.split, nowIso)
           charged++
+          if (scheme && computed.split) {
+            try {
+              await recordSplits(tx.id, scheme, computed.split, nowIso)
+            } catch (splitErr) {
+              // Never let an audit-ledger write regress an already-SUCCESS charge
+              // into the catch below (which marks FAILED and re-charges). Log for repair.
+              console.error(`[billing] split-record failed for tx ${tx.id} (already SUCCESS):`, splitErr)
+            }
+          }
         } else {
           await supabase
             .from('Transaction')

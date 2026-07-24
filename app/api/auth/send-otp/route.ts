@@ -45,13 +45,12 @@ export async function POST(request: Request) {
       smsFailed = true
     }
 
-    // Return devCode when SMS is not delivering to real phones:
-    // - dev mode, explicit DEMO_MODE flag, AT sandbox username, or SMS threw an error
-    const isSandbox = process.env.AT_USERNAME === 'sandbox'
-    const showCode = process.env.NODE_ENV === 'development'
-      || process.env.DEMO_MODE === 'true'
-      || isSandbox
-      || smsFailed
+    // SECURITY: the OTP code must NEVER be returned over the API in production.
+    // Returning it on smsFailed / sandbox / DEMO_MODE was an account-takeover
+    // vector (an attacker forces an SMS failure and reads the admin code from
+    // the response). Only expose it in a local dev build; in production a failed
+    // send returns smsFailed:true with NO code so the client prompts a resend.
+    const showCode = process.env.NODE_ENV !== 'production'
     return NextResponse.json({ ok: true, smsFailed, ...(showCode && { devCode: code }) })
   } catch (err) {
     console.error('[send-otp]', err)

@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 import { supabase } from '@/lib/supabase'
-import { scheduleRetry } from '@/lib/payments/retry'
 
 function verifySignature(payload: string, signature: string | null): boolean {
   if (!signature || !process.env.PAYSTACK_WEBHOOK_SECRET) return false
   const hash = createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET).update(payload).digest('hex')
-  return hash === signature
+  // Constant-time compare to avoid a timing side-channel on the signature.
+  const a = Buffer.from(hash)
+  const b = Buffer.from(signature)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 export async function POST(request: Request) {
@@ -25,17 +27,21 @@ export async function POST(request: Request) {
       const tx = event.data
       const { data: transaction } = await supabase
         .from('Transaction')
-        .select('id')
+        .select('id, status')
         .eq('providerReference', tx.reference)
         .maybeSingle()
 
       if (transaction) {
-        await supabase.from('Transaction').update({
-          status:           'SUCCESS',
-          providerChargeId: String(tx.id),
-          lastAttemptAt:    now,
-          updatedAt:        now,
-        }).eq('id', transaction.id)
+        // Idempotent: only promote to SUCCESS from a non-terminal state.
+        if (transaction.status !== 'SUCCESS' && transaction.status !== 'CANCELLED') {
+          await supabase.from('Transaction').update({
+            status:           'SUCCESS',
+            providerChargeId: String(tx.id),
+            lastAttemptAt:    now,
+            nextRetryAt:      null,
+            updatedAt:        now,
+          }).eq('id', transaction.id)
+        }
       } else {
         const parentId = tx.metadata?.parentId
         if (parentId && tx.metadata?.purpose === 'card_setup') {
@@ -60,18 +66,22 @@ export async function POST(request: Request) {
       const tx = event.data
       const { data: transaction } = await supabase
         .from('Transaction')
-        .select('id, attemptCount')
+        .select('id, status, attemptCount')
         .eq('providerReference', tx.reference)
         .maybeSingle()
 
-      if (transaction) {
+      // Only act on a charge that is still live. A SUCCESS/CANCELLED/FAILED
+      // transaction must never be reopened by a replayed or out-of-order
+      // charge.failed event — that would re-charge an already-paid month.
+      if (transaction && (transaction.status === 'PENDING' || transaction.status === 'RETRY_SCHEDULED')) {
         await supabase.from('Transaction').update({
-          attemptCount:  transaction.attemptCount + 1,
           failureReason: tx.gateway_response ?? 'Unknown',
           lastAttemptAt: now,
           updatedAt:     now,
         }).eq('id', transaction.id)
-        await scheduleRetry(transaction.id)
+        // NOTE: attemptCount / scheduleRetry are owned by the billing cron
+        // (single source of truth) to avoid double-counting a decline that the
+        // synchronous charge already recorded.
       }
     }
 

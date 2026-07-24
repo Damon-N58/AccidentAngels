@@ -7,20 +7,30 @@ async function paystackRequest<T>(
   path: string,
   body?: Record<string, unknown>
 ): Promise<T> {
-  const res = await fetch(`${PAYSTACK_BASE}${path}`, {
-    method,
-    headers: {
-      Authorization:  `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  // Bounded timeout: a hung Paystack connection must not block the whole billing
+  // run until the platform hard-kills it. Callers treat an abort as UNKNOWN, not
+  // a definitive failure, so they never blind re-charge on a timeout.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 20_000)
+  try {
+    const res = await fetch(`${PAYSTACK_BASE}${path}`, {
+      method,
+      headers: {
+        Authorization:  `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    })
 
-  const data = await res.json()
-  if (!res.ok || !data.status) {
-    throw new Error(data.message ?? `Paystack error: HTTP ${res.status}`)
+    const data = await res.json()
+    if (!res.ok || !data.status) {
+      throw new Error(data.message ?? `Paystack error: HTTP ${res.status}`)
+    }
+    return data.data as T
+  } finally {
+    clearTimeout(timer)
   }
-  return data.data as T
 }
 
 export class PaystackCardProvider implements PaymentProvider {
@@ -59,7 +69,7 @@ export class PaystackCardProvider implements PaymentProvider {
         return { success: false, error: 'No authorization on file' }
       }
 
-      const data = await paystackRequest<{ reference: string; id: number }>(
+      const data = await paystackRequest<{ reference: string; id: number; status?: string; gateway_response?: string }>(
         'POST',
         '/transaction/charge_authorization',
         {
@@ -80,6 +90,18 @@ export class PaystackCardProvider implements PaymentProvider {
           },
         }
       )
+
+      // CRITICAL: charge_authorization returns HTTP 200 + envelope status:true
+      // even for a DECLINED card — the real outcome is data.status. Only a
+      // 'success' means money moved. 'failed' is a hard decline; anything else
+      // ('pending'/'ongoing'/'queued') is not settled and must not be booked.
+      if (data.status !== 'success') {
+        return {
+          success:   false,
+          error:     data.gateway_response ?? `Charge ${data.status ?? 'not successful'}`,
+          errorCode: data.status ?? 'unknown',
+        }
+      }
 
       return {
         success:           true,
