@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -114,9 +115,9 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Back */}
-      <a href="/admin/drivers" className="inline-flex items-center gap-1.5 text-sm text-[#ec3d3a] font-medium hover:underline">
+      <Link href="/admin/drivers" className="inline-flex items-center gap-1.5 text-sm text-[#ec3d3a] font-medium hover:underline">
         <ChevronLeft className="w-4 h-4" /> All drivers
-      </a>
+      </Link>
 
       {/* Header */}
       <div className="flex items-start justify-between">
