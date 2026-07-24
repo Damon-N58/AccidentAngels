@@ -149,3 +149,39 @@ INSERT INTO "SplitShare" ("id", "schemeId", "partyId", "calcType", "value", "sor
 INSERT INTO "SplitShare" ("id", "schemeId", "partyId", "calcType", "value", "sortOrder")
   VALUES ('splitshare_driver', 'splitscheme_default', 'splitparty_driver', 'REMAINDER', 0, 100)
   ON CONFLICT ("schemeId", "partyId") DO NOTHING;
+
+-- ============================================================================
+-- Integrity hardening
+-- ============================================================================
+
+-- RLS: these tables hold payout accounts + per-charge amounts. The browser
+-- ships the public anon key, so without RLS anyone could read them via the REST
+-- API. All app access is via the service-role key (which bypasses RLS), so
+-- enabling RLS with NO policies denies anon/authenticated entirely.
+ALTER TABLE "SplitParty"       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SplitScheme"      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SplitShare"       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "TransactionSplit" ENABLE ROW LEVEL SECURITY;
+
+-- Audit ledger must reference a real Transaction and cascade on delete.
+DO $$ BEGIN
+  ALTER TABLE "TransactionSplit"
+    ADD CONSTRAINT "TransactionSplit_transactionId_fkey"
+    FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; WHEN undefined_table THEN null; END $$;
+
+-- One ledger row per (transaction, party) so a re-run can never duplicate a
+-- party's cut (which would double-count payout reconciliation). partyKey is
+-- NOT NULL (partyId is nullable), so key on it.
+CREATE UNIQUE INDEX IF NOT EXISTS "TransactionSplit_tx_party_uk"
+  ON "TransactionSplit" ("transactionId", "partyKey");
+
+-- Split amounts can never be negative.
+DO $$ BEGIN
+  ALTER TABLE "TransactionSplit"
+    ADD CONSTRAINT "TransactionSplit_amount_nonneg" CHECK ("amountCents" >= 0);
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- Only one ASSOCIATION_LEVY share per scheme (else the levy is deducted twice).
+CREATE UNIQUE INDEX IF NOT EXISTS "SplitShare_one_assoc_levy"
+  ON "SplitShare" ("schemeId") WHERE "calcType" = 'ASSOCIATION_LEVY';
