@@ -40,6 +40,7 @@ export default function AddChildPage() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null)
   const [skipDriver, setSkipDriver] = useState(false)
   const [driversLoading, setDriversLoading] = useState(false)
+  const [showOptional, setShowOptional] = useState(false)
 
   useEffect(() => {
     if (step === 2) loadDrivers()
@@ -93,7 +94,8 @@ export default function AddChildPage() {
 
   function canAdvance() {
     if (step === 0) return child.name.trim() && child.schoolName.trim()
-    if (step === 1) return !!pickupAddr && !!dropoffAddr && pickupLat != null && dropoffLat != null && !isNaN(pickupLat) && !isNaN(dropoffLat)
+    // Forgiving: don't block on a geocoded pin — typed address is enough.
+    if (step === 1) return !!pickupAddr.trim() && !!dropoffAddr.trim()
     if (step === 2) return !!selectedDriver || skipDriver
     return false
   }
@@ -118,37 +120,49 @@ export default function AddChildPage() {
             }`} />
           ))}
         </div>
-        <h2 className="text-lg font-bold text-[#0F1923] text-center">{STEPS[step]}</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] text-center">{STEPS[step]}</h2>
       </div>
 
       <div className="flex-1 px-6 py-4 space-y-5 overflow-y-auto">
         {step === 0 && (
-          <>
-            {([
-              { key: 'name',        label: "Child's full name",        placeholder: 'Amahle Dlamini', type: 'text' },
-              { key: 'schoolName',  label: 'School name',              placeholder: 'Soweto Primary',  type: 'text' },
-              { key: 'grade',       label: 'Grade (optional)',          placeholder: 'Grade 4',         type: 'text' },
-              { key: 'dateOfBirth', label: 'Date of birth (optional)', placeholder: '',                type: 'date' },
-            ] as { key: keyof typeof child; label: string; placeholder: string; type: string }[]).map(({ key, label, placeholder, type }) => (
-              <div key={key} className="space-y-2">
-                <Label>{label}</Label>
-                <Input
-                  type={type}
-                  placeholder={placeholder}
-                  value={child[key]}
-                  onChange={e => setChild(p => ({ ...p, [key]: e.target.value }))}
-                  className="h-12"
-                />
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label className="text-[15px]">Child&apos;s full name</Label>
+              <Input placeholder="Amahle Dlamini" value={child.name}
+                onChange={e => setChild(p => ({ ...p, name: e.target.value }))} className="h-14 text-base" autoFocus />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[15px]">School name</Label>
+              <Input placeholder="Soweto Primary" value={child.schoolName}
+                onChange={e => setChild(p => ({ ...p, schoolName: e.target.value }))} className="h-14 text-base" />
+            </div>
+            {showOptional ? (
+              <div className="space-y-5 border-t border-[rgba(236,61,58,0.08)] pt-5">
+                <div className="space-y-2">
+                  <Label className="text-[15px]">Grade</Label>
+                  <Input placeholder="Grade 4" value={child.grade}
+                    onChange={e => setChild(p => ({ ...p, grade: e.target.value }))} className="h-14 text-base" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[15px]">Date of birth</Label>
+                  <Input type="date" value={child.dateOfBirth}
+                    onChange={e => setChild(p => ({ ...p, dateOfBirth: e.target.value }))} className="h-14 text-base" />
+                </div>
               </div>
-            ))}
-          </>
+            ) : (
+              <button type="button" onClick={() => setShowOptional(true)}
+                className="text-[15px] font-semibold text-[var(--brand-ink)]">
+                + Add grade &amp; date of birth (optional)
+              </button>
+            )}
+          </div>
         )}
 
         {step === 1 && (
           <>
             <AddressPicker
-              label="Pickup address (home)"
-              placeholder="Search for your home address"
+              label="Home address (pickup)"
+              placeholder="Type your home address"
               value={pickupAddr}
               lat={pickupLat}
               lng={pickupLng}
@@ -156,14 +170,17 @@ export default function AddChildPage() {
             />
             <div className="border-t border-[rgba(236,61,58,0.08)] pt-4">
               <AddressPicker
-                label="Dropoff address (school)"
-                placeholder="Search for the school address"
+                label="School address (dropoff)"
+                placeholder="Type the school address"
                 value={dropoffAddr}
                 lat={dropoffLat}
                 lng={dropoffLng}
                 onChange={(addr, lat, lng) => { setDropoffAddr(addr); setDropoffLat(lat); setDropoffLng(lng) }}
               />
             </div>
+            <p className="text-sm text-[#5A6474]">
+              Can&apos;t find it on the map? Just type the address — you can drop a pin later.
+            </p>
           </>
         )}
 
@@ -226,12 +243,12 @@ export default function AddChildPage() {
 
       <div className="px-6 pb-8 pt-2 flex gap-3">
         {step > 0 && (
-          <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-12 flex-1">Back</Button>
+          <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-14 flex-1">Back</Button>
         )}
         <Button
           onClick={handleNext}
           disabled={!canAdvance() || loading}
-          className="h-12 flex-1 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
+          className="h-14 flex-1 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
         >
           {loading ? 'Adding child…' : step === 2 ? 'Add child →' : 'Continue →'}
         </Button>
