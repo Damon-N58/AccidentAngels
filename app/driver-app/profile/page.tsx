@@ -31,13 +31,13 @@ export default async function DriverProfilePage() {
             {driver.profilePhotoUrl ? (
               <img src={driver.profilePhotoUrl} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
             ) : (
-              <User className="w-9 h-9 text-[#ec3d3a]" />
+              <User className="w-9 h-9 text-[var(--brand-ink)]" />
             )}
           </div>
           <h2 className="text-lg font-bold text-[#0F1923]">{user.name}</h2>
           <p className="text-sm text-[#5A6474]">{user.phone}</p>
           {driver.getsRegistrationNumber && (
-            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[#ec3d3a] px-2 py-0.5 rounded-full font-medium">
+            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[var(--brand-ink)] px-2 py-0.5 rounded-full font-medium">
               GETS: {driver.getsRegistrationNumber}
             </span>
           )}
@@ -46,7 +46,7 @@ export default async function DriverProfilePage() {
         <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Car className="w-4 h-4 text-[#ec3d3a]" />
+              <Car className="w-4 h-4 text-[var(--brand-ink)]" />
               <span className="font-semibold text-sm text-[#0F1923]">Vehicle</span>
             </div>
             <Separator className="mb-3" />
@@ -71,7 +71,7 @@ export default async function DriverProfilePage() {
           <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Building2 className="w-4 h-4 text-[#ec3d3a]" />
+                <Building2 className="w-4 h-4 text-[var(--brand-ink)]" />
                 <span className="font-semibold text-sm text-[#0F1923]">Association</span>
               </div>
               <Separator className="mb-3" />

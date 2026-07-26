@@ -105,7 +105,7 @@ export default function ReportPage() {
                 onClick={() => setCategory(value)}
                 className={`w-full flex items-center gap-3 h-12 px-4 rounded-xl border text-sm font-medium transition-colors text-left ${
                   category === value
-                    ? 'border-[#ec3d3a] bg-[#ec3d3a]/05 text-[#ec3d3a]'
+                    ? 'border-[#ec3d3a] bg-[#ec3d3a]/5 text-[var(--brand-ink)]'
                     : 'border-[rgba(236,61,58,0.15)] bg-white text-[#0F1923] hover:border-[#ec3d3a]/40'
                 }`}
               >

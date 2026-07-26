@@ -81,7 +81,7 @@ export default function DocUploadPage({ params }: { params: Promise<{ docType: s
         }
       />
       <form onSubmit={handleSubmit} className="px-4 py-4 space-y-5">
-        <div className="bg-[#ec3d3a]/05 rounded-xl p-3">
+        <div className="bg-[#ec3d3a]/5 rounded-xl p-3">
           <p className="text-sm text-[#0F1923]">{cfg.instruction}</p>
         </div>
 

@@ -72,7 +72,7 @@ export default async function ChildrenPage() {
                       <p className="text-xs text-[#5A6474] mt-0.5">{child.parent.user.name}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      {child.monthlyFee && <span className="text-sm font-bold text-[#ec3d3a]">{formatZAR(child.monthlyFee)}/mo</span>}
+                      {child.monthlyFee && <span className="text-sm font-bold text-[var(--brand-ink)]">{formatZAR(child.monthlyFee)}/mo</span>}
                       {contract && <StatusBadge status={contract.status} />}
                       <ChevronRight className="w-4 h-4 text-[#5A6474]" />
                     </div>

@@ -181,7 +181,7 @@ export default function EditChildPage({
         {/* Pickup address */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#ec3d3a]" />
+            <MapPin className="w-4 h-4 text-[var(--brand-ink)]" />
             <p className="font-semibold text-sm text-[#0F1923]">Pickup address (home)</p>
           </div>
           <AddressPicker
@@ -201,7 +201,7 @@ export default function EditChildPage({
         {/* Dropoff address */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <School className="w-4 h-4 text-[#ec3d3a]" />
+            <School className="w-4 h-4 text-[var(--brand-ink)]" />
             <p className="font-semibold text-sm text-[#0F1923]">Dropoff address (school)</p>
           </div>
           <AddressPicker
@@ -235,7 +235,7 @@ export default function EditChildPage({
           <Button
             onClick={() => router.push(`/parent-app/schedule/${childId}`)}
             variant="outline"
-            className="w-full h-11 border-[#ec3d3a] text-[#ec3d3a] font-semibold rounded-xl"
+            className="w-full h-11 border-[#ec3d3a] text-[var(--brand-ink)] font-semibold rounded-xl"
           >
             Set up trip schedule →
           </Button>

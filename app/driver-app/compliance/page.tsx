@@ -40,7 +40,7 @@ export default async function DriverCompliancePage() {
         <div className="bg-white rounded-2xl p-4 border border-[rgba(236,61,58,0.10)]">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-semibold text-[#0F1923]">Documents approved</span>
-            <span className="text-sm font-bold text-[#ec3d3a]">{approved} / {DOC_TYPES.length}</span>
+            <span className="text-sm font-bold text-[var(--brand-ink)]">{approved} / {DOC_TYPES.length}</span>
           </div>
           <Progress value={pct} className="h-2" />
           {approved === DOC_TYPES.length && (

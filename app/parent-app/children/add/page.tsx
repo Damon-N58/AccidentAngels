@@ -179,14 +179,14 @@ export default function AddChildPage() {
                   return (
                     <button key={d.id} onClick={() => { setSelectedDriver(d); setSkipDriver(false) }}
                       className={`w-full text-left rounded-2xl border p-4 transition-all ${
-                        isSelected ? 'border-[#fdc73e] bg-[#fdc73e]/05 ring-1 ring-[#fdc73e]'
+                        isSelected ? 'border-[#fdc73e] bg-[#fdc73e]/5 ring-1 ring-[#fdc73e]'
                           : 'border-[rgba(236,61,58,0.12)] bg-white hover:border-[#fdc73e]/40'
                       }`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="w-10 h-10 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
                           {d.profilePhotoUrl
                             ? <img src={d.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                            : <User className="w-5 h-5 text-[#ec3d3a]" />}
+                            : <User className="w-5 h-5 text-[var(--brand-ink)]" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-[#0F1923] text-sm">{d.user.name}</p>
@@ -203,7 +203,7 @@ export default function AddChildPage() {
                             <span className="text-xs text-[#0F6E56] font-medium">{d.approvedDocsCount}/6 verified</span>
                           </div>
                         </div>
-                        {isSelected && <CheckCircle2 className="w-5 h-5 text-[#fdc73e] shrink-0 mt-0.5" />}
+                        {isSelected && <CheckCircle2 className="w-5 h-5 text-[#b8860b] shrink-0 mt-0.5" />}
                       </div>
                     </button>
                   )
@@ -212,7 +212,7 @@ export default function AddChildPage() {
                 <button
                   onClick={() => { setSelectedDriver(null); setSkipDriver(true) }}
                   className={`w-full text-center rounded-2xl border-2 border-dashed p-4 transition-all ${
-                    skipDriver ? 'border-[#fdc73e] bg-[#fdc73e]/05' : 'border-[rgba(236,61,58,0.15)] hover:border-[#fdc73e]/40'
+                    skipDriver ? 'border-[#fdc73e] bg-[#fdc73e]/5' : 'border-[rgba(236,61,58,0.15)] hover:border-[#fdc73e]/40'
                   }`}
                 >
                   <p className="font-semibold text-sm text-[#0F1923]">Select later</p>

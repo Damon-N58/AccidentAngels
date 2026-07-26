@@ -54,7 +54,7 @@ export function DocumentUploadCard({ docType, status, expiryDate, documentNumber
                   <span className={cn(
                     'text-xs font-medium',
                     expiryCol === 'green' ? 'text-[#0F6E56]' :
-                    expiryCol === 'amber' ? 'text-[#F59E0B]' : 'text-[#E24B4A]'
+                    expiryCol === 'amber' ? 'text-[#c77700]' : 'text-[#E24B4A]'
                   )}>
                     Expires {formatDate(expiryDate)}
                     {days !== null && days <= 30 && ` · ${days}d`}

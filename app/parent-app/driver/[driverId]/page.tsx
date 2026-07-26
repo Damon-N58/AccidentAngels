@@ -81,12 +81,12 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
             {driver.profilePhotoUrl ? (
               <img src={driver.profilePhotoUrl} alt={driver.user.name} className="w-20 h-20 rounded-full object-cover" />
             ) : (
-              <User className="w-9 h-9 text-[#ec3d3a]" />
+              <User className="w-9 h-9 text-[var(--brand-ink)]" />
             )}
           </div>
           <h2 className="text-xl font-bold text-[#0F1923]">{driver.user.name}</h2>
           {driver.getsRegistrationNumber && (
-            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[#ec3d3a] px-2.5 py-0.5 rounded-full font-medium">
+            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[var(--brand-ink)] px-2.5 py-0.5 rounded-full font-medium">
               GETS: {driver.getsRegistrationNumber}
             </span>
           )}
@@ -106,7 +106,7 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
         <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Car className="w-4 h-4 text-[#ec3d3a]" />
+              <Car className="w-4 h-4 text-[var(--brand-ink)]" />
               <span className="font-semibold text-sm text-[#0F1923]">Vehicle</span>
             </div>
             <div className="space-y-1.5">
@@ -141,7 +141,7 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
                     'bg-[#E24B4A]/06 border border-[#E24B4A]/15'
                   }`}>
                     {approved && !expiring ? <CheckCircle2 className="w-4 h-4 text-[#0F6E56] shrink-0 mt-0.5" /> :
-                     approved && expiring  ? <AlertTriangle className="w-4 h-4 text-[#F59E0B] shrink-0 mt-0.5" /> :
+                     approved && expiring  ? <AlertTriangle className="w-4 h-4 text-[#c77700] shrink-0 mt-0.5" /> :
                      <XCircle className="w-4 h-4 text-[#E24B4A] shrink-0 mt-0.5" />}
                     <p className="text-xs font-medium text-[#0F1923] leading-tight">{label}</p>
                   </div>

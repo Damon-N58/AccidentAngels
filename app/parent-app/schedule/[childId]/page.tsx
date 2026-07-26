@@ -125,7 +125,7 @@ export default function ParentChildSchedulePage({
         )}
 
         {/* Explanation banner */}
-        <div className="bg-[#ec3d3a]/05 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
+        <div className="bg-[#ec3d3a]/5 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
           <p className="font-semibold text-[#0F1923]">How this works</p>
           <p>Set the days your child needs transport and the time windows for pickup and dropoff. Your driver will see the daily schedule and route on their app.</p>
           <p className="text-xs text-[#5A6474] mt-2">One-off schedule changes (e.g. skipping a day) can be done from the trips page.</p>

@@ -272,7 +272,7 @@ export default function ParentOnboardingPage() {
                           <div className="w-10 h-10 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
                             {d.profilePhotoUrl
                               ? <img src={d.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                              : <User className="w-5 h-5 text-[#ec3d3a]" />
+                              : <User className="w-5 h-5 text-[var(--brand-ink)]" />
                             }
                           </div>
                           <div className="flex-1 min-w-0">
@@ -290,7 +290,7 @@ export default function ParentOnboardingPage() {
                               <span className="text-xs text-[#0F6E56] font-medium">{d.approvedDocsCount}/6 docs verified</span>
                             </div>
                           </div>
-                          {isSelected && <CheckCircle2 className="w-5 h-5 text-[#ec3d3a] shrink-0 mt-0.5" />}
+                          {isSelected && <CheckCircle2 className="w-5 h-5 text-[var(--brand-ink)] shrink-0 mt-0.5" />}
                         </div>
                       </button>
                     )

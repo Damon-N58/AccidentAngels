@@ -26,7 +26,7 @@ export function ParentBottomNav() {
               href={href}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] gap-0.5 transition-colors',
-                active ? 'text-[#fdc73e]' : 'text-[#5A6474]'
+                active ? 'text-[#b8860b]' : 'text-[#5A6474]'
               )}
             >
               <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />

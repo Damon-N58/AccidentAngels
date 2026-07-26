@@ -8,7 +8,7 @@ export default function DriverDevLogin() {
       <p className="text-white/60 text-xs uppercase tracking-widest mb-2">Dev bypass</p>
       <a
         href="/api/dev/login?role=DRIVER"
-        className="w-full max-w-xs text-center bg-white text-[#ec3d3a] font-semibold py-4 rounded-xl"
+        className="w-full max-w-xs text-center bg-white text-[var(--brand-ink)] font-semibold py-4 rounded-xl"
       >
         Login as Driver →
       </a>

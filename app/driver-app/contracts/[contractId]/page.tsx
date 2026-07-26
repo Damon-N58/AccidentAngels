@@ -118,7 +118,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#ec3d3a]" />
+                <FileText className="w-4 h-4 text-[var(--brand-ink)]" />
                 <span className="font-semibold text-sm">Contract details</span>
               </div>
               <StatusBadge status={contract.status as any} />
@@ -153,7 +153,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
                     Signed {new Date(date!).toLocaleDateString('en-ZA')}
                   </span>
                 ) : (
-                  <span className="text-[#F59E0B]">Pending</span>
+                  <span className="text-[#c77700]">Pending</span>
                 )}
               </div>
             ))}

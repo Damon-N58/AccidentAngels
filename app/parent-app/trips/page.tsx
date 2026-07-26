@@ -135,7 +135,7 @@ export default function ParentTripsPage() {
         <Button
           onClick={() => router.push('/parent-app/trips/book')}
           variant="outline"
-          className="w-full h-11 border border-[rgba(236,61,58,0.15)] text-[#ec3d3a] font-semibold rounded-xl"
+          className="w-full h-11 border border-[rgba(236,61,58,0.15)] text-[var(--brand-ink)] font-semibold rounded-xl"
         >
           <Plus className="w-4 h-4 mr-2" />
           Book a one-off trip
@@ -177,8 +177,8 @@ export default function ParentTripsPage() {
                           trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
                         }`}>
                           {trip.type === 'MORNING'
-                            ? <Sun className="w-4 h-4 text-[#fdc73e]" />
-                            : <Moon className="w-4 h-4 text-[#ec3d3a]" />}
+                            ? <Sun className="w-4 h-4 text-[#b8860b]" />
+                            : <Moon className="w-4 h-4 text-[var(--brand-ink)]" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-[#0F1923]">
@@ -191,7 +191,7 @@ export default function ParentTripsPage() {
                         </div>
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
                           trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                          trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]' :
+                          trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[var(--brand-ink)]' :
                           trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                           'bg-[#F8F9FB] text-[#5A6474]'
                         }`}>

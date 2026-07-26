@@ -19,7 +19,7 @@ export function ParentTopBar({ title, showLogo = false, showBack, rightSlot }: P
           {showLogo ? (
             <div className="flex items-center gap-2">
               <Logo size={32} className="rounded-lg object-contain bg-white p-0.5" />
-              <span className="font-bold text-[#ec3d3a] text-base tracking-tight">GETS</span>
+              <span className="font-bold text-[var(--brand-ink)] text-base tracking-tight">GETS</span>
             </div>
           ) : (
             <h1 className="font-semibold text-base text-[#0F1923] truncate">{title}</h1>

@@ -100,7 +100,7 @@ export function TripStopCard({
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xs font-medium text-[#ec3d3a]">{formatTime(stop.estimatedTime)}</p>
+            <p className="text-xs font-medium text-[var(--brand-ink)]">{formatTime(stop.estimatedTime)}</p>
             {stop.actualTime && (
               <p className="text-xs text-[#0F6E56]">Actual: {formatTime(stop.actualTime)}</p>
             )}
@@ -110,7 +110,7 @@ export function TripStopCard({
         <p className="text-xs text-[#5A6474] mt-1 truncate">{stop.address}</p>
 
         {stop.notes && (
-          <div className="flex items-center gap-1 mt-1 text-xs text-[#fdc73e]">
+          <div className="flex items-center gap-1 mt-1 text-xs text-[#b8860b]">
             <AlertCircle className="w-3 h-3" />
             <span>{stop.notes}</span>
           </div>
@@ -153,7 +153,7 @@ export function TripStopCard({
                       }
                     }}
                     disabled={!missedReason.trim()}
-                    className="flex-1 text-xs font-semibold border border-[#E24B4A] text-[#E24B4A] rounded-lg py-1.5 hover:bg-[#E24B4A]/05 disabled:opacity-40"
+                    className="flex-1 text-xs font-semibold border border-[#E24B4A] text-[#E24B4A] rounded-lg py-1.5 hover:bg-[#E24B4A]/5 disabled:opacity-40"
                   >
                     Mark missed
                   </button>
@@ -168,7 +168,7 @@ export function TripStopCard({
             ) : (
               <button
                 onClick={() => setExpanded(true)}
-                className="text-xs font-medium text-[#ec3d3a] hover:underline"
+                className="text-xs font-medium text-[var(--brand-ink)] hover:underline"
               >
                 Mark stop →
               </button>

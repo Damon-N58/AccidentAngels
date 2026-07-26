@@ -156,7 +156,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
             {/* Expand PDF button */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-center justify-between bg-white rounded-2xl p-4 border border-[rgba(236,61,58,0.10)] text-sm font-medium text-[#ec3d3a]"
+              className="w-full flex items-center justify-between bg-white rounded-2xl p-4 border border-[rgba(236,61,58,0.10)] text-sm font-medium text-[var(--brand-ink)]"
             >
               <span className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />

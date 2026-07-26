@@ -77,14 +77,14 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ ch
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#ec3d3a]" />
+                <FileText className="w-4 h-4 text-[var(--brand-ink)]" />
                 <span className="font-semibold text-sm text-[#0F1923]">Contract</span>
               </div>
               {contract && <StatusBadge status={contract.status} />}
             </div>
             {contract ? (
               <Link href={`/driver-app/contracts/${contract.id}`}>
-                <Button variant="outline" className="w-full h-10 text-[#ec3d3a] border-[#ec3d3a]/30">
+                <Button variant="outline" className="w-full h-10 text-[var(--brand-ink)] border-[#ec3d3a]/30">
                   {contract.status === 'PENDING_DRIVER_SIGNATURE' ? 'Sign contract →' : 'View contract →'}
                 </Button>
               </Link>
@@ -97,7 +97,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ ch
         <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <CreditCard className="w-4 h-4 text-[#ec3d3a]" />
+              <CreditCard className="w-4 h-4 text-[var(--brand-ink)]" />
               <span className="font-semibold text-sm text-[#0F1923]">Payment</span>
             </div>
             <p className="text-sm text-[#5A6474]">

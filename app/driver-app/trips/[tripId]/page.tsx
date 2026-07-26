@@ -157,7 +157,7 @@ export default function DriverTripDetailPage({
       <DriverTopBar title={tripLabel} />
       <div className="px-4 pt-4 pb-24 space-y-4">
 
-        <button onClick={() => router.push('/driver-app/trips')} className="flex items-center gap-1 text-sm text-[#ec3d3a] font-medium hover:underline">
+        <button onClick={() => router.push('/driver-app/trips')} className="flex items-center gap-1 text-sm text-[var(--brand-ink)] font-medium hover:underline">
           <ChevronLeft className="w-4 h-4" /> All trips
         </button>
 
@@ -171,7 +171,7 @@ export default function DriverTripDetailPage({
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
               isCompleted ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
               trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
-              'bg-[#ec3d3a]/10 text-[#ec3d3a]'
+              'bg-[#ec3d3a]/10 text-[var(--brand-ink)]'
             }`}>
               {isCompleted ? 'Completed' : trip.status === 'CANCELLED' ? 'Cancelled' : 'Scheduled'}
             </span>
@@ -220,7 +220,7 @@ export default function DriverTripDetailPage({
         {/* Stop list (summary view for scheduled/completed) */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Navigation className="w-4 h-4 text-[#ec3d3a]" />
+            <Navigation className="w-4 h-4 text-[var(--brand-ink)]" />
             <p className="font-semibold text-sm text-[#0F1923]">Route — {trip.stops.length} stops</p>
           </div>
           {trip.stops.map((stop, i) => (

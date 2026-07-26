@@ -28,7 +28,7 @@ export function DriverBottomNav() {
               href={href}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] gap-0.5 transition-colors',
-                active ? 'text-[#ec3d3a]' : 'text-[#5A6474]'
+                active ? 'text-[var(--brand-ink)]' : 'text-[#5A6474]'
               )}
             >
               <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />

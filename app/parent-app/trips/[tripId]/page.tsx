@@ -74,7 +74,7 @@ export default function ParentTripDetailPage({
       <div className="px-4 pt-4 pb-24 space-y-4">
 
         {/* Back */}
-        <button onClick={() => router.push('/parent-app/trips')} className="flex items-center gap-1 text-sm text-[#ec3d3a] font-medium hover:underline">
+        <button onClick={() => router.push('/parent-app/trips')} className="flex items-center gap-1 text-sm text-[var(--brand-ink)] font-medium hover:underline">
           <ChevronLeft className="w-4 h-4" /> All trips
         </button>
 
@@ -86,8 +86,8 @@ export default function ParentTripDetailPage({
                 trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
               }`}>
                 {trip.type === 'MORNING'
-                  ? <Sun className="w-5 h-5 text-[#fdc73e]" />
-                  : <Moon className="w-5 h-5 text-[#ec3d3a]" />}
+                  ? <Sun className="w-5 h-5 text-[#b8860b]" />
+                  : <Moon className="w-5 h-5 text-[var(--brand-ink)]" />}
               </div>
               <div>
                 <p className="font-semibold text-sm text-[#0F1923]">
@@ -99,7 +99,7 @@ export default function ParentTripDetailPage({
               </div>
               <span className={`ml-auto text-xs font-semibold px-2 py-1 rounded-full ${
                 trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]' :
+                trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[var(--brand-ink)]' :
                 trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                 'bg-[#F8F9FB] text-[#5A6474]'
               }`}>
@@ -120,7 +120,7 @@ export default function ParentTripDetailPage({
         {/* Stop list (read-only for parent) */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Navigation className="w-4 h-4 text-[#ec3d3a]" />
+            <Navigation className="w-4 h-4 text-[var(--brand-ink)]" />
             <p className="font-semibold text-sm text-[#0F1923]">Route</p>
           </div>
           {trip.stops.map((stop, i) => (

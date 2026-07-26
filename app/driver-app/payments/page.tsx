@@ -47,7 +47,7 @@ export default async function DriverPaymentsPage() {
         <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Building2 className="w-4 h-4 text-[#ec3d3a]" />
+              <Building2 className="w-4 h-4 text-[var(--brand-ink)]" />
               <span className="font-semibold text-sm text-[#0F1923]">Banking details (for payouts)</span>
             </div>
             <Separator className="mb-3" />
@@ -89,7 +89,7 @@ export default async function DriverPaymentsPage() {
         <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-[#ec3d3a]" />
+              <TrendingUp className="w-4 h-4 text-[var(--brand-ink)]" />
               <span className="font-semibold text-sm text-[#0F1923]">Earnings preview</span>
             </div>
             <Separator className="mb-3" />
@@ -108,7 +108,7 @@ export default async function DriverPaymentsPage() {
                 <Separator className="mb-3" />
                 <div className="flex justify-between text-sm font-bold">
                   <span className="text-[#0F1923]">Gross total</span>
-                  <span className="text-[#ec3d3a]">{formatZAR(totalGross)}</span>
+                  <span className="text-[var(--brand-ink)]">{formatZAR(totalGross)}</span>
                 </div>
                 <p className="text-xs text-[#5A6474] mt-3 italic">Fee splits will be confirmed before payments go live.</p>
               </>
