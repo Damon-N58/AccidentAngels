@@ -25,11 +25,16 @@ function toWhatsappId(phone: string): string {
 export async function sendWhatsappOtp(to: string, code: string, channel: WhatsappChannel): Promise<WhatsappResult> {
   const { phoneNumberId, accessToken } = channelCredentials(channel)
   const mode = process.env.OTP_MODE
-  const devMode = mode === 'dev' || !phoneNumberId || !accessToken
 
-  if (devMode) {
+  if (mode === 'dev') {
     console.log(`[WHATSAPP DEV] (${channel}) To: ${to}\nOTP: ${code}`)
     return { success: true, messageId: 'dev-mode' }
+  }
+
+  // Missing credentials is a misconfiguration, not a deliberate dev choice —
+  // fail loudly instead of silently pretending the OTP was sent.
+  if (!phoneNumberId || !accessToken) {
+    return { success: false, error: `WhatsApp credentials not configured for channel "${channel}"` }
   }
 
   // Hybrid: send a real WhatsApp message but also log the code, so it's
