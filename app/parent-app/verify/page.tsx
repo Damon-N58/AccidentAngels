@@ -48,7 +48,7 @@ export default function ParentVerifyPage() {
       sessionStorage.removeItem('otp_phone')
       sessionStorage.removeItem('otp_role')
 
-      router.push(data.isNewUser ? '/parent-app/onboarding' : '/parent-app/dashboard')
+      window.location.href = data.isNewUser ? '/parent-app/onboarding' : '/parent-app/dashboard'
     } catch (err) {
       toast.error((err as Error).message)
       setOtp('')

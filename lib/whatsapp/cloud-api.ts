@@ -24,11 +24,18 @@ function toWhatsappId(phone: string): string {
 
 export async function sendWhatsappOtp(to: string, code: string, channel: WhatsappChannel): Promise<WhatsappResult> {
   const { phoneNumberId, accessToken } = channelCredentials(channel)
-  const devMode = process.env.OTP_MODE === 'dev' || !phoneNumberId || !accessToken
+  const mode = process.env.OTP_MODE
+  const devMode = mode === 'dev' || !phoneNumberId || !accessToken
 
   if (devMode) {
     console.log(`[WHATSAPP DEV] (${channel}) To: ${to}\nOTP: ${code}`)
     return { success: true, messageId: 'dev-mode' }
+  }
+
+  // Hybrid: send a real WhatsApp message but also log the code, so it's
+  // visible without needing the phone at hand during testing.
+  if (mode === 'hybrid') {
+    console.log(`[WHATSAPP HYBRID] (${channel}) To: ${to}\nOTP: ${code}`)
   }
 
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME ?? 'otp_auth'
