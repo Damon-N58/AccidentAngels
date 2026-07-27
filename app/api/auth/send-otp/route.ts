@@ -37,9 +37,12 @@ export async function POST(request: Request) {
     const userAgent = request.headers.get('user-agent') ?? undefined
     const code = await createOtp(normalized, purpose, ipAddress, userAgent)
 
+    // Parents get their own WhatsApp channel; drivers and admin share the driver channel.
+    const channel = role === 'PARENT' ? 'parent' : 'driver'
+
     let whatsappFailed = false
     try {
-      const result = await sendWhatsappOtp(normalized, code)
+      const result = await sendWhatsappOtp(normalized, code, channel)
       if (!result.success) {
         console.warn('[send-otp] WhatsApp send failed:', result.error)
         whatsappFailed = true

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { formatPhone } from '@/lib/utils/formatters'
 import { Logo } from '@/components/ui/Logo'
 
-export default function DriverVerifyPage() {
+export default function AdminVerifyPage() {
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(30)
@@ -19,7 +19,7 @@ export default function DriverVerifyPage() {
 
   useEffect(() => {
     const p = sessionStorage.getItem('otp_phone')
-    if (!p) { router.replace('/driver-app/login'); return }
+    if (!p) { router.replace('/admin/login'); return }
     setPhone(p)
   }, [router])
 
@@ -35,19 +35,18 @@ export default function DriverVerifyPage() {
     if (otp.length !== 6) { verifyingRef.current = false; return }
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/verify-otp', {
+      const res = await fetch('/api/auth/admin-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code: otp, purpose: 'login', role: 'DRIVER' }),
+        body: JSON.stringify({ phone, code: otp }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Invalid code')
 
       succeededRef.current = true
       sessionStorage.removeItem('otp_phone')
-      sessionStorage.removeItem('otp_role')
 
-      window.location.href = data.isNewUser ? '/driver-app/onboarding' : '/driver-app/dashboard'
+      window.location.href = '/admin/dashboard'
     } catch (err) {
       toast.error((err as Error).message)
       setOtp('')
@@ -60,11 +59,12 @@ export default function DriverVerifyPage() {
   async function handleResend() {
     if (resendTimer > 0) return
     try {
-      await fetch('/api/auth/send-otp', {
+      const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, purpose: 'login', role: 'DRIVER' }),
+        body: JSON.stringify({ phone, purpose: 'admin_login' }),
       })
+      if (!res.ok) throw new Error('Failed to resend')
       setResendTimer(30)
       toast.success('New code sent')
     } catch {
