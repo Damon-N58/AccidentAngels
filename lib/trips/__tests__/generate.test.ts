@@ -26,6 +26,10 @@ const mocks = vi.hoisted(() => {
           return Promise.resolve({ error: null })
         },
       }),
+      maybeSingle: () => {
+        const filtered = rows.filter(r => filters.every(f => f(r)))
+        return Promise.resolve({ data: filtered[0] ?? null, error: null })
+      },
       then: (resolve: (v: { data: unknown[]; error: null }) => void) => {
         resolve({ data: rows.filter(r => filters.every(f => f(r))), error: null })
       },
@@ -109,6 +113,21 @@ describe('generateTripsForDriver', () => {
     const morningStops = stops.filter(s => s.tripId === result.morningTripId)
     expect(morningStops.map(s => s.type)).toEqual(['PICKUP', 'DROPOFF'])
     expect(morningStops.map(s => s.stopOrder)).toEqual([0, 1])
+  })
+
+  it("uses the driver's base location as the route's start point", async () => {
+    seed('Child', [CHILD]) // home/school both near Johannesburg CBD, close together
+    seed('ChildSchedule', [fullDaySchedule()])
+    seed('ScheduleOverride', [])
+    seed('Trip', [])
+    // Base location ~55km away in Pretoria — should add a large first leg
+    // that wouldn't exist if optimizeRoute were called with no start at all.
+    seed('Driver', [{ id: 'driver-1', baseLat: -25.7479, baseLng: 28.2293 }])
+
+    const result = await generateTripsForDriver('driver-1', TEST_DATE)
+
+    const morningTrip = mocks.tables['Trip'].find(t => t.id === result.morningTripId)
+    expect(morningTrip?.totalDistanceMeters as number).toBeGreaterThan(10000)
   })
 
   it('does not recreate a trip type that already exists for that driver/date', async () => {

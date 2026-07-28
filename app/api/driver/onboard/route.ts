@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     const [body, bodyErr] = await validateAndParseJson(request)
     if (bodyErr) return bodyErr
-    const { details, vehicle, associationId, banking } = body as Record<string, any>
+    const { details, vehicle, baseLocation, associationId, banking } = body as Record<string, any>
 
     if (!details?.name) {
       return NextResponse.json({ error: 'Full name is required' }, { status: 400 })
@@ -37,6 +37,9 @@ export async function POST(request: Request) {
       vehicleRegistration:    vehicle.registration?.trim() || null,
       vehicleColour:          vehicle.colour?.trim() || null,
       vehicleCapacity:        vehicle.capacity ? parseInt(vehicle.capacity) : null,
+      baseAddress:            baseLocation?.address?.trim() || null,
+      baseLat:                typeof baseLocation?.lat === 'number' ? baseLocation.lat : null,
+      baseLng:                typeof baseLocation?.lng === 'number' ? baseLocation.lng : null,
       bankName:               banking.bankName?.trim() || null,
       bankAccountNumber:      banking.accountNumber?.trim() ? encrypt(banking.accountNumber.trim()) : null,
       bankBranchCode:         banking.branchCode?.trim() ? encrypt(banking.branchCode.trim()) : null,

@@ -137,6 +137,12 @@ model Driver {
   vehicleCapacity     Int?
   vehicleColour       String?
 
+  // Base/start location — where the driver's day begins, used to seed route
+  // optimization's start point instead of an arbitrary first stop.
+  baseAddress String?
+  baseLat     Float?
+  baseLng     Float?
+
   bankName              String?
   bankAccountNumber     String?
   bankBranchCode        String?

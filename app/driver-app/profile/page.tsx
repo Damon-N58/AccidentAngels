@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { DriverTopBar } from '@/components/driver/DriverTopBar'
+import { BaseLocationCard } from '@/components/driver/BaseLocationCard'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
@@ -66,6 +67,12 @@ export default async function DriverProfilePage() {
             </div>
           </CardContent>
         </Card>
+
+        <BaseLocationCard
+          initialAddress={driver.baseAddress}
+          initialLat={driver.baseLat}
+          initialLng={driver.baseLng}
+        />
 
         {driver.association && (
           <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">

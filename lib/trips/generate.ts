@@ -188,6 +188,17 @@ function buildStopsForType(
   }
 }
 
+async function getDriverStartLocation(driverId: string): Promise<{ lat: number; lng: number } | undefined> {
+  const { data } = await supabase
+    .from('Driver')
+    .select('baseLat, baseLng')
+    .eq('id', driverId)
+    .maybeSingle()
+
+  if (data?.baseLat == null || data?.baseLng == null) return undefined
+  return { lat: data.baseLat, lng: data.baseLng }
+}
+
 function parseTime(t: string): number {
   const [h, m] = t.split(':').map(Number)
   return h * 60 + m
@@ -240,7 +251,8 @@ async function createSingleTrip(
 
   let optimizationResult: OptimizationResult
   if (geocodedStops.length >= 2) {
-    optimizationResult = optimizeRoute(geocodedStops, type)
+    const start = await getDriverStartLocation(driverId)
+    optimizationResult = optimizeRoute(geocodedStops, type, start)
   } else {
     // Not enough geocoded data — use original order
     const fallback = stops.map((s, i) => ({
