@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createHmac, timingSafeEqual } from 'crypto'
 import { supabase } from '@/lib/supabase'
-
-function verifySignature(payload: string, signature: string | null): boolean {
-  if (!signature || !process.env.PAYSTACK_WEBHOOK_SECRET) return false
-  const hash = createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET).update(payload).digest('hex')
-  // Constant-time compare to avoid a timing side-channel on the signature.
-  const a = Buffer.from(hash)
-  const b = Buffer.from(signature)
-  return a.length === b.length && timingSafeEqual(a, b)
-}
+import {
+  verifyPaystackSignature,
+  canPromoteToSuccess,
+  canApplyRefund,
+  isDisputeEvent,
+} from '@/lib/payments/webhook-logic'
 
 export async function POST(request: Request) {
   try {
     const rawBody = await request.text()
     const signature = request.headers.get('x-paystack-signature')
 
-    if (!verifySignature(rawBody, signature)) {
+    if (!verifyPaystackSignature(rawBody, signature, process.env.PAYSTACK_WEBHOOK_SECRET)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
@@ -37,7 +33,7 @@ export async function POST(request: Request) {
         // out-of-order charge.success — promoting a REFUNDED row back to SUCCESS
         // would resurrect a charge whose money was already returned. The
         // matching .in() on the write makes the guard atomic against races.
-        if (transaction.status === 'PENDING' || transaction.status === 'RETRY_SCHEDULED') {
+        if (canPromoteToSuccess(transaction.status)) {
           await supabase.from('Transaction').update({
             status:           'SUCCESS',
             providerChargeId: String(tx.id),
@@ -108,7 +104,7 @@ export async function POST(request: Request) {
           .select('id, status')
           .eq('providerReference', ref)
           .maybeSingle()
-        if (transaction && transaction.status !== 'REFUNDED' && transaction.status !== 'CANCELLED') {
+        if (transaction && canApplyRefund(transaction.status)) {
           await supabase
             .from('Transaction')
             .update({ status: 'REFUNDED', failureReason: 'reversed: refund.processed', updatedAt: now })
@@ -126,7 +122,7 @@ export async function POST(request: Request) {
     // charge REFUNDED on dispute.create AND on both resolution outcomes, and
     // hard-deleted the ledger — wrong for a won dispute. We now only surface the
     // dispute for manual/admin review and leave the money state untouched.
-    if (event.event === 'charge.dispute.create' || event.event === 'charge.dispute.resolve') {
+    if (isDisputeEvent(event.event)) {
       const ref =
         event.data?.transaction?.reference ??
         event.data?.transaction_reference ??
