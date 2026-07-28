@@ -65,3 +65,8 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true, scanned: rows?.length ?? 0, resolved, failed, stillPending, errors })
 }
+
+// Vercel Cron triggers scheduled jobs with a GET request (carrying the
+// `Authorization: Bearer $CRON_SECRET` header), so expose the same handler on
+// GET. POST is retained for internal/manual invocation.
+export const GET = POST

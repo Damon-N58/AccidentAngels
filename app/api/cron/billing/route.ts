@@ -135,3 +135,8 @@ export async function POST(request: Request) {
     scheme: scheme?.name ?? 'legacy-fallback',
   })
 }
+
+// Vercel Cron triggers scheduled jobs with a GET request (carrying the
+// `Authorization: Bearer $CRON_SECRET` header), so expose the same handler on
+// GET. POST is retained for internal/manual invocation.
+export const GET = POST
