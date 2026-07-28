@@ -2,6 +2,14 @@ import type { PaymentProvider, SetupParams, SetupResult, ChargeParams, ChargeRes
 
 const PAYSTACK_BASE = 'https://api.paystack.co'
 
+// Paystack charge statuses that mean money DEFINITIVELY did not move, so a
+// re-charge (under a fresh reference) is safe. Every OTHER non-success status
+// — 'pending', 'ongoing', 'processing', 'queued', or anything unrecognised —
+// is NOT settled and may still resolve to success; those must be treated as
+// UNKNOWN so the charge is left on its reference for the reconcile cron rather
+// than blindly re-charged (which would double-charge once the pending settles).
+const DEFINITIVE_DECLINE_STATUSES = new Set(['failed', 'abandoned', 'reversed'])
+
 async function paystackRequest<T>(
   method: 'GET' | 'POST',
   path: string,
@@ -94,14 +102,16 @@ export class PaystackCardProvider implements PaymentProvider {
 
       // CRITICAL: charge_authorization returns HTTP 200 + envelope status:true
       // even for a DECLINED card — the real outcome is data.status. Only a
-      // 'success' means money moved. 'failed' is a hard decline; anything else
-      // ('pending'/'ongoing'/'queued') is not settled and must not be booked.
+      // 'success' means money moved. A definitive decline ('failed' etc.) is
+      // safe to retry; anything else ('pending'/'ongoing'/'queued') is NOT
+      // settled — treat it as UNKNOWN so it is never booked or re-charged.
       if (data.status !== 'success') {
-        // Gateway returned a definitive non-success envelope (HTTP 200 +
-        // status 'failed'/'reversed'/etc.) — money did NOT move.
+        const definitiveDecline = data.status ? DEFINITIVE_DECLINE_STATUSES.has(data.status) : false
         return {
           success:   false,
-          outcome:   'failed',
+          // Only a definitive decline may be retried under a fresh reference;
+          // an unsettled status must be reconciled against THIS reference.
+          outcome:   definitiveDecline ? 'failed' : 'unknown',
           error:     data.gateway_response ?? `Charge ${data.status ?? 'not successful'}`,
           errorCode: data.status ?? 'unknown',
         }

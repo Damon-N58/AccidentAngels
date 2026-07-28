@@ -65,6 +65,32 @@ describe('PaystackCardProvider.chargeMandate outcome classification', () => {
     expect(r.outcome).toBe('failed')
   })
 
+  it('returns outcome=unknown for an unsettled status (pending) — must NOT be booked or re-charged', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: true, data: { status: 'pending', gateway_response: 'Awaiting confirmation' } }),
+      }),
+    )
+    const r = await new PaystackCardProvider().chargeMandate(params)
+    expect(r.success).toBe(false)
+    expect(r.outcome).toBe('unknown')
+  })
+
+  it('treats a definitive decline (abandoned) as failed — safe to retry', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: true, data: { status: 'abandoned', gateway_response: 'Abandoned' } }),
+      }),
+    )
+    const r = await new PaystackCardProvider().chargeMandate(params)
+    expect(r.success).toBe(false)
+    expect(r.outcome).toBe('failed')
+  })
+
   it('returns outcome=unknown on a timeout/abort — must never be re-charged blindly', async () => {
     vi.stubGlobal(
       'fetch',

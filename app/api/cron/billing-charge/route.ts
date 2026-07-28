@@ -54,6 +54,11 @@ export async function POST(request: Request) {
     failed = 0,
     unknown = 0
   let budgetHit = false
+  // Rows this invocation has already handled. An UNKNOWN outcome releases the
+  // claim and leaves the row PENDING for the RECONCILE cron to settle — it must
+  // NOT be re-charged later in this same run (that is what "leave for reconcile"
+  // means), so we exclude everything we have already attempted here.
+  const attempted = new Set<string>()
 
   while (Date.now() - start < TIME_BUDGET_MS) {
     const nowIso = new Date().toISOString()
@@ -69,8 +74,13 @@ export async function POST(request: Request) {
 
     if (!candidates || candidates.length === 0) break
 
+    // Drop rows already attempted this run (e.g. released as UNKNOWN); if that
+    // leaves nothing, the remaining work is not for this invocation — stop.
+    const fresh = candidates.filter(c => !attempted.has(c.id))
+    if (fresh.length === 0) break
+
     // Atomically claim — only rows still unclaimed are returned to this worker.
-    const ids = candidates.map(c => c.id)
+    const ids = fresh.map(c => c.id)
     const { data: claimedRows } = await supabase
       .from('Transaction')
       .update({ claimedAt: nowIso, updatedAt: nowIso })
@@ -78,8 +88,11 @@ export async function POST(request: Request) {
       .is('claimedAt', null)
       .select('id')
     const claimedIds = new Set((claimedRows ?? []).map(r => r.id))
-    const work = candidates.filter(c => claimedIds.has(c.id))
+    const work = fresh.filter(c => claimedIds.has(c.id))
     if (work.length === 0) continue
+    // Mark as attempted regardless of outcome so a released UNKNOWN row is not
+    // picked up again this run.
+    work.forEach(w => attempted.add(w.id))
 
     // Charge in bounded-concurrency chunks.
     for (let i = 0; i < work.length; i += CONCURRENCY) {

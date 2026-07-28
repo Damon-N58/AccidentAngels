@@ -58,8 +58,12 @@ export async function scheduleRetry(transactionId: string): Promise<void> {
   const { day1, day2 } = await getRetryDays()
   const now = new Date()
 
+  // <=1 (not ===1) for the first retry: a charge whose first attempt came back
+  // UNKNOWN (attemptCount never incremented) and was later confirmed failed by
+  // reconcile still has attemptCount 0 — it must get its first retry, not skip
+  // straight to FAILED + dunning.
   let nextRetryAt: string | null = null
-  if (tx.attemptCount === 1) nextRetryAt = addDays(now, day1).toISOString()
+  if (tx.attemptCount <= 1) nextRetryAt = addDays(now, day1).toISOString()
   else if (tx.attemptCount === 2) nextRetryAt = addDays(now, day2).toISOString()
 
   await supabase.from('Transaction').update({
