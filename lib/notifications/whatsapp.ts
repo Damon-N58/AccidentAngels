@@ -3,13 +3,14 @@ import { randomUUID } from 'crypto'
 
 /**
  * ============================================================================
- * ⚠️⚠️⚠️  WHATSAPP INTEGRATION IS NOT IMPLEMENTED — THIS IS A STUB  ⚠️⚠️⚠️
+ * WhatsApp reminder queue (native WhatsApp transport NOT built yet)
  * ============================================================================
- * Reminders are NOT actually delivered. This function only QUEUES the message
- * into the "WhatsAppOutbox" table so nothing is lost. Another developer must:
+ * This queues a reminder into "WhatsAppOutbox". Delivery is handled
+ * asynchronously by the dunning consumer cron (app/api/cron/dunning), which
+ * currently sends via SMS as the interim transport so failed-payment reminders
+ * actually reach parents. To finish the native integration, a developer must:
  *   1. Wire a WhatsApp provider (Meta Cloud API / Twilio / 360dialog).
- *   2. Add a worker that drains WhatsAppOutbox WHERE status='QUEUED' and sends.
- *   3. Flip status to SENT/FAILED accordingly.
+ *   2. Swap the sendSms call in the dunning consumer for the WhatsApp provider.
  * See WHATSAPP_INTEGRATION_TODO.md.
  * ============================================================================
  */
@@ -19,10 +20,9 @@ export async function queueWhatsAppReminder(params: {
   parentId?: string
   kind?: string
 }): Promise<{ queued: boolean; delivered: false; gap: true }> {
-  // Make the gap impossible to miss in logs.
-  console.warn(
-    '[WHATSAPP GAP — NOT SENT] Reminder queued only. Integration missing. ' +
-      `to=${params.toPhone} kind=${params.kind ?? 'DUNNING'} body="${params.body}"`,
+  console.info(
+    '[dunning] reminder queued for async delivery (SMS interim). ' +
+      `to=${params.toPhone} kind=${params.kind ?? 'DUNNING'}`,
   )
   try {
     await supabase.from('WhatsAppOutbox').insert({
