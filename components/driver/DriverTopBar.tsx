@@ -13,7 +13,7 @@ interface DriverTopBarProps {
 
 export function DriverTopBar({ title, showLogo = false, showBack, rightSlot }: DriverTopBarProps) {
   return (
-    <header className="sticky top-0 z-40 bg-[#ec3d3a] text-white px-4 pt-safe">
+    <header className="sticky top-0 z-40 bg-[#c1272d] text-white px-4 pt-safe">
       <div className="flex items-center justify-between h-14">
         {/* Left: logo or title */}
         <div className="flex items-center gap-1.5 min-w-0">

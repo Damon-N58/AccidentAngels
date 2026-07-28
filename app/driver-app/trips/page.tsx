@@ -49,7 +49,7 @@ export default function DriverTripsPage() {
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          className="w-full h-10 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a]"
+          className="w-full h-10 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d]"
         />
 
         {error && (
@@ -134,7 +134,7 @@ export default function DriverTripsPage() {
                 <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-full bg-[#c1272d]/10 flex items-center justify-center">
                         <Moon className="w-5 h-5 text-[var(--brand-ink)]" />
                       </div>
                       <div className="flex-1 min-w-0">

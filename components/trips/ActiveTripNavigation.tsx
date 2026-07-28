@@ -306,7 +306,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
           {routeCoords.length >= 2 && (
             <>
               <MapRoute id="nav-route-shadow" coordinates={routeCoords} color="rgba(0,0,0,0.15)" width={8} opacity={1} interactive={false} />
-              <MapRoute id="nav-route-main" coordinates={routeCoords} color="#ec3d3a" width={5} opacity={1} interactive={false} />
+              <MapRoute id="nav-route-main" coordinates={routeCoords} color="#c1272d" width={5} opacity={1} interactive={false} />
               <MapRoute id="nav-route-dash" coordinates={routeCoords} color="white" width={2} opacity={0.7} dashArray={[8, 14]} interactive={false} />
             </>
           )}
@@ -316,7 +316,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
             const isNext = stop.id === nextStop?.id
             const isDone = stop.status === 'COMPLETED'
             const isMissed = stop.status === 'MISSED'
-            const bg = isDone ? '#0F6E56' : isMissed ? '#E24B4A' : isNext ? '#ec3d3a' : '#94A3B8'
+            const bg = isDone ? '#0F6E56' : isMissed ? '#E24B4A' : isNext ? '#c1272d' : '#94A3B8'
             const scale = isNext ? 1.25 : 1
 
             return (
@@ -413,7 +413,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
             {/* Stop info */}
             <div className="flex items-start gap-3">
               <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-                nextStop.type === 'PICKUP' ? 'bg-[#ec3d3a]/10' : 'bg-[#0F6E56]/10'
+                nextStop.type === 'PICKUP' ? 'bg-[#c1272d]/10' : 'bg-[#0F6E56]/10'
               }`}>
                 {nextStop.type === 'PICKUP'
                   ? <Car className="w-5 h-5 text-[var(--brand-ink)]" />
@@ -424,7 +424,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                     nextStop.type === 'PICKUP'
-                      ? 'bg-[#ec3d3a]/10 text-[var(--brand-ink)]'
+                      ? 'bg-[#c1272d]/10 text-[var(--brand-ink)]'
                       : 'bg-[#0F6E56]/10 text-[#0F6E56]'
                   }`}>
                     {stopActionLabel(nextStop)}
@@ -466,7 +466,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
               </div>
               <div className="h-2 bg-[#E8EAED] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#ec3d3a] rounded-full transition-all duration-500"
+                  className="h-full bg-[#c1272d] rounded-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -480,7 +480,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   href={nextStop.lat && nextStop.lng ? googleMapsUrl(nextStop.lat, nextStop.lng) : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 h-12 rounded-xl border-2 border-[#ec3d3a] text-[var(--brand-ink)] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#ec3d3a]/5"
+                  className="flex-1 h-12 rounded-xl border-2 border-[#c1272d] text-[var(--brand-ink)] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#c1272d]/5"
                 >
                   <Navigation2 className="w-4 h-4" />
                   Navigate
@@ -501,7 +501,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   <Button
                     onClick={handleConfirm}
                     disabled={completing}
-                    className="flex-[1.5] h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-sm"
+                    className="flex-[1.5] h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl text-sm"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1.5" />
                     {completing
@@ -575,7 +575,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                       <p className="text-xs text-[#5A6474] truncate">{stop.address}</p>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                      stop.type === 'PICKUP' ? 'bg-[#ec3d3a]/08 text-[var(--brand-ink)]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
+                      stop.type === 'PICKUP' ? 'bg-[#c1272d]/08 text-[var(--brand-ink)]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
                     }`}>
                       {isSchoolStop(stop) ? '🏫' : '🏠'} {stop.type === 'PICKUP' ? 'Pick' : 'Drop'}
                     </span>

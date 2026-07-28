@@ -114,7 +114,7 @@ export function NotificationBell() {
                   className={`px-4 py-3.5 cursor-pointer transition-colors ${
                     n.isRead
                       ? 'bg-white hover:bg-[#F8F9FB]'
-                      : 'bg-[#ec3d3a]/[0.06] border-l-2 border-l-[#ec3d3a] hover:bg-[#ec3d3a]/[0.10]'
+                      : 'bg-[#c1272d]/[0.06] border-l-2 border-l-[#c1272d] hover:bg-[#c1272d]/[0.10]'
                   }`}
                 >
                   <p className="text-sm font-semibold text-[#0F1923] leading-snug">

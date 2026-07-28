@@ -146,7 +146,7 @@ export default async function DriverDashboardPage() {
                     <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                       <CardContent className="p-4 flex items-center gap-3.5 min-h-[64px]">
                         <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/15' : 'bg-[#ec3d3a]/10'
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/15' : 'bg-[#c1272d]/10'
                         }`}>
                           {trip.type === 'MORNING'
                             ? <Sun className="w-5 h-5 text-[#b8860b]" />
@@ -160,7 +160,7 @@ export default async function DriverDashboardPage() {
                         </div>
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                           trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/12 text-[#0F6E56]' :
-                          trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/12 text-[var(--brand-ink)]' :
+                          trip.status === 'IN_PROGRESS' ? 'bg-[#c1272d]/12 text-[var(--brand-ink)]' :
                           'bg-[#EEF1F5] text-[#5A6474]'
                         }`}>
                           {trip.status === 'COMPLETED' ? 'Done' :

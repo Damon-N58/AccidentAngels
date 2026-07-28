@@ -4,7 +4,7 @@ export default function DriverDevLogin() {
   if (process.env.NODE_ENV !== 'development') return null
 
   return (
-    <div className="min-h-screen bg-[#ec3d3a] flex flex-col items-center justify-center gap-4 px-6">
+    <div className="min-h-screen bg-[#c1272d] flex flex-col items-center justify-center gap-4 px-6">
       <p className="text-white/60 text-xs uppercase tracking-widest mb-2">Dev bypass</p>
       <a
         href="/api/dev/login?role=DRIVER"

@@ -76,7 +76,7 @@ export default function DriverVerifyPage() {
   useEffect(() => { if (otp.length === 6 && !loading) handleVerify() }, [otp, loading])
 
   return (
-    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
+    <div className="min-h-screen bg-[#c1272d] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
         <Logo size={64} className="mb-4 rounded-2xl object-contain bg-white p-1" />
       </div>
@@ -94,7 +94,7 @@ export default function DriverVerifyPage() {
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || loading}
-          className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl mb-4"
+          className="w-full h-14 text-base font-semibold bg-[#c1272d] hover:bg-[#c1272d]/90 text-white rounded-xl mb-4"
         >
           {loading ? 'Verifying…' : 'Verify'}
         </Button>

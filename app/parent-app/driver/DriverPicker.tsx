@@ -113,10 +113,10 @@ export function ParentDriverPicker({
                   key={d.id}
                   onClick={() => assignDriver(d.id)}
                   disabled={assigning !== null}
-                  className="w-full text-left rounded-xl border border-[rgba(236,61,58,0.12)] p-3 hover:border-[#ec3d3a]/30 transition-colors disabled:opacity-50"
+                  className="w-full text-left rounded-xl border border-[rgba(236,61,58,0.12)] p-3 hover:border-[#c1272d]/30 transition-colors disabled:opacity-50"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#c1272d]/10 flex items-center justify-center shrink-0">
                       {d.profilePhotoUrl
                         ? <img src={d.profilePhotoUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
                         : <User className="w-4 h-4 text-[var(--brand-ink)]" />}
@@ -148,7 +148,7 @@ export function ParentDriverPicker({
                           <span className="text-xs text-[#5A6474]">({d.ratingCount})</span>
                         </div>
                         {d.distanceKm != null && (
-                          <span className="text-[10px] bg-[#ec3d3a]/08 text-[var(--brand-ink)] px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="text-[10px] bg-[#c1272d]/08 text-[var(--brand-ink)] px-1.5 py-0.5 rounded-full font-medium">
                             ~{d.distanceKm} km
                           </span>
                         )}

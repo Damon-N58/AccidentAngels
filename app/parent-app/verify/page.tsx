@@ -78,7 +78,7 @@ export default function ParentVerifyPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center">
+      <div className="bg-gradient-to-br from-[#c1272d] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center">
         <Logo size={64} className="rounded-2xl object-contain bg-white p-1" />
       </div>
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">

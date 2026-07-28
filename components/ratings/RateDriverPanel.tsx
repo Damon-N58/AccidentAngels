@@ -88,13 +88,13 @@ export function RateDriverPanel({
           onChange={(e) => setComment(e.target.value)}
           placeholder="Add a comment (optional)"
           rows={3}
-          className="w-full rounded-xl border border-[rgba(236,61,58,0.15)] px-3 py-2 text-sm text-[#0F1923] placeholder:text-[#5A6474] resize-none focus:outline-none focus:ring-2 focus:ring-[#ec3d3a]/30 transition"
+          className="w-full rounded-xl border border-[rgba(236,61,58,0.15)] px-3 py-2 text-sm text-[#0F1923] placeholder:text-[#5A6474] resize-none focus:outline-none focus:ring-2 focus:ring-[#c1272d]/30 transition"
         />
         <button
           type="button"
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full rounded-xl bg-[#ec3d3a] text-white text-sm font-semibold py-2.5 disabled:opacity-50 transition active:scale-[0.98]"
+          className="w-full rounded-xl bg-[#c1272d] text-white text-sm font-semibold py-2.5 disabled:opacity-50 transition active:scale-[0.98]"
         >
           {submitting ? 'Submitting…' : hasExisting ? 'Update rating' : 'Submit rating'}
         </button>

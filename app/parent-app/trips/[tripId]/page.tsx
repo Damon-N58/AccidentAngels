@@ -83,7 +83,7 @@ export default function ParentTripDetailPage({
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
+                trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#c1272d]/10'
               }`}>
                 {trip.type === 'MORNING'
                   ? <Sun className="w-5 h-5 text-[#b8860b]" />
@@ -99,7 +99,7 @@ export default function ParentTripDetailPage({
               </div>
               <span className={`ml-auto text-xs font-semibold px-2 py-1 rounded-full ${
                 trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[var(--brand-ink)]' :
+                trip.status === 'IN_PROGRESS' ? 'bg-[#c1272d]/10 text-[var(--brand-ink)]' :
                 trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                 'bg-[#F8F9FB] text-[#5A6474]'
               }`}>

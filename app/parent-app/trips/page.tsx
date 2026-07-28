@@ -114,9 +114,9 @@ export default function ParentTripsPage() {
                     onClick={() => handleSelectDate(dateStr)}
                     className={`relative h-11 min-h-[44px] text-sm rounded-lg transition-colors flex items-center justify-center ${
                       isSelected
-                        ? 'bg-[#ec3d3a] text-white'
+                        ? 'bg-[#c1272d] text-white'
                         : isToday
-                          ? 'ring-2 ring-[#ec3d3a] ring-offset-1 bg-white text-[#0F1923]'
+                          ? 'ring-2 ring-[#c1272d] ring-offset-1 bg-white text-[#0F1923]'
                           : 'text-[#5A6474] hover:bg-[#F8F9FB]'
                     }`}
                   >
@@ -174,7 +174,7 @@ export default function ParentTripsPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#c1272d]/10'
                         }`}>
                           {trip.type === 'MORNING'
                             ? <Sun className="w-4 h-4 text-[#b8860b]" />
@@ -191,7 +191,7 @@ export default function ParentTripsPage() {
                         </div>
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
                           trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                          trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[var(--brand-ink)]' :
+                          trip.status === 'IN_PROGRESS' ? 'bg-[#c1272d]/10 text-[var(--brand-ink)]' :
                           trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                           'bg-[#F8F9FB] text-[#5A6474]'
                         }`}>

@@ -50,7 +50,7 @@
 
 :root {
   /* ── GETS Design System ───────────────────── */
-  --aa-primary:     #ec3d3a;
+  --aa-primary:     #c1272d;
   --aa-accent:      #fdc73e;
   --aa-success:     #0F6E56;
   --aa-danger:      #E24B4A;
@@ -59,7 +59,7 @@
   --aa-text:        #0F1923;
   --aa-text-muted:  #5A6474;
   --aa-border:      rgba(236,61,58,0.10);
-  /* Accessible red for text/icons on white. Brand red #ec3d3a is only ~3.97:1
+  /* Accessible red for text/icons on white. Brand red #c1272d is only ~3.97:1
      (fails WCAG AA for body text); this darker tone is ~5.3:1. Use for red text,
      not large fills. */
   --brand-ink:      #c1272d;
@@ -71,10 +71,10 @@
   --card-foreground: #0F1923;
   --popover: #FFFFFF;
   --popover-foreground: #0F1923;
-  --primary: #ec3d3a;
+  --primary: #c1272d;
   --primary-foreground: #FFFFFF;
   --secondary: #F0F4FA;
-  --secondary-foreground: #ec3d3a;
+  --secondary-foreground: #c1272d;
   --muted: #F0F4FA;
   --muted-foreground: #5A6474;
   --accent: #fdc73e;
@@ -82,14 +82,14 @@
   --destructive: #E24B4A;
   --border: rgba(236,61,58,0.12);
   --input: rgba(236,61,58,0.10);
-  --ring: #ec3d3a;
-  --chart-1: #ec3d3a;
+  --ring: #c1272d;
+  --chart-1: #c1272d;
   --chart-2: #fdc73e;
   --chart-3: #0F6E56;
   --chart-4: #E24B4A;
   --chart-5: #F59E0B;
   --radius: 0.75rem;
-  --sidebar: #ec3d3a;
+  --sidebar: #c1272d;
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #fdc73e;
   --sidebar-primary-foreground: #0F1923;

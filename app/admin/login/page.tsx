@@ -56,7 +56,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#ec3d3a] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#c1272d] flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Logo size={64} className="mx-auto mb-4 rounded-2xl object-contain bg-white p-1" />
@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
               <Button
                 onClick={sendOtp}
                 disabled={loading || phone.length < 5}
-                className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl"
+                className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl"
               >
                 {loading ? 'Sending code…' : 'Sign in →'}
               </Button>
@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
               <Button
                 onClick={handleVerify}
                 disabled={otp.length !== 6 || loading}
-                className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl"
+                className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl"
               >
                 {loading ? 'Verifying…' : 'Verify →'}
               </Button>

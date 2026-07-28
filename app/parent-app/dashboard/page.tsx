@@ -140,7 +140,7 @@ export default async function ParentDashboardPage() {
                     <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                       <CardContent className="p-4 flex items-center gap-3.5 min-h-[64px]">
                         <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/15' : 'bg-[#ec3d3a]/10'
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/15' : 'bg-[#c1272d]/10'
                         }`}>
                           {trip.type === 'MORNING'
                             ? <Sun className="w-5 h-5 text-[#b8860b]" />
@@ -246,7 +246,7 @@ export default async function ParentDashboardPage() {
                     <div className="flex gap-2.5 mt-3">
                       <Link
                         href={`/parent-app/schedule/${child.id}`}
-                        className="flex-1 text-center py-2.5 rounded-xl bg-[#ec3d3a]/8 text-[var(--brand-ink)] text-[15px] font-semibold"
+                        className="flex-1 text-center py-2.5 rounded-xl bg-[#c1272d]/8 text-[var(--brand-ink)] text-[15px] font-semibold"
                       >
                         Schedule
                       </Link>

@@ -3,9 +3,13 @@ import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+function Input({ className, type, id, ...props }: React.ComponentProps<"input">) {
+  // Ensure every input has a stable id so a <Label htmlFor> can associate with
+  // it (and so assistive tech can target it) even when the caller omits one.
+  const generatedId = React.useId()
   return (
     <InputPrimitive
+      id={id ?? generatedId}
       type={type}
       data-slot="input"
       className={cn(

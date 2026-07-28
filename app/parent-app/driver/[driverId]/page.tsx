@@ -77,7 +77,7 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
       <ParentTopBar title="Your Driver" showBack />
       <div className="px-4 py-5 space-y-4">
         <div className="flex flex-col items-center py-4">
-          <div className="w-20 h-20 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center mb-3">
+          <div className="w-20 h-20 rounded-full bg-[#c1272d]/10 flex items-center justify-center mb-3">
             {driver.profilePhotoUrl ? (
               <img src={driver.profilePhotoUrl} alt={driver.user.name} className="w-20 h-20 rounded-full object-cover" />
             ) : (
@@ -86,7 +86,7 @@ export default async function DriverTrustPage({ params }: { params: Promise<{ dr
           </div>
           <h2 className="text-xl font-bold text-[#0F1923]">{driver.user.name}</h2>
           {driver.getsRegistrationNumber && (
-            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[var(--brand-ink)] px-2.5 py-0.5 rounded-full font-medium">
+            <span className="mt-1 text-xs bg-[#c1272d]/10 text-[var(--brand-ink)] px-2.5 py-0.5 rounded-full font-medium">
               GETS: {driver.getsRegistrationNumber}
             </span>
           )}

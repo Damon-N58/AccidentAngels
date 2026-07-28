@@ -162,7 +162,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
 
         {contract.status === 'PENDING_DRIVER_SIGNATURE' && (
           <div className="fixed bottom-20 left-4 right-4">
-            <Button onClick={requestOtp} className="w-full h-14 bg-[#ec3d3a] text-white text-base font-semibold rounded-xl shadow-lg">
+            <Button onClick={requestOtp} className="w-full h-14 bg-[#c1272d] text-white text-base font-semibold rounded-xl shadow-lg">
               <PenLine className="w-5 h-5 mr-2" /> Sign this contract
             </Button>
           </div>
@@ -181,7 +181,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
           <Button
             onClick={handleSign}
             disabled={otp.length !== 6 || signing}
-            className="w-full h-14 mt-6 bg-[#ec3d3a] text-white text-base font-semibold rounded-xl"
+            className="w-full h-14 mt-6 bg-[#c1272d] text-white text-base font-semibold rounded-xl"
           >
             {signing ? 'Signing…' : 'Sign & submit'}
           </Button>

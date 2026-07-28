@@ -171,7 +171,7 @@ export default function EditChildPage({
             onClick={handleSaveDetails}
             disabled={saving}
             size="sm"
-            className="bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
+            className="bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold"
           >
             <Save className="w-3.5 h-3.5 mr-1.5" />
             Save details
@@ -235,7 +235,7 @@ export default function EditChildPage({
           <Button
             onClick={() => router.push(`/parent-app/schedule/${childId}`)}
             variant="outline"
-            className="w-full h-11 border-[#ec3d3a] text-[var(--brand-ink)] font-semibold rounded-xl"
+            className="w-full h-11 border-[#c1272d] text-[var(--brand-ink)] font-semibold rounded-xl"
           >
             Set up trip schedule →
           </Button>

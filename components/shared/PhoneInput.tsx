@@ -77,8 +77,8 @@ export function PhoneInput({ value, onChange, disabled, className }: PhoneInputP
           'w-7 h-10 shrink-0 text-center text-base font-bold border-b-2 bg-transparent',
           'focus:outline-none focus:ring-0',
           'transition-colors',
-          d ? 'border-[#ec3d3a] text-[#ec3d3a]' : 'border-[rgba(236,61,58,0.20)] text-[#0F1923]',
-          'focus:border-[#ec3d3a]',
+          d ? 'border-[#c1272d] text-[#c1272d]' : 'border-[rgba(236,61,58,0.20)] text-[#0F1923]',
+          'focus:border-[#c1272d]',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       />

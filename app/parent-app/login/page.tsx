@@ -43,7 +43,7 @@ export default function ParentLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center text-center">
+      <div className="bg-gradient-to-br from-[#c1272d] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center text-center">
         <Logo size={80} className="mb-5 rounded-2xl object-contain bg-white p-2" />
         <h1 className="text-3xl font-bold text-white mb-2">GETS</h1>
         <p className="text-white/70 text-base">Safe transport, every day</p>

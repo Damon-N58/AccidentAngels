@@ -46,7 +46,7 @@ export default async function ParentDriverPage() {
                 <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-[#c1272d]/10 flex items-center justify-center shrink-0">
                         <User className="w-6 h-6 text-[var(--brand-ink)]" />
                       </div>
                       <div className="flex-1 min-w-0">

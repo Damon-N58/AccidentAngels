@@ -53,7 +53,7 @@ export default async function ChildrenPage() {
       <div className="px-4 py-4 space-y-3">
         <div className="flex justify-end">
           <Link href="/driver-app/children/add">
-            <Button className="h-10 bg-[#ec3d3a] text-white text-sm">+ Add child</Button>
+            <Button className="h-10 bg-[#c1272d] text-white text-sm">+ Add child</Button>
           </Link>
         </div>
 

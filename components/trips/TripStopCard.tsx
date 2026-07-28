@@ -132,7 +132,7 @@ export function TripStopCard({
                   placeholder="Reason if missed (optional)"
                   value={missedReason}
                   onChange={e => setMissedReason(e.target.value)}
-                  className="w-full text-xs border border-[rgba(236,61,58,0.15)] rounded-lg px-2 py-1.5 outline-none focus:border-[#ec3d3a]"
+                  className="w-full text-xs border border-[rgba(236,61,58,0.15)] rounded-lg px-2 py-1.5 outline-none focus:border-[#c1272d]"
                 />
                 <div className="flex gap-2">
                   <button

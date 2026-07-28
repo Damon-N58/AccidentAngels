@@ -129,7 +129,7 @@ export default function ParentOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-12 pb-10 flex flex-col items-center text-center">
+      <div className="bg-gradient-to-br from-[#c1272d] to-[#c81c19] px-6 pt-12 pb-10 flex flex-col items-center text-center">
         <Logo size={56} className="mb-4 rounded-2xl object-contain bg-white p-1" />
         <h1 className="text-2xl font-bold text-white">Get started</h1>
         <p className="text-white/80 text-sm mt-1">Step {step + 1} of {STEPS.length}</p>
@@ -264,12 +264,12 @@ export default function ParentOnboardingPage() {
                         onClick={() => { setSelectedDriver(d); setSkipDriver(false) }}
                         className={`w-full text-left rounded-2xl border p-4 transition-all ${
                           isSelected
-                            ? 'border-[#ec3d3a] bg-[#ec3d3a]/5 ring-1 ring-[#ec3d3a]'
-                            : 'border-[rgba(236,61,58,0.12)] bg-white hover:border-[#ec3d3a]/30'
+                            ? 'border-[#c1272d] bg-[#c1272d]/5 ring-1 ring-[#c1272d]'
+                            : 'border-[rgba(236,61,58,0.12)] bg-white hover:border-[#c1272d]/30'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-[#c1272d]/10 flex items-center justify-center shrink-0">
                             {d.profilePhotoUrl
                               ? <img src={d.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
                               : <User className="w-5 h-5 text-[var(--brand-ink)]" />
@@ -331,7 +331,7 @@ export default function ParentOnboardingPage() {
                 ))}
               </div>
 
-              <div className="bg-[#ec3d3a]/5 rounded-xl p-3 text-xs text-[#5A6474]">
+              <div className="bg-[#c1272d]/5 rounded-xl p-3 text-xs text-[#5A6474]">
                 {selectedDriver
                   ? 'By signing you agree to the GETS transport agreement. The driver will countersign to activate service.'
                   : 'By signing you agree to the GETS transport agreement. You can assign a driver later from your dashboard.'}
@@ -370,7 +370,7 @@ export default function ParentOnboardingPage() {
             <Button
               onClick={() => setStep(s => s + 1)}
               disabled={!canAdvance()}
-              className="h-14 flex-1 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
+              className="h-14 flex-1 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold"
             >
               Continue →
             </Button>

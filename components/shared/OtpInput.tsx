@@ -64,9 +64,9 @@ export function OtpInput({ value, onChange, disabled, error }: OtpInputProps) {
             error
               ? 'border-[#E24B4A] text-[#E24B4A]'
               : d && d !== ' '
-              ? 'border-[#ec3d3a] text-[#ec3d3a]'
+              ? 'border-[#c1272d] text-[#c1272d]'
               : 'border-[rgba(236,61,58,0.20)] text-[#0F1923]',
-            'focus:border-[#ec3d3a]',
+            'focus:border-[#c1272d]',
             disabled && 'opacity-50 cursor-not-allowed'
           )}
         />

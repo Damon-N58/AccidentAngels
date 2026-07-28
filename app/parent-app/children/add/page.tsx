@@ -200,7 +200,7 @@ export default function AddChildPage() {
                           : 'border-[rgba(236,61,58,0.12)] bg-white hover:border-[#fdc73e]/40'
                       }`}>
                       <div className="flex items-start justify-between gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#c1272d]/10 flex items-center justify-center shrink-0">
                           {d.profilePhotoUrl
                             ? <img src={d.profilePhotoUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
                             : <User className="w-5 h-5 text-[var(--brand-ink)]" />}
@@ -248,7 +248,7 @@ export default function AddChildPage() {
         <Button
           onClick={handleNext}
           disabled={!canAdvance() || loading}
-          className="h-14 flex-1 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
+          className="h-14 flex-1 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold"
         >
           {loading ? 'Adding child…' : step === 2 ? 'Add child →' : 'Continue →'}
         </Button>

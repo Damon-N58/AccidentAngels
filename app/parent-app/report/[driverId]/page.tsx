@@ -79,7 +79,7 @@ export default function ReportPage() {
             href="/parent-app/dashboard"
             className="w-full block"
           >
-            <Button className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl">
+            <Button className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl">
               Back to Home
             </Button>
           </Link>
@@ -105,16 +105,16 @@ export default function ReportPage() {
                 onClick={() => setCategory(value)}
                 className={`w-full flex items-center gap-3 h-12 px-4 rounded-xl border text-sm font-medium transition-colors text-left ${
                   category === value
-                    ? 'border-[#ec3d3a] bg-[#ec3d3a]/5 text-[var(--brand-ink)]'
-                    : 'border-[rgba(236,61,58,0.15)] bg-white text-[#0F1923] hover:border-[#ec3d3a]/40'
+                    ? 'border-[#c1272d] bg-[#c1272d]/5 text-[var(--brand-ink)]'
+                    : 'border-[rgba(236,61,58,0.15)] bg-white text-[#0F1923] hover:border-[#c1272d]/40'
                 }`}
               >
                 {/* Radio dot */}
                 <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                  category === value ? 'border-[#ec3d3a]' : 'border-[rgba(236,61,58,0.30)]'
+                  category === value ? 'border-[#c1272d]' : 'border-[rgba(236,61,58,0.30)]'
                 }`}>
                   {category === value && (
-                    <span className="w-2 h-2 rounded-full bg-[#ec3d3a]" />
+                    <span className="w-2 h-2 rounded-full bg-[#c1272d]" />
                   )}
                 </span>
                 {label}
@@ -135,7 +135,7 @@ export default function ReportPage() {
             }}
             placeholder="Please describe the concern in detail..."
             rows={5}
-            className={`w-full text-sm border rounded-xl px-3 py-3 outline-none resize-none focus:border-[#ec3d3a] bg-white transition-colors ${
+            className={`w-full text-sm border rounded-xl px-3 py-3 outline-none resize-none focus:border-[#c1272d] bg-white transition-colors ${
               descError
                 ? 'border-[#E24B4A] focus:border-[#E24B4A]'
                 : 'border-[rgba(236,61,58,0.15)]'
@@ -161,7 +161,7 @@ export default function ReportPage() {
         <Button
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-base"
+          className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl text-base"
         >
           {submitting ? 'Submitting...' : 'Submit Report'}
         </Button>

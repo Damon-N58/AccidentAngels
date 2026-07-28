@@ -171,7 +171,7 @@ export default function DriverTripDetailPage({
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
               isCompleted ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
               trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
-              'bg-[#ec3d3a]/10 text-[var(--brand-ink)]'
+              'bg-[#c1272d]/10 text-[var(--brand-ink)]'
             }`}>
               {isCompleted ? 'Completed' : trip.status === 'CANCELLED' ? 'Cancelled' : 'Scheduled'}
             </span>
@@ -210,7 +210,7 @@ export default function DriverTripDetailPage({
           <Button
             onClick={handleStart}
             disabled={starting}
-            className="w-full h-14 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-base"
+            className="w-full h-14 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl text-base"
           >
             <Play className="w-5 h-5 mr-2 fill-current" />
             {starting ? 'Starting…' : 'Start trip — begin navigation'}

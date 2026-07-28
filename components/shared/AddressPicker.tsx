@@ -122,7 +122,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               autoComplete="off"
-              className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a] bg-white"
+              className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d] bg-white"
             />
             {searching && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#5A6474]">Searching…</span>
@@ -146,7 +146,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
               {search.trim().length >= 3 && (
                 <button
                   onMouseDown={(e) => { e.preventDefault(); selectFreeText() }}
-                  className="w-full text-left px-3 py-3 text-sm font-medium text-[#ec3d3a] hover:bg-[#F0F2F5] border-t border-[rgba(236,61,58,0.08)]"
+                  className="w-full text-left px-3 py-3 text-sm font-medium text-[#c1272d] hover:bg-[#F0F2F5] border-t border-[rgba(236,61,58,0.08)]"
                 >
                   Use &ldquo;{search}&rdquo;
                 </button>
@@ -163,7 +163,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
           <button
             type="button"
             onClick={() => setShowMap(true)}
-            className="w-full h-10 text-xs font-medium text-[#ec3d3a] border border-dashed border-[rgba(236,61,58,0.25)] rounded-xl hover:bg-[#ec3d3a]/05 transition-colors"
+            className="w-full h-10 text-xs font-medium text-[#c1272d] border border-dashed border-[rgba(236,61,58,0.25)] rounded-xl hover:bg-[#c1272d]/05 transition-colors"
           >
             Drop a pin on the map instead
           </button>

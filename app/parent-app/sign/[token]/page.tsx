@@ -124,7 +124,7 @@ export default function ParentSignPage({ params }: { params: Promise<{ token: st
   return (
     <div className="min-h-screen bg-[#F8F9FB] flex flex-col">
       {/* Header */}
-      <div className="bg-[#ec3d3a] px-6 pt-12 pb-8 text-white">
+      <div className="bg-[#c1272d] px-6 pt-12 pb-8 text-white">
         <div className="flex items-center gap-2 mb-4">
           <Logo size={32} className="rounded-lg object-contain bg-white" />
           <span className="font-bold">GETS</span>
