@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
     }
 
-    if (!(await checkRateLimit(`otp-send:${normalized}`, 3, 60_000))) {
+    if (!(await checkRateLimit(`otp-send:${normalized}`, 3, 60_000, { failClosed: true }))) {
       return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
     }
 

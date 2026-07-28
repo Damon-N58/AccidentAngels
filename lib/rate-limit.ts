@@ -5,17 +5,23 @@ import { supabase } from './supabase'
  * scripts/payment-scale.sql -> check_rate_limit). Works across serverless
  * instances, unlike an in-process Map.
  *
- * Fail-open: if the backing store is briefly unavailable we allow the request
- * (availability for rural users on flaky networks matters, and the limiter is
- * defence-in-depth, not the only auth gate). Errors are logged.
+ * Failure behaviour is caller-controlled via `failClosed`:
+ *  - failClosed: false (default) — if the backing store is briefly unavailable
+ *    we ALLOW the request. Use for non-security throttles where availability
+ *    matters more (the limiter is defence-in-depth there).
+ *  - failClosed: true — if the store errors we DENY the request. Use for
+ *    auth-critical limits (OTP send/verify, admin login) so a store hiccup
+ *    cannot silently disable brute-force / SMS-flood protection.
  *
- * NOTE: this is now async — callers must `await` it.
+ * NOTE: this is async — callers must `await` it.
  */
 export async function checkRateLimit(
   key: string,
   maxAttempts: number,
   windowMs: number,
+  opts: { failClosed?: boolean } = {},
 ): Promise<boolean> {
+  const allowOnError = !opts.failClosed
   try {
     const { data, error } = await supabase.rpc('check_rate_limit', {
       p_key: key,
@@ -23,12 +29,12 @@ export async function checkRateLimit(
       p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
     })
     if (error) {
-      console.error('[rate-limit] rpc error, failing open:', error.message)
-      return true
+      console.error(`[rate-limit] rpc error, failing ${allowOnError ? 'open' : 'CLOSED'}:`, error.message)
+      return allowOnError
     }
     return data === true
   } catch (err) {
-    console.error('[rate-limit] failing open:', err)
-    return true
+    console.error(`[rate-limit] failing ${allowOnError ? 'open' : 'CLOSED'}:`, err)
+    return allowOnError
   }
 }
