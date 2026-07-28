@@ -401,7 +401,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
             {nearStop && !hasArrived && (
               <div className="flex items-center gap-2 bg-[#fdc73e]/15 border border-[#fdc73e]/40 rounded-xl px-3 py-2.5">
                 <AlertTriangle className="w-4 h-4 text-[#b8860b] shrink-0" />
-                <p className="text-sm font-semibold text-[#0F1923]">You're nearby — ready to mark arrived?</p>
+                <p className="text-sm font-semibold text-[#0F1923]">You&apos;re nearby — ready to mark arrived?</p>
               </div>
             )}
 
