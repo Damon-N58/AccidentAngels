@@ -15,17 +15,22 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 2. Contracts bucket (public — accessible via signed or public URLs
---    so parents can view signed contracts without authentication)
+-- 2. Contracts bucket (PRIVATE — signed contract PDFs contain child/family PII:
+--    names, home addresses, phone numbers. Access is via short-lived signed
+--    URLs minted server-side per request; never public.)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'contracts',
   'contracts',
-  true,
+  false,
   20971520, -- 20 MB
   ARRAY['application/pdf']
 )
 ON CONFLICT (id) DO NOTHING;
+
+-- Ensure the bucket is private even if it was previously created as public
+-- (ON CONFLICT DO NOTHING above will not update an existing row).
+UPDATE storage.buckets SET public = false WHERE id = 'contracts';
 
 -- --------------------------------------------------------------
 -- RLS policies for compliance-docs
@@ -55,14 +60,13 @@ CREATE POLICY "authenticated_read_own_compliance" ON storage.objects
   );
 
 -- --------------------------------------------------------------
--- RLS policies for contracts (public bucket)
+-- RLS policies for contracts (PRIVATE bucket)
 -- --------------------------------------------------------------
 
--- Anyone can read contracts (bucket is public)
-CREATE POLICY "public_read_contracts" ON storage.objects
-  FOR SELECT
-  TO public
-  USING (bucket_id = 'contracts');
+-- Revoke the previous world-readable access. Contract PDFs contain child/family
+-- PII and must never be publicly readable. Reads now go through short-lived
+-- signed URLs minted by the service role (covered by service_role_all above).
+DROP POLICY IF EXISTS "public_read_contracts" ON storage.objects;
 
 -- Authenticated users can insert contracts
 CREATE POLICY "authenticated_insert_contracts" ON storage.objects

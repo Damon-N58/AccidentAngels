@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { verifyParentSigningToken } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { getSignedContractUrl } from '@/lib/storage/supabase'
 
 export async function GET(
   _request: Request,
@@ -32,7 +33,8 @@ export async function GET(
       monthlyAmountCents: contract.monthlyAmountCents,
       startDate:          contract.startDate,
       parentPhone:        contract.parent.user.phone,
-      pdfUrl:             contract.pdfUrl,
+      // Fresh short-lived signed URL (private bucket) — null until PDF exists.
+      pdfUrl:             contract.pdfUrl ? await getSignedContractUrl(contract.id) : null,
     })
   } catch (err) {
     console.error('[contracts/sign-info]', err)
