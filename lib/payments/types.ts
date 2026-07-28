@@ -35,6 +35,16 @@ export interface ChargeParams {
 
 export interface ChargeResult {
   success: boolean
+  /**
+   * Definitive outcome of the charge attempt:
+   *  - 'success' — money moved.
+   *  - 'failed'  — a definitive gateway decline (money did NOT move); safe to retry.
+   *  - 'unknown' — timeout / network / pre-charge error; the charge MAY have
+   *                landed. Callers must NOT re-charge; leave the row for the
+   *                reconcile cron to verify against the gateway.
+   * Absent implies 'failed' for backwards compatibility.
+   */
+  outcome?: 'success' | 'failed' | 'unknown'
   providerReference?: string
   providerChargeId?: string
   error?: string

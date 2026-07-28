@@ -66,7 +66,8 @@ export class PaystackCardProvider implements PaymentProvider {
         .maybeSingle()
 
       if (!parent?.paystackAuthorizationCode || !parent.paystackAuthorizationEmail) {
-        return { success: false, error: 'No authorization on file' }
+        // Definitive: nothing was charged (we never called the gateway).
+        return { success: false, outcome: 'failed', error: 'No authorization on file' }
       }
 
       const data = await paystackRequest<{ reference: string; id: number; status?: string; gateway_response?: string }>(
@@ -96,8 +97,11 @@ export class PaystackCardProvider implements PaymentProvider {
       // 'success' means money moved. 'failed' is a hard decline; anything else
       // ('pending'/'ongoing'/'queued') is not settled and must not be booked.
       if (data.status !== 'success') {
+        // Gateway returned a definitive non-success envelope (HTTP 200 +
+        // status 'failed'/'reversed'/etc.) — money did NOT move.
         return {
           success:   false,
+          outcome:   'failed',
           error:     data.gateway_response ?? `Charge ${data.status ?? 'not successful'}`,
           errorCode: data.status ?? 'unknown',
         }
@@ -105,11 +109,16 @@ export class PaystackCardProvider implements PaymentProvider {
 
       return {
         success:           true,
+        outcome:           'success',
         providerReference: data.reference,
         providerChargeId:  String(data.id),
       }
     } catch (err) {
-      return { success: false, error: (err as Error).message }
+      // We never received a definitive success/failed envelope (timeout, abort,
+      // network error, or non-2xx from paystackRequest). The charge MAY have
+      // landed at Paystack — treat as UNKNOWN so the caller leaves it for the
+      // reconcile cron to verify against this reference, never blind re-charging.
+      return { success: false, outcome: 'unknown', error: (err as Error).message }
     }
   }
 

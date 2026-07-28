@@ -66,6 +66,10 @@ export async function scheduleRetry(transactionId: string): Promise<void> {
     status:        nextRetryAt ? 'RETRY_SCHEDULED' : 'FAILED',
     nextRetryAt,
     lastAttemptAt: now.toISOString(),
+    // Always release the claim: the charge worker only picks up rows with
+    // claimedAt IS NULL, so a retry scheduled by reconcile (which may run on a
+    // still-claimed row) would otherwise be stranded and never re-charged.
+    claimedAt:     null,
     updatedAt:     now.toISOString(),
   }).eq('id', transactionId)
 

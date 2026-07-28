@@ -43,7 +43,8 @@ export async function POST(request: Request) {
 
   const start = Date.now()
   let charged = 0,
-    failed = 0
+    failed = 0,
+    unknown = 0
   let budgetHit = false
 
   while (Date.now() - start < TIME_BUDGET_MS) {
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
       for (const r of results) {
         if (r === 'charged') charged++
         else if (r === 'failed') failed++
+        else if (r === 'unknown') unknown++
       }
     }
 
@@ -96,7 +98,7 @@ export async function POST(request: Request) {
     } catch { /* best-effort; the scheduled cron continues regardless */ }
   }
 
-  return NextResponse.json({ ok: true, phase: 'charge', charged, failed, continued: budgetHit })
+  return NextResponse.json({ ok: true, phase: 'charge', charged, failed, unknown, continued: budgetHit })
 }
 
 // Vercel Cron triggers scheduled jobs with a GET request (carrying the
@@ -104,7 +106,7 @@ export async function POST(request: Request) {
 // GET. POST is retained for the internal self-continuation fetch above.
 export const GET = POST
 
-type ChargeOutcome = 'charged' | 'failed' | 'skipped'
+type ChargeOutcome = 'charged' | 'failed' | 'skipped' | 'unknown'
 
 async function chargeOne(
   tx: any,
@@ -185,7 +187,19 @@ async function chargeOne(
       return 'charged'
     }
 
-    // Decline / non-success: advance the retry schedule (also clears the claim).
+    // UNKNOWN outcome (timeout / network / non-2xx): the charge MAY have landed
+    // at the gateway. Release the claim but do NOT mark failed, do NOT bump
+    // attemptCount, do NOT schedule a retry and do NOT allocate a new reference
+    // — any of which would risk re-charging a charge that already succeeded.
+    // The reconcile cron verifies THIS reference against Paystack and settles it.
+    if (result.outcome === 'unknown') {
+      console.warn(`[billing-charge] unknown outcome for tx ${tx.id} (left for reconcile): ${result.error}`)
+      await supabase.from('Transaction').update({ claimedAt: null, updatedAt: nowIso }).eq('id', tx.id)
+      return 'unknown'
+    }
+
+    // Definitive decline (money did NOT move): advance the retry schedule
+    // (also clears the claim).
     await supabase
       .from('Transaction')
       .update({
@@ -200,11 +214,11 @@ async function chargeOne(
     await scheduleRetry(tx.id)
     return 'failed'
   } catch (err) {
-    // Unknown outcome (timeout/network): release the claim WITHOUT marking
-    // failed. The reconciliation cron verifies with Paystack before any
-    // re-charge, so we never blind-retry a charge that may have landed.
+    // Backstop: an unexpected throw (e.g. a DB write itself failing) is also an
+    // unknown outcome. Release the claim WITHOUT marking failed so reconcile
+    // verifies with Paystack before any re-charge.
     console.error(`[billing-charge] charge error for tx ${tx.id} (left for reconcile):`, err)
     await supabase.from('Transaction').update({ claimedAt: null, updatedAt: nowIso }).eq('id', tx.id)
-    return 'failed'
+    return 'unknown'
   }
 }
