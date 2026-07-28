@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { verifyTransaction } from '@/lib/payments/paystack-admin'
 import { scheduleRetry } from '@/lib/payments/retry'
 import { isCronAuthorized } from '@/lib/cron-auth'
+import { assertPaymentsSchemaReady } from '@/lib/payments/schema-guard'
 
 // Charges are external HTTP; give the run room to work through a batch.
 export const maxDuration = 300
@@ -17,6 +18,12 @@ export const maxDuration = 300
 export async function POST(request: Request) {
   if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const schema = await assertPaymentsSchemaReady()
+  if (!schema.ok) {
+    console.error('[reconcile] blocked — schema not ready:', schema.reason)
+    return NextResponse.json({ error: 'Payments schema not ready', reason: schema.reason }, { status: 503 })
   }
 
   // Only look at rows old enough that a real response would have landed.

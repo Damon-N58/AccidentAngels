@@ -5,6 +5,7 @@ import { getActiveSplitScheme } from '@/lib/payments/splits'
 import { computeCharge, recordSplits } from '@/lib/payments/compute-charge'
 import { scheduleRetry } from '@/lib/payments/retry'
 import { isCronAuthorized } from '@/lib/cron-auth'
+import { assertPaymentsSchemaReady } from '@/lib/payments/schema-guard'
 
 export const maxDuration = 300
 
@@ -30,6 +31,13 @@ async function getConfig(key: string): Promise<string | null> {
 export async function POST(request: Request) {
   if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Fail closed: never charge if the claim/idempotency DB objects are missing.
+  const schema = await assertPaymentsSchemaReady()
+  if (!schema.ok) {
+    console.error('[billing-charge] blocked — schema not ready:', schema.reason)
+    return NextResponse.json({ error: 'Payments schema not ready', reason: schema.reason }, { status: 503 })
   }
 
   const paymentsLive = await getConfig('PAYMENTS_LIVE')
