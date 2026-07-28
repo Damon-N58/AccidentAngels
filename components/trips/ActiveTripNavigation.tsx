@@ -35,12 +35,17 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
+// Routing host. Defaults to the public OSRM demo server (NOT for production —
+// no SLA, rate-limited), overridable so ops can point at a self-hosted / keyed
+// OSRM instance without a code change. Falls back to a straight line on failure.
+const ROUTING_BASE_URL = process.env.NEXT_PUBLIC_ROUTING_URL ?? 'https://router.project-osrm.org'
+
 async function fetchOsrmRoute(
   from: { lat: number; lng: number },
   to: { lat: number; lng: number },
 ): Promise<{ coords: [number, number][]; minutes: number }> {
   try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?geometries=geojson&overview=full`
+    const url = `${ROUTING_BASE_URL}/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?geometries=geojson&overview=full`
     const res = await fetch(url, { signal: AbortSignal.timeout(6000) })
     if (!res.ok) throw new Error('OSRM unavailable')
     const data = await res.json()
