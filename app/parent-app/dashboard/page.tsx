@@ -124,7 +124,7 @@ export default async function ParentDashboardPage() {
             <p className="text-sm text-[#5A6474]">{today}</p>
           </div>
           <Link href="/parent-app/children/add">
-            <Button size="sm" className="h-8 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] text-xs font-semibold gap-1">
+            <Button size="sm" className="h-8 bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] text-xs font-semibold gap-1">
               <Plus className="w-3.5 h-3.5" /> Add child
             </Button>
           </Link>
@@ -134,7 +134,7 @@ export default async function ParentDashboardPage() {
         {todayTrips.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Navigation className="w-4 h-4 text-[#1A3F7A]" />
+              <Navigation className="w-4 h-4 text-[#ec3d3a]" />
               <h3 className="text-sm font-semibold text-[#0F1923]">Today&apos;s trips</h3>
             </div>
             <div className="space-y-2">
@@ -142,14 +142,14 @@ export default async function ParentDashboardPage() {
                 const completed = trip.stops.filter((s: any) => s.status === 'COMPLETED').length
                 return (
                   <Link key={trip.id} href={`/parent-app/trips/${trip.id}`}>
-                    <Card className="rounded-xl border-[rgba(26,63,122,0.10)] shadow-none hover:shadow-sm transition-shadow">
+                    <Card className="rounded-xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                          trip.type === 'MORNING' ? 'bg-[#F5A623]/10' : 'bg-[#1A3F7A]/10'
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
                         }`}>
                           {trip.type === 'MORNING'
-                            ? <Sun className="w-4 h-4 text-[#F5A623]" />
-                            : <Moon className="w-4 h-4 text-[#1A3F7A]" />}
+                            ? <Sun className="w-4 h-4 text-[#fdc73e]" />
+                            : <Moon className="w-4 h-4 text-[#ec3d3a]" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[#0F1923]">
@@ -170,9 +170,9 @@ export default async function ParentDashboardPage() {
         {/* Waiting charges callout — only shown when payments are live and there are unbilled charges */}
         {paymentsLive && waitingChargesTotal > 0 && (
           <Link href="/parent-app/charges">
-            <div className="bg-[#F5A623]/10 border border-[#F5A623]/30 rounded-2xl p-4 flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#F5A623]/20 flex items-center justify-center shrink-0">
-                <Timer className="w-5 h-5 text-[#F5A623]" />
+            <div className="bg-[#fdc73e]/10 border border-[#fdc73e]/30 rounded-2xl p-4 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#fdc73e]/20 flex items-center justify-center shrink-0">
+                <Timer className="w-5 h-5 text-[#fdc73e]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-[#0F1923]">Waiting time charges</p>
@@ -186,14 +186,14 @@ export default async function ParentDashboardPage() {
         )}
 
         {children.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center border border-[rgba(26,63,122,0.10)]">
+          <div className="bg-white rounded-2xl p-8 text-center border border-[rgba(236,61,58,0.10)]">
             <Logo size={64} className="mx-auto mb-4 rounded-2xl object-contain opacity-30" />
             <p className="text-base font-semibold text-[#0F1923]">No children added yet</p>
             <p className="text-sm text-[#5A6474] mt-2 mb-5 max-w-xs mx-auto">
               Add your child and choose a verified driver to get started.
             </p>
             <Link href="/parent-app/children/add">
-              <Button className="bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] font-semibold h-11 px-6">
+              <Button className="bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] font-semibold h-11 px-6">
                 Add your first child →
               </Button>
             </Link>
@@ -207,7 +207,7 @@ export default async function ParentDashboardPage() {
             const awaitingDriver = contract?.status === 'PENDING_DRIVER_SIGNATURE'
 
             return (
-              <Card key={child.id} className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+              <Card key={child.id} className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -246,12 +246,12 @@ export default async function ParentDashboardPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between text-xs text-[#5A6474] mt-3 pt-3 border-t border-[rgba(26,63,122,0.06)]">
+                  <div className="flex items-center justify-between text-xs text-[#5A6474] mt-3 pt-3 border-t border-[rgba(236,61,58,0.06)]">
                     <div className="flex gap-3">
-                      <Link href={`/parent-app/schedule/${child.id}`} className="font-medium text-[#1A3F7A] hover:underline">
+                      <Link href={`/parent-app/schedule/${child.id}`} className="font-medium text-[#ec3d3a] hover:underline">
                         Schedule
                       </Link>
-                      <Link href={`/parent-app/children/${child.id}`} className="font-medium text-[#1A3F7A] hover:underline">
+                      <Link href={`/parent-app/children/${child.id}`} className="font-medium text-[#ec3d3a] hover:underline">
                         Edit
                       </Link>
                     </div>

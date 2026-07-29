@@ -19,7 +19,7 @@ export default function ParentAppError({
         <p className="text-sm text-[#5A6474] mb-4">{error.message}</p>
         <button
           onClick={reset}
-          className="h-12 px-6 bg-[#1A3F7A] text-white font-semibold rounded-xl text-sm hover:bg-[#1A3F7A]/90"
+          className="h-12 px-6 bg-[#ec3d3a] text-white font-semibold rounded-xl text-sm hover:bg-[#ec3d3a]/90"
         >
           Try again
         </button>

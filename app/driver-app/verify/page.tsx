@@ -13,7 +13,6 @@ export default function DriverVerifyPage() {
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(30)
   const [phone, setPhone] = useState('')
-  const [devCode, setDevCode] = useState('')
   const router = useRouter()
   const verifyingRef = useRef(false)
   const succeededRef = useRef(false)
@@ -22,8 +21,6 @@ export default function DriverVerifyPage() {
     const p = sessionStorage.getItem('otp_phone')
     if (!p) { router.replace('/driver-app/login'); return }
     setPhone(p)
-    const code = sessionStorage.getItem('otp_dev_code')
-    if (code) setDevCode(code)
   }, [router])
 
   useEffect(() => {
@@ -49,9 +46,8 @@ export default function DriverVerifyPage() {
       succeededRef.current = true
       sessionStorage.removeItem('otp_phone')
       sessionStorage.removeItem('otp_role')
-      sessionStorage.removeItem('otp_dev_code')
 
-      router.push(data.isNewUser ? '/driver-app/onboarding' : '/driver-app/dashboard')
+      window.location.href = data.isNewUser ? '/driver-app/onboarding' : '/driver-app/dashboard'
     } catch (err) {
       toast.error((err as Error).message)
       setOtp('')
@@ -80,7 +76,7 @@ export default function DriverVerifyPage() {
   useEffect(() => { if (otp.length === 6 && !loading) handleVerify() }, [otp, loading])
 
   return (
-    <div className="min-h-screen bg-[#1A3F7A] flex flex-col">
+    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
         <Logo size={64} className="mb-4 rounded-2xl object-contain bg-white p-1" />
       </div>
@@ -91,13 +87,6 @@ export default function DriverVerifyPage() {
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
 
-        {devCode && (
-          <div className="mb-4 px-4 py-3 bg-[#F5A623]/15 border border-[#F5A623]/40 rounded-xl text-center">
-            <p className="text-xs text-[#0F1923] font-medium mb-0.5">Your code (SMS unavailable)</p>
-            <p className="text-2xl font-bold tracking-[0.3em] text-[#0F1923]">{devCode}</p>
-          </div>
-        )}
-
         <div className="mb-8">
           <OtpInput value={otp} onChange={setOtp} disabled={loading} />
         </div>
@@ -105,7 +94,7 @@ export default function DriverVerifyPage() {
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || loading}
-          className="w-full h-14 text-base font-semibold bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white rounded-xl mb-4"
+          className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl mb-4"
         >
           {loading ? 'Verifying…' : 'Verify'}
         </Button>
@@ -114,7 +103,7 @@ export default function DriverVerifyPage() {
           {resendTimer > 0 ? (
             <p className="text-sm text-[#5A6474]">Resend code in {resendTimer}s</p>
           ) : (
-            <button onClick={handleResend} className="text-sm font-medium text-[#1A3F7A]">
+            <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">
               Resend code
             </button>
           )}

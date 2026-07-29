@@ -16,14 +16,14 @@ export function TimeWindowPicker({ label, earliest, latest, onChange }: TimeWind
           type="time"
           value={earliest}
           onChange={e => onChange(e.target.value, latest)}
-          className="flex-1 h-9 text-sm border border-[rgba(26,63,122,0.15)] rounded-lg px-3 outline-none focus:border-[#1A3F7A]"
+          className="flex-1 h-9 text-sm border border-[rgba(236,61,58,0.15)] rounded-lg px-3 outline-none focus:border-[#ec3d3a]"
         />
         <span className="text-xs text-[#5A6474]">to</span>
         <input
           type="time"
           value={latest}
           onChange={e => onChange(earliest, e.target.value)}
-          className="flex-1 h-9 text-sm border border-[rgba(26,63,122,0.15)] rounded-lg px-3 outline-none focus:border-[#1A3F7A]"
+          className="flex-1 h-9 text-sm border border-[rgba(236,61,58,0.15)] rounded-lg px-3 outline-none focus:border-[#ec3d3a]"
         />
       </div>
     </div>

@@ -1,0 +1,18 @@
+# Auto-request reviewers by area. See CONTRIBUTING.md.
+# Format: <path>  <owner(s)>
+
+# Default owner
+*                         @Damon-N58
+
+# Payments (splits, Paystack, billing)
+/lib/payments/            @Damon-N58
+/app/api/payments/        @Damon-N58
+
+# Route optimisation + trip engine
+/lib/trips/               @MuaazBayat
+
+# Parent app
+/app/parent-app/          @Damon-N58
+
+# Driver app
+/app/driver-app/          @Damon-N58

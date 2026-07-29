@@ -45,7 +45,7 @@ export default function ParentTripDetailPage({
       <div className="min-h-screen bg-[#F8F9FB]">
         <ParentTopBar title="Trip" showBack />
         <div className="px-4 pt-4 animate-pulse">
-          <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-5">
+          <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-5">
             <div className="h-4 bg-[#E8EAED] rounded w-1/3 mb-3" />
             <div className="h-3 bg-[#E8EAED] rounded w-1/2 mb-6" />
             {[1, 2, 3].map(i => (
@@ -74,20 +74,20 @@ export default function ParentTripDetailPage({
       <div className="px-4 pt-4 pb-24 space-y-4">
 
         {/* Back */}
-        <button onClick={() => router.push('/parent-app/trips')} className="flex items-center gap-1 text-sm text-[#1A3F7A] font-medium hover:underline">
+        <button onClick={() => router.push('/parent-app/trips')} className="flex items-center gap-1 text-sm text-[#ec3d3a] font-medium hover:underline">
           <ChevronLeft className="w-4 h-4" /> All trips
         </button>
 
         {/* Trip info */}
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                trip.type === 'MORNING' ? 'bg-[#F5A623]/10' : 'bg-[#1A3F7A]/10'
+                trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
               }`}>
                 {trip.type === 'MORNING'
-                  ? <Sun className="w-5 h-5 text-[#F5A623]" />
-                  : <Moon className="w-5 h-5 text-[#1A3F7A]" />}
+                  ? <Sun className="w-5 h-5 text-[#fdc73e]" />
+                  : <Moon className="w-5 h-5 text-[#ec3d3a]" />}
               </div>
               <div>
                 <p className="font-semibold text-sm text-[#0F1923]">
@@ -99,7 +99,7 @@ export default function ParentTripDetailPage({
               </div>
               <span className={`ml-auto text-xs font-semibold px-2 py-1 rounded-full ${
                 trip.status === 'COMPLETED' ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
-                trip.status === 'IN_PROGRESS' ? 'bg-[#1A3F7A]/10 text-[#1A3F7A]' :
+                trip.status === 'IN_PROGRESS' ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]' :
                 trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
                 'bg-[#F8F9FB] text-[#5A6474]'
               }`}>
@@ -118,9 +118,9 @@ export default function ParentTripDetailPage({
         </Card>
 
         {/* Stop list (read-only for parent) */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Navigation className="w-4 h-4 text-[#1A3F7A]" />
+            <Navigation className="w-4 h-4 text-[#ec3d3a]" />
             <p className="font-semibold text-sm text-[#0F1923]">Route</p>
           </div>
           {trip.stops.map((stop, i) => (

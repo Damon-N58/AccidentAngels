@@ -151,7 +151,7 @@ export default function EditChildPage({
       <div className="px-4 pt-4 pb-24 space-y-6">
 
         {/* Child name & school */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-4">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-4">
           <p className="font-semibold text-sm text-[#0F1923]">Child details</p>
           <div className="space-y-3">
             <div>
@@ -171,7 +171,7 @@ export default function EditChildPage({
             onClick={handleSaveDetails}
             disabled={saving}
             size="sm"
-            className="bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold"
+            className="bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
           >
             <Save className="w-3.5 h-3.5 mr-1.5" />
             Save details
@@ -179,9 +179,9 @@ export default function EditChildPage({
         </div>
 
         {/* Pickup address */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#1A3F7A]" />
+            <MapPin className="w-4 h-4 text-[#ec3d3a]" />
             <p className="font-semibold text-sm text-[#0F1923]">Pickup address (home)</p>
           </div>
           <AddressPicker
@@ -199,9 +199,9 @@ export default function EditChildPage({
         </div>
 
         {/* Dropoff address */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <School className="w-4 h-4 text-[#1A3F7A]" />
+            <School className="w-4 h-4 text-[#ec3d3a]" />
             <p className="font-semibold text-sm text-[#0F1923]">Dropoff address (school)</p>
           </div>
           <AddressPicker
@@ -221,13 +221,13 @@ export default function EditChildPage({
         <Button
           onClick={handleSaveAddresses}
           disabled={saving || !hasAddressChanges()}
-          className="w-full h-12 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0F1923] font-semibold rounded-xl text-base"
+          className="w-full h-12 bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] font-semibold rounded-xl text-base"
         >
           {saving ? 'Saving…' : 'Save address changes'}
         </Button>
 
         {/* Schedule setup */}
-        <div className="bg-white rounded-2xl border border-[rgba(26,63,122,0.10)] p-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
           <div>
             <p className="font-semibold text-sm text-[#0F1923]">Trip schedule</p>
             <p className="text-xs text-[#5A6474] mt-0.5">Set which days and times your child travels. Trips are auto-generated from this schedule.</p>
@@ -235,7 +235,7 @@ export default function EditChildPage({
           <Button
             onClick={() => router.push(`/parent-app/schedule/${childId}`)}
             variant="outline"
-            className="w-full h-11 border-[#1A3F7A] text-[#1A3F7A] font-semibold rounded-xl"
+            className="w-full h-11 border-[#ec3d3a] text-[#ec3d3a] font-semibold rounded-xl"
           >
             Set up trip schedule →
           </Button>

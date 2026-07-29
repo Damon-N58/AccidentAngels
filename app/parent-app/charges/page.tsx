@@ -68,7 +68,7 @@ export default async function ParentChargesPage() {
               pillClass = 'bg-[#5A6474]/10 text-[#5A6474]'
             } else if (paymentsLive) {
               pillLabel = 'Pending invoice'
-              pillClass = 'bg-[#F5A623]/15 text-[#9A6A00]'
+              pillClass = 'bg-[#fdc73e]/15 text-[#9A6A00]'
             } else {
               pillLabel = 'Recorded'
               pillClass = 'bg-[#5A6474]/10 text-[#5A6474]'
@@ -87,7 +87,7 @@ export default async function ParentChargesPage() {
             return (
               <Card
                 key={charge.id}
-                className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none"
+                className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none"
               >
                 <CardContent className="p-4">
                   {/* Header row: child name + status pill */}
@@ -104,7 +104,7 @@ export default async function ParentChargesPage() {
                   </div>
 
                   {/* Detail rows */}
-                  <div className="space-y-1.5 border-t border-[rgba(26,63,122,0.06)] pt-3">
+                  <div className="space-y-1.5 border-t border-[rgba(236,61,58,0.06)] pt-3">
                     <div className="flex justify-between text-xs">
                       <span className="text-[#5A6474]">Waiting duration</span>
                       <span className="font-medium text-[#0F1923]">{duration}</span>
@@ -115,7 +115,7 @@ export default async function ParentChargesPage() {
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#5A6474]">Amount</span>
-                      <span className="font-bold text-[#1A3F7A]">R{amount}</span>
+                      <span className="font-bold text-[#ec3d3a]">R{amount}</span>
                     </div>
                   </div>
                 </CardContent>

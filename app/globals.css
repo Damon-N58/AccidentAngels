@@ -49,16 +49,16 @@
 }
 
 :root {
-  /* ── Accident Angels Design System ───────────────────── */
-  --aa-primary:     #1A3F7A;
-  --aa-accent:      #F5A623;
+  /* ── GETS Design System ───────────────────── */
+  --aa-primary:     #ec3d3a;
+  --aa-accent:      #fdc73e;
   --aa-success:     #0F6E56;
   --aa-danger:      #E24B4A;
   --aa-warning:     #F59E0B;
   --aa-surface:     #F8F9FB;
   --aa-text:        #0F1923;
   --aa-text-muted:  #5A6474;
-  --aa-border:      rgba(26,63,122,0.10);
+  --aa-border:      rgba(236,61,58,0.10);
 
   /* ── shadcn tokens mapped to AA palette ──────────────── */
   --background: #F8F9FB;
@@ -67,32 +67,32 @@
   --card-foreground: #0F1923;
   --popover: #FFFFFF;
   --popover-foreground: #0F1923;
-  --primary: #1A3F7A;
+  --primary: #ec3d3a;
   --primary-foreground: #FFFFFF;
   --secondary: #F0F4FA;
-  --secondary-foreground: #1A3F7A;
+  --secondary-foreground: #ec3d3a;
   --muted: #F0F4FA;
   --muted-foreground: #5A6474;
-  --accent: #F5A623;
+  --accent: #fdc73e;
   --accent-foreground: #0F1923;
   --destructive: #E24B4A;
-  --border: rgba(26,63,122,0.12);
-  --input: rgba(26,63,122,0.10);
-  --ring: #1A3F7A;
-  --chart-1: #1A3F7A;
-  --chart-2: #F5A623;
+  --border: rgba(236,61,58,0.12);
+  --input: rgba(236,61,58,0.10);
+  --ring: #ec3d3a;
+  --chart-1: #ec3d3a;
+  --chart-2: #fdc73e;
   --chart-3: #0F6E56;
   --chart-4: #E24B4A;
   --chart-5: #F59E0B;
   --radius: 0.75rem;
-  --sidebar: #1A3F7A;
+  --sidebar: #ec3d3a;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #F5A623;
+  --sidebar-primary: #fdc73e;
   --sidebar-primary-foreground: #0F1923;
   --sidebar-accent: rgba(255,255,255,0.1);
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: rgba(255,255,255,0.1);
-  --sidebar-ring: #F5A623;
+  --sidebar-ring: #fdc73e;
 }
 
 .dark {
@@ -141,6 +141,29 @@
     /* Prevent rubber-band scroll bounce on iOS */
     overscroll-behavior: none;
   }
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+  }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+  }
+  .maplibregl-ctrl-attrib {
+    @apply bg-background! text-muted-foreground! border-border! rounded-md! border! shadow-sm!;
+  }
+  .maplibregl-ctrl-attrib a {
+    @apply text-muted-foreground!;
+  }
+  .maplibregl-ctrl-attrib a:hover {
+    @apply text-foreground!;
+  }
+  .maplibregl-ctrl-attrib-button {
+    @apply bg-transparent! dark:invert;
+  }
+}
+
+@keyframes gps-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.6); opacity: 0; }
 }
 
 @layer utilities {
@@ -148,6 +171,11 @@
   .tap-target {
     min-height: 48px;
     min-width: 48px;
+  }
+
+  /* Driver GPS marker pulse ring, used by ActiveTripNavigation's map */
+  .animate-gps-pulse {
+    animation: gps-pulse 2s ease-in-out infinite;
   }
 
   /* Safe area insets for notched phones */

@@ -81,7 +81,7 @@ export default function DocUploadPage({ params }: { params: Promise<{ docType: s
         }
       />
       <form onSubmit={handleSubmit} className="px-4 py-4 space-y-5">
-        <div className="bg-[#1A3F7A]/05 rounded-xl p-3">
+        <div className="bg-[#ec3d3a]/05 rounded-xl p-3">
           <p className="text-sm text-[#0F1923]">{cfg.instruction}</p>
         </div>
 
@@ -114,7 +114,7 @@ export default function DocUploadPage({ params }: { params: Promise<{ docType: s
         <Button
           type="submit"
           disabled={!file || uploading}
-          className="w-full h-14 bg-[#1A3F7A] text-white text-base font-semibold rounded-xl"
+          className="w-full h-14 bg-[#ec3d3a] text-white text-base font-semibold rounded-xl"
         >
           {uploading ? 'Uploading…' : 'Submit for review'}
         </Button>

@@ -50,7 +50,7 @@ export function HideCommentToggle({ driverId, ratingId, isHidden }: HideCommentT
       type="button"
       onClick={handleToggle}
       disabled={loading}
-      className="flex items-center gap-1 text-xs text-[#5A6474] hover:text-[#1A3F7A] transition-colors disabled:opacity-50"
+      className="flex items-center gap-1 text-xs text-[#5A6474] hover:text-[#ec3d3a] transition-colors disabled:opacity-50"
     >
       {hidden ? (
         <>

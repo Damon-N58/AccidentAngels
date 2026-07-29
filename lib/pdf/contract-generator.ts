@@ -163,7 +163,7 @@ function ContractDocument({ data }: { data: ContractData }) {
       React.createElement(View, { style: styles.header },
         React.createElement(Text, { style: styles.title }, 'Scholar Transport Agreement'),
         React.createElement(Text, { style: styles.subtitle },
-          `Accident Angels · Contract ${data.contractId.slice(-8).toUpperCase()} · v${data.contractVersion}`
+          `GETS · Contract ${data.contractId.slice(-8).toUpperCase()} · v${data.contractVersion}`
         ),
         isSigned && React.createElement(View, { style: styles.badge },
           React.createElement(Text, { style: styles.badgeText }, '✓ FULLY EXECUTED')
@@ -289,7 +289,7 @@ function ContractDocument({ data }: { data: ContractData }) {
       // Footer
       React.createElement(View, { style: styles.footer, fixed: true },
         React.createElement(Text, { style: styles.footerText },
-          `Accident Angels · ${data.contractId.slice(-8).toUpperCase()}`
+          `GETS · ${data.contractId.slice(-8).toUpperCase()}`
         ),
         React.createElement(Text, { style: styles.footerText },
           `Generated: ${fmt(data.generatedAt)}`

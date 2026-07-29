@@ -52,7 +52,7 @@ export async function geocodeAddress(address: string): Promise<{ lat: number; ln
 
     const res = await fetch(url.toString(), {
       headers: {
-        'User-Agent': 'AccidentAngels/1.0 (scholar-transport)',
+        'User-Agent': 'GETS/1.0 (scholar-transport)',
         'Accept': 'application/json',
       },
     })

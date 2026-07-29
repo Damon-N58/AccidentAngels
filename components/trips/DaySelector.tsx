@@ -35,8 +35,8 @@ export function DaySelector({ selectedDays, onChange, disabled }: DaySelectorPro
             className={cn(
               'w-10 h-10 rounded-full text-sm font-semibold transition-colors',
               isSelected
-                ? 'bg-[#1A3F7A] text-white'
-                : 'bg-[#F8F9FB] text-[#5A6474] border border-[rgba(26,63,122,0.15)] hover:border-[#1A3F7A]/30',
+                ? 'bg-[#ec3d3a] text-white'
+                : 'bg-[#F8F9FB] text-[#5A6474] border border-[rgba(236,61,58,0.15)] hover:border-[#ec3d3a]/30',
               disabled && 'opacity-50 cursor-not-allowed',
             )}
           >

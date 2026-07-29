@@ -1,12 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import 'leaflet/dist/leaflet.css'
 import { ChevronLeft, Navigation2, CheckCircle2, XCircle, MapPin, Clock, AlertTriangle, Car, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import type { TripData, TripStopData } from '@/lib/trips/types'
 import { toUtcDate } from '@/lib/dates'
+import { cn } from '@/lib/utils'
+import {
+  Map,
+  MapMarker,
+  MarkerContent,
+  MarkerPopup,
+  MapRoute,
+  MapControls,
+  type MapRef,
+} from '@/components/ui/map'
 
 interface Props {
   trip: TripData
@@ -36,14 +45,13 @@ async function fetchOsrmRoute(
     if (!res.ok) throw new Error('OSRM unavailable')
     const data = await res.json()
     if (!data.routes?.length) throw new Error('No route found')
-    const coords: [number, number][] = data.routes[0].geometry.coordinates.map(
-      ([lng, lat]: [number, number]) => [lat, lng],
-    )
+    // OSRM returns [lng, lat] pairs already — that's what MapLibre wants.
+    const coords: [number, number][] = data.routes[0].geometry.coordinates
     const minutes = Math.ceil(data.routes[0].duration / 60)
     return { coords, minutes }
   } catch {
     // Straight-line fallback
-    return { coords: [[from.lat, from.lng], [to.lat, to.lng]], minutes: 0 }
+    return { coords: [[from.lng, from.lat], [to.lng, to.lat]], minutes: 0 }
   }
 }
 
@@ -51,11 +59,11 @@ function googleMapsUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
 }
 
-/** Returns the ring border style for a stop marker based on its paymentStatus. */
-function paymentBorder(paymentStatus?: 'PAID' | 'OVERDUE'): string {
-  if (paymentStatus === 'PAID') return '4px solid #22C55E'
-  if (paymentStatus === 'OVERDUE') return '4px solid #EF4444'
-  return '3px solid white'
+/** Returns the ring border classes for a stop marker based on its paymentStatus. */
+function paymentBorderClass(paymentStatus?: 'PAID' | 'OVERDUE'): string {
+  if (paymentStatus === 'PAID') return 'border-4 border-[#22C55E]'
+  if (paymentStatus === 'OVERDUE') return 'border-4 border-[#EF4444]'
+  return 'border-[3px] border-white'
 }
 
 // Grace period = 3 minutes, rate = R5/min (500 cents/min)
@@ -101,9 +109,9 @@ function WaitingTimerCard({ arrivedAt }: { arrivedAt: string }) {
     <div className={`rounded-2xl px-4 py-3 border flex items-center gap-3 ${
       inGrace
         ? 'bg-[#0F6E56]/08 border-[#0F6E56]/25'
-        : 'bg-[#F5A623]/12 border-[#F5A623]/40'
+        : 'bg-[#fdc73e]/12 border-[#fdc73e]/40'
     }`}>
-      <Timer className={`w-5 h-5 shrink-0 ${inGrace ? 'text-[#0F6E56]' : 'text-[#F5A623]'}`} />
+      <Timer className={`w-5 h-5 shrink-0 ${inGrace ? 'text-[#0F6E56]' : 'text-[#fdc73e]'}`} />
       <div className="flex-1 min-w-0">
         {inGrace ? (
           <>
@@ -116,7 +124,7 @@ function WaitingTimerCard({ arrivedAt }: { arrivedAt: string }) {
           </>
         ) : (
           <>
-            <p className="text-sm font-semibold text-[#F5A623]">
+            <p className="text-sm font-semibold text-[#fdc73e]">
               Waiting — {formatElapsed(elapsedSec)}
             </p>
             <p className="text-xs text-[#5A6474]">
@@ -135,17 +143,17 @@ function WaitingTimerCard({ arrivedAt }: { arrivedAt: string }) {
   )
 }
 
+const DEFAULT_CENTER: [number, number] = [28.0473, -26.2041]
+// Driver moved <40m from the last route fetch: skip re-fetching from OSRM.
+const ROUTE_REFETCH_METERS = 40
+const ARRIVAL_RADIUS_METERS = 200
+
 export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMissed, onStopArrived, onTripRefresh }: Props) {
-  const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<any>(null)
-  const leafletRef = useRef<any>(null)
-  const driverMarkerRef = useRef<any>(null)
-  const routeLayerRef = useRef<any>(null)
-  const stopMarkersRef = useRef<any>(null)
+  const mapRef = useRef<MapRef>(null)
   const lastRoutePos = useRef<{ lat: number; lng: number } | null>(null)
 
-  const [mounted, setMounted] = useState(false)
   const [driverPos, setDriverPos] = useState<{ lat: number; lng: number } | null>(null)
+  const [routeCoords, setRouteCoords] = useState<[number, number][]>([])
   const [eta, setEta] = useState<number | null>(null)
   const [nearStop, setNearStop] = useState(false)
   const [completing, setCompleting] = useState(false)
@@ -173,132 +181,9 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
   // Whether the driver has arrived at the current stop (stage 2 of the flow)
   const hasArrived = !!(nextStop?.arrivedAt)
 
-  useEffect(() => { setMounted(true) }, [])
-
-  // ── Initialise Leaflet map ────────────────────────────────
-  useEffect(() => {
-    if (!mounted || !mapContainerRef.current || mapRef.current) return
-
-    let cancelled = false
-    const init = async () => {
-      await new Promise(r => requestAnimationFrame(r))
-      if (cancelled || !mapContainerRef.current) return
-
-      const L = await import('leaflet')
-      if (cancelled) return
-
-      leafletRef.current = L
-
-      const center: [number, number] = nextStop?.lat && nextStop?.lng
-        ? [nextStop.lat, nextStop.lng]
-        : [-26.2041, 28.0473]
-
-      const map = L.map(mapContainerRef.current!, {
-        center,
-        zoom: 15,
-        zoomControl: false,
-        attributionControl: false,
-      })
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-      }).addTo(map)
-
-      L.control.zoom({ position: 'topright' }).addTo(map)
-      L.control.attribution({ position: 'bottomleft', prefix: '© OSM' }).addTo(map)
-
-      // Route layer (below markers)
-      const routeLayer = L.featureGroup().addTo(map)
-      routeLayerRef.current = routeLayer
-
-      // Stop markers layer
-      const stopsLayer = L.featureGroup().addTo(map)
-      stopMarkersRef.current = stopsLayer
-
-      // Build stop markers — fill = stop status, ring = payment status
-      trip.stops.forEach((stop, i) => {
-        if (!stop.lat || !stop.lng) return
-        const isNext = stop.id === nextStop?.id
-        const isDone = stop.status === 'COMPLETED'
-        const isMissed = stop.status === 'MISSED'
-        const bg = isDone ? '#0F6E56' : isMissed ? '#E24B4A' : isNext ? '#1A3F7A' : '#94A3B8'
-        const scale = isNext ? '1.25' : '1'
-        const border = paymentBorder(stop.paymentStatus)
-        const icon = L.divIcon({
-          className: '',
-          html: `
-            <div style="
-              width:40px;height:40px;border-radius:50%;
-              background:${bg};color:white;
-              display:flex;align-items:center;justify-content:center;
-              font-size:14px;font-weight:800;
-              border:${border};
-              box-shadow:0 3px 12px rgba(0,0,0,0.35);
-              transform:scale(${scale});
-              transition:transform .2s;
-            ">
-              ${isDone ? '✓' : isMissed ? '✕' : i + 1}
-            </div>
-          `,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
-        })
-        // Append overdue line to popup if relevant
-        const overdueHtml = stop.paymentStatus === 'OVERDUE'
-          ? `<div style="font-size:11px;color:#EF4444;font-weight:600;margin-top:4px;">Fees overdue</div>`
-          : ''
-        L.marker([stop.lat, stop.lng], { icon })
-          .bindPopup(`
-            <div style="font-family:system-ui;min-width:160px">
-              <b style="font-size:13px">${stop.child?.name ?? 'Child'}</b>
-              <div style="font-size:11px;color:#666;margin-top:2px">${isSchoolStop(stop) ? '🏫' : '🏠'} ${stopActionLabel(stop)}</div>
-              <div style="font-size:11px;color:#444;margin-top:4px">${stop.address}</div>
-              ${overdueHtml}
-            </div>
-          `)
-          .addTo(stopsLayer)
-      })
-
-      // Driver position marker (pulsing blue dot)
-      const driverIcon = L.divIcon({
-        className: '',
-        html: `
-          <div style="position:relative;width:28px;height:28px">
-            <div style="
-              position:absolute;inset:-6px;border-radius:50%;
-              background:rgba(66,133,244,0.2);
-              animation:gps-pulse 2s ease-in-out infinite;
-            "></div>
-            <div style="
-              position:absolute;inset:0;border-radius:50%;
-              background:#4285F4;border:3px solid white;
-              box-shadow:0 2px 8px rgba(0,0,0,0.3);
-            "></div>
-          </div>
-          <style>
-            @keyframes gps-pulse {
-              0%,100% { transform:scale(1); opacity:.3 }
-              50% { transform:scale(1.6); opacity:0 }
-            }
-          </style>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-      })
-      driverMarkerRef.current = L.marker(center, { icon: driverIcon, zIndexOffset: 1000 }).addTo(map)
-
-      mapRef.current = map
-      map.invalidateSize()
-    }
-
-    init()
-    return () => {
-      cancelled = true
-      mapRef.current?.remove()
-      mapRef.current = null
-      leafletRef.current = null
-    }
-  }, [mounted])
+  const [initialCenter] = useState<[number, number]>(() =>
+    nextStop?.lat != null && nextStop?.lng != null ? [nextStop.lng, nextStop.lat] : DEFAULT_CENTER,
+  )
 
   // ── GPS watch ─────────────────────────────────────────────
   useEffect(() => {
@@ -311,48 +196,29 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
     return () => navigator.geolocation.clearWatch(id)
   }, [])
 
-  // ── Update map as driver moves ────────────────────────────
+  // ── Follow the driver + refresh the live route ────────────
   useEffect(() => {
     const map = mapRef.current
-    const L = leafletRef.current
-    if (!map || !L || !driverPos) return
+    if (!map || !driverPos) return
 
-    // Move driver dot
-    driverMarkerRef.current?.setLatLng([driverPos.lat, driverPos.lng])
-    map.setView([driverPos.lat, driverPos.lng], Math.max(map.getZoom(), 15), {
-      animate: true,
-      duration: 0.8,
+    map.easeTo({
+      center: [driverPos.lng, driverPos.lat],
+      zoom: Math.max(map.getZoom(), 15),
+      duration: 800,
     })
 
     if (!nextStop?.lat || !nextStop?.lng) return
 
-    // Check arrival proximity
     const dist = haversineMeters(driverPos.lat, driverPos.lng, nextStop.lat, nextStop.lng)
-    setNearStop(dist < 200)
+    setNearStop(dist < ARRIVAL_RADIUS_METERS)
 
-    // Only re-fetch route if moved >40 m from last fetch
+    // Only re-fetch route if moved far enough from the last fetch position.
     const last = lastRoutePos.current
-    if (last && haversineMeters(driverPos.lat, driverPos.lng, last.lat, last.lng) < 40) return
+    if (last && haversineMeters(driverPos.lat, driverPos.lng, last.lat, last.lng) < ROUTE_REFETCH_METERS) return
     lastRoutePos.current = driverPos
 
     fetchOsrmRoute(driverPos, { lat: nextStop.lat, lng: nextStop.lng }).then(({ coords, minutes }) => {
-      const routeLayer = routeLayerRef.current
-      if (!routeLayer || !L) return
-      routeLayer.clearLayers()
-      if (coords.length >= 2) {
-        // Shadow line
-        L.polyline(coords, { color: 'rgba(0,0,0,0.15)', weight: 8, lineCap: 'round' }).addTo(routeLayer)
-        // Main route line
-        L.polyline(coords, { color: '#1A3F7A', weight: 5, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayer)
-        // Animated dash on top
-        L.polyline(coords, {
-          color: 'white',
-          weight: 2,
-          lineCap: 'round',
-          dashArray: '8 14',
-          opacity: 0.7,
-        }).addTo(routeLayer)
-      }
+      setRouteCoords(coords)
       if (minutes > 0) setEta(minutes)
     })
   }, [driverPos, nextStop])
@@ -381,7 +247,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
       await onStopComplete(nextStop.id, driverPos?.lat, driverPos?.lng)
       setNearStop(false)
       lastRoutePos.current = null
-      routeLayerRef.current?.clearLayers()
+      setRouteCoords([])
       toast.success(`Stop marked complete`)
     } catch {
       toast.error('Failed to mark stop')
@@ -397,15 +263,13 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
       await onStopMissed(nextStop.id, missedReason.trim())
       setShowMissed(false)
       setMissedReason('')
-      routeLayerRef.current?.clearLayers()
+      setRouteCoords([])
     } catch {
       toast.error('Failed to mark stop')
     } finally {
       setCompleting(false)
     }
   }
-
-  if (!mounted) return <div className="flex-1 bg-[#F8F9FB] animate-pulse" />
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black">
@@ -435,10 +299,68 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
       </div>{/* end top bar */}
 
       {/* ── Map — flex-1 with min-h-0 so it doesn't overflow into sheet ── */}
-      <div ref={mapContainerRef} className="flex-1 min-h-0 w-full" style={{ zIndex: 0 }} />
+      <div className="flex-1 min-h-0 w-full" style={{ zIndex: 0 }}>
+        <Map ref={mapRef} center={initialCenter} zoom={15}>
+          <MapControls position="top-right" showZoom />
+
+          {routeCoords.length >= 2 && (
+            <>
+              <MapRoute id="nav-route-shadow" coordinates={routeCoords} color="rgba(0,0,0,0.15)" width={8} opacity={1} interactive={false} />
+              <MapRoute id="nav-route-main" coordinates={routeCoords} color="#ec3d3a" width={5} opacity={1} interactive={false} />
+              <MapRoute id="nav-route-dash" coordinates={routeCoords} color="white" width={2} opacity={0.7} dashArray={[8, 14]} interactive={false} />
+            </>
+          )}
+
+          {trip.stops.map((stop, i) => {
+            if (stop.lat == null || stop.lng == null) return null
+            const isNext = stop.id === nextStop?.id
+            const isDone = stop.status === 'COMPLETED'
+            const isMissed = stop.status === 'MISSED'
+            const bg = isDone ? '#0F6E56' : isMissed ? '#E24B4A' : isNext ? '#ec3d3a' : '#94A3B8'
+            const scale = isNext ? 1.25 : 1
+
+            return (
+              <MapMarker key={stop.id} longitude={stop.lng} latitude={stop.lat}>
+                <MarkerContent>
+                  <div
+                    className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg transition-transform',
+                      paymentBorderClass(stop.paymentStatus),
+                    )}
+                    style={{ background: bg, transform: `scale(${scale})` }}
+                  >
+                    {isDone ? '✓' : isMissed ? '✕' : i + 1}
+                  </div>
+                </MarkerContent>
+                <MarkerPopup>
+                  <p className="font-bold text-sm">{stop.child?.name ?? 'Child'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isSchoolStop(stop) ? '🏫' : '🏠'} {stopActionLabel(stop)}
+                  </p>
+                  <p className="text-xs mt-1">{stop.address}</p>
+                  {stop.paymentStatus === 'OVERDUE' && (
+                    <p className="text-xs font-semibold text-[#EF4444] mt-1">Fees overdue</p>
+                  )}
+                </MarkerPopup>
+              </MapMarker>
+            )
+          })}
+
+          {driverPos && (
+            <MapMarker longitude={driverPos.lng} latitude={driverPos.lat}>
+              <MarkerContent>
+                <div className="relative w-7 h-7">
+                  <div className="absolute -inset-1.5 rounded-full bg-[#4285F4]/20 animate-gps-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-[#4285F4] border-[3px] border-white shadow-lg" />
+                </div>
+              </MarkerContent>
+            </MapMarker>
+          )}
+        </Map>
+      </div>
 
       {/* ── Bottom sheet — in normal flex flow, NOT absolute ────────────── */}
-      {/* z-[600] keeps it above Leaflet panes (max z-index ~500) */}
+      {/* z-[600] keeps it above the map's controls (z-10) */}
       <div className={`
         relative z-[600] shrink-0
         bg-white rounded-t-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.2)]
@@ -477,8 +399,8 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
 
             {/* Arrival proximity alert (only before driver has tapped Arrived) */}
             {nearStop && !hasArrived && (
-              <div className="flex items-center gap-2 bg-[#F5A623]/15 border border-[#F5A623]/40 rounded-xl px-3 py-2.5">
-                <AlertTriangle className="w-4 h-4 text-[#F5A623] shrink-0" />
+              <div className="flex items-center gap-2 bg-[#fdc73e]/15 border border-[#fdc73e]/40 rounded-xl px-3 py-2.5">
+                <AlertTriangle className="w-4 h-4 text-[#fdc73e] shrink-0" />
                 <p className="text-sm font-semibold text-[#0F1923]">You're nearby — ready to mark arrived?</p>
               </div>
             )}
@@ -491,10 +413,10 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
             {/* Stop info */}
             <div className="flex items-start gap-3">
               <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-                nextStop.type === 'PICKUP' ? 'bg-[#1A3F7A]/10' : 'bg-[#0F6E56]/10'
+                nextStop.type === 'PICKUP' ? 'bg-[#ec3d3a]/10' : 'bg-[#0F6E56]/10'
               }`}>
                 {nextStop.type === 'PICKUP'
-                  ? <Car className="w-5 h-5 text-[#1A3F7A]" />
+                  ? <Car className="w-5 h-5 text-[#ec3d3a]" />
                   : <CheckCircle2 className="w-5 h-5 text-[#0F6E56]" />
                 }
               </div>
@@ -502,7 +424,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                     nextStop.type === 'PICKUP'
-                      ? 'bg-[#1A3F7A]/10 text-[#1A3F7A]'
+                      ? 'bg-[#ec3d3a]/10 text-[#ec3d3a]'
                       : 'bg-[#0F6E56]/10 text-[#0F6E56]'
                   }`}>
                     {stopActionLabel(nextStop)}
@@ -514,13 +436,13 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                     </span>
                   )}
                   {!driverPos && (
-                    <span className="text-xs text-[#F5A623]">Getting location…</span>
+                    <span className="text-xs text-[#fdc73e]">Getting location…</span>
                   )}
                 </div>
                 <p className="font-bold text-[#0F1923] text-base mt-0.5">{nextStop.child?.name ?? 'Child'}</p>
                 <p className="text-sm text-[#5A6474] mt-0.5 leading-snug">{nextStop.address}</p>
                 {nextStop.notes && (
-                  <p className="text-xs text-[#F5A623] mt-1">⚠ {nextStop.notes}</p>
+                  <p className="text-xs text-[#fdc73e] mt-1">⚠ {nextStop.notes}</p>
                 )}
                 {/* Payment chip — only when paymentStatus is defined */}
                 {nextStop.paymentStatus === 'OVERDUE' && (
@@ -544,7 +466,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
               </div>
               <div className="h-2 bg-[#E8EAED] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#1A3F7A] rounded-full transition-all duration-500"
+                  className="h-full bg-[#ec3d3a] rounded-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -558,7 +480,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   href={nextStop.lat && nextStop.lng ? googleMapsUrl(nextStop.lat, nextStop.lng) : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 h-12 rounded-xl border-2 border-[#1A3F7A] text-[#1A3F7A] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#1A3F7A]/05"
+                  className="flex-1 h-12 rounded-xl border-2 border-[#ec3d3a] text-[#ec3d3a] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#ec3d3a]/05"
                 >
                   <Navigation2 className="w-4 h-4" />
                   Navigate
@@ -579,7 +501,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   <Button
                     onClick={handleConfirm}
                     disabled={completing}
-                    className="flex-[1.5] h-12 bg-[#1A3F7A] hover:bg-[#1A3F7A]/90 text-white font-semibold rounded-xl text-sm"
+                    className="flex-[1.5] h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-sm"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-1.5" />
                     {completing
@@ -599,12 +521,12 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   placeholder="Reason for missing this stop"
                   value={missedReason}
                   onChange={e => setMissedReason(e.target.value)}
-                  className="w-full h-11 text-sm border border-[rgba(26,63,122,0.2)] rounded-xl px-3 outline-none focus:border-[#E24B4A]"
+                  className="w-full h-11 text-sm border border-[rgba(236,61,58,0.2)] rounded-xl px-3 outline-none focus:border-[#E24B4A]"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowMissed(false); setMissedReason('') }}
-                    className="flex-1 h-11 text-sm text-[#5A6474] border border-[rgba(26,63,122,0.15)] rounded-xl"
+                    className="flex-1 h-11 text-sm text-[#5A6474] border border-[rgba(236,61,58,0.15)] rounded-xl"
                   >
                     Cancel
                   </button>
@@ -632,7 +554,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
 
             {/* Expanded: remaining stops list */}
             {sheetExpanded && pendingStops.length > 1 && (
-              <div className="border-t border-[rgba(26,63,122,0.08)] pt-4 space-y-3">
+              <div className="border-t border-[rgba(236,61,58,0.08)] pt-4 space-y-3">
                 <p className="text-xs font-semibold text-[#5A6474] uppercase tracking-wide">Upcoming stops</p>
                 {pendingStops.slice(1).map((stop, i) => (
                   <div key={stop.id} className="flex items-center gap-3">
@@ -653,7 +575,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                       <p className="text-xs text-[#5A6474] truncate">{stop.address}</p>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                      stop.type === 'PICKUP' ? 'bg-[#1A3F7A]/08 text-[#1A3F7A]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
+                      stop.type === 'PICKUP' ? 'bg-[#ec3d3a]/08 text-[#ec3d3a]' : 'bg-[#0F6E56]/08 text-[#0F6E56]'
                     }`}>
                       {isSchoolStop(stop) ? '🏫' : '🏠'} {stop.type === 'PICKUP' ? 'Pick' : 'Drop'}
                     </span>

@@ -27,26 +27,26 @@ export default async function DriverProfilePage() {
       <DriverTopBar title="Profile" />
       <div className="px-4 py-4 space-y-4">
         <div className="flex flex-col items-center py-6">
-          <div className="w-20 h-20 rounded-full bg-[#1A3F7A]/10 flex items-center justify-center mb-3">
+          <div className="w-20 h-20 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center mb-3">
             {driver.profilePhotoUrl ? (
               <img src={driver.profilePhotoUrl} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
             ) : (
-              <User className="w-9 h-9 text-[#1A3F7A]" />
+              <User className="w-9 h-9 text-[#ec3d3a]" />
             )}
           </div>
           <h2 className="text-lg font-bold text-[#0F1923]">{user.name}</h2>
           <p className="text-sm text-[#5A6474]">{user.phone}</p>
           {driver.getsRegistrationNumber && (
-            <span className="mt-1 text-xs bg-[#1A3F7A]/10 text-[#1A3F7A] px-2 py-0.5 rounded-full font-medium">
+            <span className="mt-1 text-xs bg-[#ec3d3a]/10 text-[#ec3d3a] px-2 py-0.5 rounded-full font-medium">
               GETS: {driver.getsRegistrationNumber}
             </span>
           )}
         </div>
 
-        <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+        <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Car className="w-4 h-4 text-[#1A3F7A]" />
+              <Car className="w-4 h-4 text-[#ec3d3a]" />
               <span className="font-semibold text-sm text-[#0F1923]">Vehicle</span>
             </div>
             <Separator className="mb-3" />
@@ -68,10 +68,10 @@ export default async function DriverProfilePage() {
         </Card>
 
         {driver.association && (
-          <Card className="rounded-2xl border-[rgba(26,63,122,0.10)] shadow-none">
+          <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Building2 className="w-4 h-4 text-[#1A3F7A]" />
+                <Building2 className="w-4 h-4 text-[#ec3d3a]" />
                 <span className="font-semibold text-sm text-[#0F1923]">Association</span>
               </div>
               <Separator className="mb-3" />

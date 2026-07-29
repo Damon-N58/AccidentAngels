@@ -39,7 +39,7 @@ export function DocumentUploadCard({ docType, status, expiryDate, documentNumber
 
   return (
     <Link href={`/compliance/${docType}`}>
-      <Card className="rounded-2xl border border-[rgba(26,63,122,0.10)] shadow-none active:scale-[0.98] transition-transform">
+      <Card className="rounded-2xl border border-[rgba(236,61,58,0.10)] shadow-none active:scale-[0.98] transition-transform">
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
