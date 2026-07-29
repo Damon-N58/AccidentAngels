@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/cron/dunning",
-      "schedule": "0 9,17 * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/trips/generate-all",
