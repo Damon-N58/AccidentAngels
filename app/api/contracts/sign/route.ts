@@ -44,8 +44,10 @@ async function regeneratePdf(contractId: string): Promise<string | null> {
     .from(CONTRACTS_BUCKET).upload(path, pdfBuffer, { contentType: 'application/pdf', upsert: true })
   if (error) return null
 
-  const { data } = storage.storage.from(CONTRACTS_BUCKET).getPublicUrl(path)
-  return data.publicUrl
+  // The contracts bucket is PRIVATE — do not persist a public URL (it would be
+  // a dead link and, if the bucket were ever public, a PII leak). Store the
+  // object path; readers mint a short-lived signed URL on demand.
+  return path
 }
 
 export async function POST(request: Request) {
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
 
     // Rate limit by IP
     const rateKey = `contract-sign:${ipAddress ?? 'unknown'}`
-    if (!checkRateLimit(rateKey, 10, 300_000)) {
+    if (!(await checkRateLimit(rateKey, 10, 300_000))) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
     }
 
@@ -97,8 +99,10 @@ export async function POST(request: Request) {
         updatedAt:              now,
       }).eq('id', contract.id)
 
-      const pdfUrl = await regeneratePdf(contract.id)
-      if (pdfUrl) await supabase.from('Contract').update({ pdfUrl, updatedAt: now }).eq('id', contract.id)
+      // regeneratePdf returns the storage PATH (not a URL); persisted only as an
+      // existence marker. Viewers get a fresh signed URL via getSignedContractUrl.
+      const pdfPath = await regeneratePdf(contract.id)
+      if (pdfPath) await supabase.from('Contract').update({ pdfUrl: pdfPath, updatedAt: now }).eq('id', contract.id)
 
       try {
         await sendSms(

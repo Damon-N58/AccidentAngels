@@ -14,7 +14,14 @@ export async function POST(request: Request) {
     if (validationError) return validationError
     const body = await safeParseJson(request)
     if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
-    const { method } = body as { method: PaymentMethodType }
+    // Components send `type`; accept `method` too for safety. Validate against the
+    // known methods and return 400 (not 500) on a missing/unknown value.
+    const { type, method } = body as { type?: PaymentMethodType; method?: PaymentMethodType }
+    const selectedMethod = type ?? method
+    const VALID_METHODS: PaymentMethodType[] = ['PAYSTACK_CARD', 'DEBICHECK', 'CAPITEC_PAY_VRP']
+    if (!selectedMethod || !VALID_METHODS.includes(selectedMethod)) {
+      return NextResponse.json({ error: 'A valid payment method is required' }, { status: 400 })
+    }
 
     const { data: parent } = await supabase
       .from('Parent')
@@ -23,7 +30,7 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (!parent) return NextResponse.json({ error: 'Parent profile not found' }, { status: 404 })
 
-    const provider = getPaymentProvider(method)
+    const provider = getPaymentProvider(selectedMethod)
     const result = await provider.setupMandate({
       parentId: parent.id,
       phone:    parent.user.phone,
@@ -31,11 +38,11 @@ export async function POST(request: Request) {
     })
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error ?? 'Setup failed' }, { status: 500 })
+      return NextResponse.json({ error: result.error ?? 'Setup failed' }, { status: 502 })
     }
 
     await supabase.from('Parent').update({
-      paymentMethodType:   method,
+      paymentMethodType:   selectedMethod,
       paymentMethodStatus: 'PENDING_SETUP',
       updatedAt:           new Date().toISOString(),
     }).eq('id', parent.id)

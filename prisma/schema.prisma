@@ -70,6 +70,19 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum SplitPartyKind {
+  FIXED       // org-level party with its own paystackSubAccountCode
+  DRIVER      // resolved per-transaction from Driver.paystackSubAccountCode
+  ASSOCIATION // resolved per-transaction from the driver's Association
+}
+
+enum SplitCalcType {
+  PERCENT          // value = basis points of gross (10000 = 100%)
+  FLAT             // value = cents
+  REMAINDER        // gets whatever is left (one per scheme)
+  ASSOCIATION_LEVY // reads the driver's Association.monthlyLevy
+}
+
 // ─── MODELS ───────────────────────────────────────────────────
 
 model User {
@@ -223,6 +236,10 @@ model Parent {
   isPaymentSetup Boolean   @default(false)
   paymentSetupAt DateTime?
 
+  // Preferred WhatsApp number for dunning/payment reminders (falls back to the
+  // login phone). Created by scripts/payment-scale.sql.
+  whatsappPhone String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -328,6 +345,11 @@ model Transaction {
   failureReason String?
   failureCode   String?
 
+  // Billing-queue claim stamp. The charge worker atomically sets this to claim a
+  // row before charging (concurrent workers never charge the same row twice).
+  // Created by scripts/payment-scale.sql.
+  claimedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -337,6 +359,16 @@ model Transaction {
 
   @@index([parentId, billingYear, billingMonth])
   @@index([status, nextRetryAt])
+  @@index([status, claimedAt])
+  // NOTE: the following are created/managed ONLY by the hand-run SQL migrations
+  // (Prisma is documentation-only here; the app talks to Supabase via PostgREST):
+  //   - UNIQUE partial index Transaction_one_active_bill
+  //       (parentId, childId, billingMonth, billingYear) WHERE status <> 'CANCELLED'
+  //     -> the double-charge guard  [scripts/payment-hardening.sql]
+  //   - partial index Transaction_retry_due (nextRetryAt) WHERE status='RETRY_SCHEDULED'
+  //   - CHECK Transaction_amounts_nonneg
+  // check_payments_schema() (scripts/payment-schema-guard.sql) verifies these
+  // exist at runtime; billing fails closed if any are missing.
 }
 
 model Payout {
@@ -362,6 +394,66 @@ model PlatformConfig {
   description     String?
   updatedAt       DateTime @updatedAt
   updatedByUserId String?
+}
+
+// ─── Payment splits — configurable multi-party revenue splitting ──────────
+model SplitParty {
+  id                     String         @id @default(cuid())
+  key                    String         @unique
+  label                  String
+  kind                   SplitPartyKind @default(FIXED)
+  paystackSubAccountCode String?
+  isActive               Boolean        @default(true)
+  sortOrder              Int            @default(0)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  shares SplitShare[]
+}
+
+model SplitScheme {
+  id                String    @id @default(cuid())
+  name              String
+  isActive          Boolean   @default(false)
+  gatewayPercentBps Int       @default(334) // Paystack ZA 2.9% + 15% VAT = 3.335%
+  gatewayFlatCents  Int       @default(115) // R1 + 15% VAT = R1.15
+  notes             String?
+  createdByUserId   String?
+  createdAt         DateTime  @default(now())
+  activatedAt       DateTime?
+
+  shares SplitShare[]
+}
+
+model SplitShare {
+  id        String        @id @default(cuid())
+  schemeId  String
+  partyId   String
+  calcType  SplitCalcType
+  value     Int           @default(0)
+  sortOrder Int           @default(0)
+
+  scheme SplitScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  party  SplitParty  @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@unique([schemeId, partyId])
+  @@index([schemeId])
+}
+
+model TransactionSplit {
+  id                     String         @id @default(cuid())
+  transactionId          String
+  schemeId               String?
+  partyId                String?
+  partyKey               String
+  partyLabel             String
+  partyKind              SplitPartyKind
+  calcType               SplitCalcType
+  resolvedSubAccountCode String?
+  amountCents            Int
+  createdAt              DateTime       @default(now())
+
+  @@index([transactionId])
 }
 
 model Notification {

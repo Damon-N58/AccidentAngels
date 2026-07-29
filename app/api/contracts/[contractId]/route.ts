@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { maskAmountForAdmin } from '@/lib/utils/payment-messages'
+import { getSignedContractUrl } from '@/lib/storage/supabase'
 
 export async function GET(
   request: Request,
@@ -42,7 +43,8 @@ export async function GET(
       startDate:          contract.startDate,
       driverSignedAt:     contract.driverSignedAt ?? null,
       parentSignedAt:     contract.parentSignedAt ?? null,
-      pdfUrl:             contract.pdfUrl,
+      // Fresh short-lived signed URL (private bucket) — null until PDF exists.
+      pdfUrl:             contract.pdfUrl ? await getSignedContractUrl(contract.id) : null,
     })
   } catch (err) {
     console.error('[contracts/get]', err)

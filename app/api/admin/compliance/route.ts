@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { getSignedComplianceUrl } from '@/lib/storage/supabase'
 
 export async function GET(request: Request) {
   try {
@@ -22,11 +23,11 @@ export async function GET(request: Request) {
       .range(offset, offset + limit - 1)
 
     return NextResponse.json({
-      items: (docs ?? []).map((doc: any) => ({
+      items: await Promise.all((docs ?? []).map(async (doc: any) => ({
       id:             doc.id,
       type:           doc.type,
       status:         doc.status,
-      fileUrl:        doc.fileUrl,
+      fileUrl:        await getSignedComplianceUrl(doc.fileUrl),
       fileName:       doc.fileName,
       expiryDate:     doc.expiryDate ?? null,
       issueDate:      doc.issueDate ?? null,
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
         association: doc.driver.association?.name ?? null,
         status:      doc.driver.status,
       },
-    })),
+    }))),
     count,
     offset,
     limit,

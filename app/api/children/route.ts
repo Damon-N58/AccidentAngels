@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const body = await safeParseJson(request)
     if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
 
-    if (!checkRateLimit(`children:${session.userId}`, 5, 600_000)) {
+    if (!(await checkRateLimit(`children:${session.userId}`, 5, 600_000))) {
       return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
     }
 
@@ -207,8 +207,9 @@ export async function POST(request: Request) {
         const { error: uploadError } = await storage.storage
           .from(CONTRACTS_BUCKET).upload(path, pdfBuffer, { contentType: 'application/pdf', upsert: true })
         if (!uploadError) {
-          const { data: urlData } = storage.storage.from(CONTRACTS_BUCKET).getPublicUrl(path)
-          await supabase.from('Contract').update({ pdfUrl: urlData.publicUrl, updatedAt: new Date().toISOString() }).eq('id', contract.id)
+          // Private bucket: persist the object PATH as an existence marker, not
+          // a public URL. Viewers mint a short-lived signed URL on demand.
+          await supabase.from('Contract').update({ pdfUrl: path, updatedAt: new Date().toISOString() }).eq('id', contract.id)
         }
       } catch (pdfErr) {
         console.error('[children] PDF generation failed (non-fatal):', pdfErr)

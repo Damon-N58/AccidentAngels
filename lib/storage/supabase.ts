@@ -37,11 +37,50 @@ export async function getUploadUrl(
   return { url: data.signedUrl, token: data.token }
 }
 
-// Get a public URL for a stored file
+// Get a public URL for a stored file (only valid for PUBLIC buckets).
 export function getPublicUrl(bucket: string, path: string): string {
   const supabase = getSupabaseAdmin()
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl
+}
+
+// Short-lived signed URL for a stored file in a PRIVATE bucket. Returns null if
+// the object does not exist or signing fails.
+export async function getSignedUrl(
+  bucket: string,
+  path: string,
+  expiresInSeconds = 300,
+): Promise<string | null> {
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresInSeconds)
+  if (error || !data) {
+    console.error('[Storage] getSignedUrl error:', error)
+    return null
+  }
+  return data.signedUrl
+}
+
+// Fresh, short-lived signed URL for a contract PDF. The contracts bucket is
+// PRIVATE (it holds child/family PII), so URLs are minted per request and must
+// never be persisted. Returns null if the PDF has not been generated yet.
+export async function getSignedContractUrl(
+  contractId: string,
+  expiresInSeconds = 300,
+): Promise<string | null> {
+  return getSignedUrl(CONTRACTS_BUCKET, contractPdfPath(contractId), expiresInSeconds)
+}
+
+// Fresh signed URL for a compliance document. The compliance-docs bucket is
+// PRIVATE (driver ID/licence/police-clearance scans), so we store the object
+// PATH and mint a signed URL per request. Legacy rows may hold a full (dead)
+// public URL — passed through unchanged. Returns null if nothing is stored.
+export async function getSignedComplianceUrl(
+  stored: string | null | undefined,
+  expiresInSeconds = 3600,
+): Promise<string | null> {
+  if (!stored) return null
+  if (/^https?:\/\//i.test(stored)) return stored // legacy absolute URL
+  return getSignedUrl(COMPLIANCE_BUCKET, stored, expiresInSeconds)
 }
 
 // Compliance document upload path: compliance-docs/{driverId}/{docType}/{timestamp}-{filename}

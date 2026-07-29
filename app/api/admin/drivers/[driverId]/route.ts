@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { getSignedComplianceUrl } from '@/lib/storage/supabase'
 
 export async function GET(
   request: Request,
@@ -46,17 +47,17 @@ export async function GET(
       association: driver.association
         ? { name: driver.association.name, region: driver.association.region }
         : null,
-      complianceDocs: (complianceDocs ?? []).map((d: any) => ({
+      complianceDocs: await Promise.all((complianceDocs ?? []).map(async (d: any) => ({
         id:             d.id,
         type:           d.type,
         status:         d.status,
-        fileUrl:        d.fileUrl,
+        fileUrl:        await getSignedComplianceUrl(d.fileUrl),
         fileName:       d.fileName,
         documentNumber: d.documentNumber,
         issueDate:      d.issueDate ?? null,
         expiryDate:     d.expiryDate ?? null,
         reviewNotes:    d.reviewNotes,
-      })),
+      }))),
     })
   } catch (err) {
     console.error('[admin/drivers/:id]', err)

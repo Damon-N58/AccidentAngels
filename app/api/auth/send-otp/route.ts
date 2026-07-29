@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
     }
 
-    if (!checkRateLimit(`otp-send:${normalized}`, 3, 60_000)) {
+    if (!(await checkRateLimit(`otp-send:${normalized}`, 3, 60_000, { failClosed: true }))) {
       return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
     }
 
@@ -52,7 +52,14 @@ export async function POST(request: Request) {
       whatsappFailed = true
     }
 
-    return NextResponse.json({ ok: true, whatsappFailed })
+    // SECURITY: the OTP code must NEVER be returned over the API in production.
+    // Returning it on a send failure / sandbox / DEMO_MODE was an
+    // account-takeover vector (an attacker forces a send failure and reads the
+    // admin code from the response). Expose it only in a local dev build; in
+    // production a failed send returns whatsappFailed:true with NO code so the
+    // client prompts a resend.
+    const showCode = process.env.NODE_ENV !== 'production'
+    return NextResponse.json({ ok: true, whatsappFailed, ...(showCode && { devCode: code }) })
   } catch (err) {
     console.error('[send-otp]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

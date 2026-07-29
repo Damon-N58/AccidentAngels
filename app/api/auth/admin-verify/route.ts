@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     // Admin phones may be test numbers — normalise but skip strict SA mobile validation
     const normalized = normalizeSAPhone(phone)
 
-    if (!checkRateLimit(`admin-verify:${normalized}`, 5, 300_000)) {
+    if (!(await checkRateLimit(`admin-verify:${normalized}`, 5, 300_000, { failClosed: true }))) {
       return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
     }
 

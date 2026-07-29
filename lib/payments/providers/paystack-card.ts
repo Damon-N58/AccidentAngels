@@ -2,25 +2,43 @@ import type { PaymentProvider, SetupParams, SetupResult, ChargeParams, ChargeRes
 
 const PAYSTACK_BASE = 'https://api.paystack.co'
 
+// Paystack charge statuses that mean money DEFINITIVELY did not move, so a
+// re-charge (under a fresh reference) is safe. Every OTHER non-success status
+// — 'pending', 'ongoing', 'processing', 'queued', or anything unrecognised —
+// is NOT settled and may still resolve to success; those must be treated as
+// UNKNOWN so the charge is left on its reference for the reconcile cron rather
+// than blindly re-charged (which would double-charge once the pending settles).
+const DEFINITIVE_DECLINE_STATUSES = new Set(['failed', 'abandoned', 'reversed'])
+
 async function paystackRequest<T>(
   method: 'GET' | 'POST',
   path: string,
   body?: Record<string, unknown>
 ): Promise<T> {
-  const res = await fetch(`${PAYSTACK_BASE}${path}`, {
-    method,
-    headers: {
-      Authorization:  `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  // Bounded timeout: a hung Paystack connection must not block the whole billing
+  // run until the platform hard-kills it. Callers treat an abort as UNKNOWN, not
+  // a definitive failure, so they never blind re-charge on a timeout.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 20_000)
+  try {
+    const res = await fetch(`${PAYSTACK_BASE}${path}`, {
+      method,
+      headers: {
+        Authorization:  `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    })
 
-  const data = await res.json()
-  if (!res.ok || !data.status) {
-    throw new Error(data.message ?? `Paystack error: HTTP ${res.status}`)
+    const data = await res.json()
+    if (!res.ok || !data.status) {
+      throw new Error(data.message ?? `Paystack error: HTTP ${res.status}`)
+    }
+    return data.data as T
+  } finally {
+    clearTimeout(timer)
   }
-  return data.data as T
 }
 
 export class PaystackCardProvider implements PaymentProvider {
@@ -56,10 +74,11 @@ export class PaystackCardProvider implements PaymentProvider {
         .maybeSingle()
 
       if (!parent?.paystackAuthorizationCode || !parent.paystackAuthorizationEmail) {
-        return { success: false, error: 'No authorization on file' }
+        // Definitive: nothing was charged (we never called the gateway).
+        return { success: false, outcome: 'failed', error: 'No authorization on file' }
       }
 
-      const data = await paystackRequest<{ reference: string; id: number }>(
+      const data = await paystackRequest<{ reference: string; id: number; status?: string; gateway_response?: string }>(
         'POST',
         '/transaction/charge_authorization',
         {
@@ -67,6 +86,10 @@ export class PaystackCardProvider implements PaymentProvider {
           email:              parent.paystackAuthorizationEmail,
           amount:             params.amountCents,
           reference:          params.reference,
+          // Inline multi-party split — routes each party's cut to its
+          // subaccount; the rest settles to the main account. Omitted when
+          // no party has a subaccount configured yet (params.split == null).
+          ...(params.split ? { split: params.split } : {}),
           metadata: {
             parentId:     params.parentId,
             childId:      params.childId,
@@ -77,13 +100,35 @@ export class PaystackCardProvider implements PaymentProvider {
         }
       )
 
+      // CRITICAL: charge_authorization returns HTTP 200 + envelope status:true
+      // even for a DECLINED card — the real outcome is data.status. Only a
+      // 'success' means money moved. A definitive decline ('failed' etc.) is
+      // safe to retry; anything else ('pending'/'ongoing'/'queued') is NOT
+      // settled — treat it as UNKNOWN so it is never booked or re-charged.
+      if (data.status !== 'success') {
+        const definitiveDecline = data.status ? DEFINITIVE_DECLINE_STATUSES.has(data.status) : false
+        return {
+          success:   false,
+          // Only a definitive decline may be retried under a fresh reference;
+          // an unsettled status must be reconciled against THIS reference.
+          outcome:   definitiveDecline ? 'failed' : 'unknown',
+          error:     data.gateway_response ?? `Charge ${data.status ?? 'not successful'}`,
+          errorCode: data.status ?? 'unknown',
+        }
+      }
+
       return {
         success:           true,
+        outcome:           'success',
         providerReference: data.reference,
         providerChargeId:  String(data.id),
       }
     } catch (err) {
-      return { success: false, error: (err as Error).message }
+      // We never received a definitive success/failed envelope (timeout, abort,
+      // network error, or non-2xx from paystackRequest). The charge MAY have
+      // landed at Paystack — treat as UNKNOWN so the caller leaves it for the
+      // reconcile cron to verify against this reference, never blind re-charging.
+      return { success: false, outcome: 'unknown', error: (err as Error).message }
     }
   }
 

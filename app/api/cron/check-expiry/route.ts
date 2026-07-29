@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { sendSms, smsTemplates } from '@/lib/sms/africas-talking'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { addDays } from 'date-fns'
-
-// Requires CRON_SECRET env var — set in Vercel dashboard and locally in .env.local
-const CRON_SECRET = process.env.CRON_SECRET
-
-function isCronAuthorized(request: Request): boolean {
-  if (!CRON_SECRET) return false
-  return request.headers.get('authorization') === `Bearer ${CRON_SECRET}`
-}
 
 async function getLastRun(): Promise<string> {
   const { data } = await supabase
@@ -132,3 +125,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+// Vercel Cron triggers scheduled jobs with a GET request (carrying the
+// `Authorization: Bearer $CRON_SECRET` header), so expose the same handler on
+// GET. POST is retained for internal/manual invocation.
+export const GET = POST
