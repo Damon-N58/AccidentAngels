@@ -4,6 +4,8 @@ import { verifyTransaction } from '@/lib/payments/paystack-admin'
 import { scheduleRetry } from '@/lib/payments/retry'
 import { isCronAuthorized } from '@/lib/cron-auth'
 import { assertPaymentsSchemaReady } from '@/lib/payments/schema-guard'
+import { getActiveSplitScheme } from '@/lib/payments/splits'
+import { computeCharge, recordSplits } from '@/lib/payments/compute-charge'
 
 // Charges are external HTTP; give the run room to work through a batch.
 export const maxDuration = 300
@@ -26,11 +28,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Payments schema not ready', reason: schema.reason }, { status: 503 })
   }
 
+  // Active split scheme, loaded once, to backfill the ledger for reconciled
+  // successes (the lost DB write never recorded their TransactionSplit rows).
+  const scheme = await getActiveSplitScheme(supabase)
+
   // Only look at rows old enough that a real response would have landed.
   const cutoff = new Date(Date.now() - 10 * 60_000).toISOString()
   const { data: rows } = await supabase
     .from('Transaction')
-    .select('id, providerReference, status')
+    .select('id, providerReference, status, grossAmountCents, driver:Driver(paystackSubAccountCode, association:Association(*))')
     .in('status', ['PENDING', 'RETRY_SCHEDULED'])
     .not('providerReference', 'is', null)
     .lte('updatedAt', cutoff)
@@ -54,8 +60,31 @@ export async function POST(request: Request) {
           .update({ status: 'SUCCESS', nextRetryAt: null, claimedAt: null, updatedAt: now })
           .eq('id', tx.id)
           .in('status', ['PENDING', 'RETRY_SCHEDULED'])
-        // NOTE: split-ledger backfill for reconciled successes is a known gap —
-        // rare (only lost-write cases) and does not affect double-charge safety.
+        // Backfill the split ledger the lost DB write never recorded, so driver/
+        // party payout reconciliation isn't missing this charge. Only when a
+        // scheme is active (legacy mode records no TransactionSplit rows).
+        if (scheme) {
+          const driver = (tx as { driver?: { paystackSubAccountCode?: string | null; association?: { paystackSubAccountCode?: string | null; monthlyLevy?: number | null } | null } }).driver
+          const computed = computeCharge(
+            {
+              grossCents: (tx as { grossAmountCents: number }).grossAmountCents,
+              driverSubAccountCode: driver?.paystackSubAccountCode ?? null,
+              associationSubAccountCode: driver?.association?.paystackSubAccountCode ?? null,
+              associationLevyCents: driver?.association?.monthlyLevy ?? 0,
+            },
+            scheme,
+            0,
+            0,
+          )
+          if (computed.ok && computed.split) {
+            try {
+              await supabase.from('TransactionSplit').delete().eq('transactionId', tx.id)
+              await recordSplits(tx.id, scheme, computed.split, now)
+            } catch (splitErr) {
+              console.error(`[reconcile] split backfill failed for tx ${tx.id} (already SUCCESS):`, splitErr)
+            }
+          }
+        }
         resolved++
       } else if (result.status === 'failed' || result.status === 'abandoned') {
         await scheduleRetry(tx.id)

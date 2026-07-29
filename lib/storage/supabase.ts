@@ -70,6 +70,19 @@ export async function getSignedContractUrl(
   return getSignedUrl(CONTRACTS_BUCKET, contractPdfPath(contractId), expiresInSeconds)
 }
 
+// Fresh signed URL for a compliance document. The compliance-docs bucket is
+// PRIVATE (driver ID/licence/police-clearance scans), so we store the object
+// PATH and mint a signed URL per request. Legacy rows may hold a full (dead)
+// public URL — passed through unchanged. Returns null if nothing is stored.
+export async function getSignedComplianceUrl(
+  stored: string | null | undefined,
+  expiresInSeconds = 3600,
+): Promise<string | null> {
+  if (!stored) return null
+  if (/^https?:\/\//i.test(stored)) return stored // legacy absolute URL
+  return getSignedUrl(COMPLIANCE_BUCKET, stored, expiresInSeconds)
+}
+
 // Compliance document upload path: compliance-docs/{driverId}/{docType}/{timestamp}-{filename}
 export function complianceDocPath(driverId: string, docType: string, fileName: string): string {
   const ts = Date.now()

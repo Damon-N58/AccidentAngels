@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
-import { getPublicUrl, COMPLIANCE_BUCKET } from '@/lib/storage/supabase'
 import { validateRequest, safeParseJson } from '@/lib/request-validation'
 
 export async function POST(
@@ -33,10 +32,11 @@ export async function POST(
       .maybeSingle()
     if (!doc) return NextResponse.json({ error: 'Document not found' }, { status: 404 })
 
-    const fileUrl = getPublicUrl(COMPLIANCE_BUCKET, path)
-
+    // Store the object PATH, not a public URL: the compliance-docs bucket is
+    // private, so a public URL is a dead link. Readers mint a signed URL from
+    // this path via getSignedComplianceUrl.
     await supabase.from('ComplianceDocument').update({
-      fileUrl,
+      fileUrl:        path,
       status:         'UNDER_REVIEW',
       documentNumber: docNumber?.trim() || null,
       issueDate:      issueDate ? new Date(issueDate).toISOString() : null,
