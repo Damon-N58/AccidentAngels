@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { formatPhone } from '@/lib/utils/formatters'
 import { Logo } from '@/components/ui/Logo'
 
-export default function ParentVerifyPage() {
+export default function AdminVerifyPage() {
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(30)
@@ -19,7 +19,7 @@ export default function ParentVerifyPage() {
 
   useEffect(() => {
     const p = sessionStorage.getItem('otp_phone')
-    if (!p) { router.replace('/parent-app/login'); return }
+    if (!p) { router.replace('/admin/login'); return }
     setPhone(p)
   }, [router])
 
@@ -30,25 +30,23 @@ export default function ParentVerifyPage() {
   }, [resendTimer])
 
   async function handleVerify() {
-    // Prevent double-fire from React 18 Strict Mode or rapid typing
     if (succeededRef.current || verifyingRef.current || loading) return
     verifyingRef.current = true
     if (otp.length !== 6) { verifyingRef.current = false; return }
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/verify-otp', {
+      const res = await fetch('/api/auth/admin-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code: otp, purpose: 'login', role: 'PARENT' }),
+        body: JSON.stringify({ phone, code: otp }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Invalid code')
 
       succeededRef.current = true
       sessionStorage.removeItem('otp_phone')
-      sessionStorage.removeItem('otp_role')
 
-      window.location.href = data.isNewUser ? '/parent-app/onboarding' : '/parent-app/dashboard'
+      window.location.href = '/admin/dashboard'
     } catch (err) {
       toast.error((err as Error).message)
       setOtp('')
@@ -58,47 +56,57 @@ export default function ParentVerifyPage() {
     }
   }
 
-  useEffect(() => { if (otp.length === 6 && !loading) handleVerify() }, [otp, loading])
-
   async function handleResend() {
     if (resendTimer > 0) return
     try {
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, purpose: 'login', role: 'PARENT' }),
+        body: JSON.stringify({ phone, purpose: 'admin_login' }),
       })
       if (!res.ok) throw new Error('Failed to resend')
       setResendTimer(30)
-      toast.success('Code resent')
+      toast.success('New code sent')
     } catch {
       toast.error('Failed to resend code')
     }
   }
 
+  // Auto-submit when 6 digits entered
+  useEffect(() => { if (otp.length === 6 && !loading) handleVerify() }, [otp, loading])
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-gradient-to-br from-[#c1272d] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center">
-        <Logo size={64} className="rounded-2xl object-contain bg-white p-1" />
+    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
+      <div className="flex flex-col items-center pt-16 pb-8 px-6">
+        <Logo size={64} className="mb-4 rounded-2xl object-contain bg-white p-1" />
       </div>
-      <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">
-        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
+
+      <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl px-6 pt-8">
+        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
         <p className="text-sm text-[#5A6474] mb-8">
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
-        <div className="mb-8"><OtpInput value={otp} onChange={setOtp} disabled={loading} /></div>
+
+        <div className="mb-8">
+          <OtpInput value={otp} onChange={setOtp} disabled={loading} />
+        </div>
+
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || loading}
-          className="w-full h-14 font-semibold bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] rounded-xl mb-4"
+          className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl mb-4"
         >
           {loading ? 'Verifying…' : 'Verify'}
         </Button>
+
         <div className="text-center">
-          {resendTimer > 0
-            ? <p className="text-sm text-[#5A6474]">Resend in {resendTimer}s</p>
-            : <button onClick={handleResend} className="text-sm font-semibold text-[var(--brand-ink)]">Resend code</button>
-          }
+          {resendTimer > 0 ? (
+            <p className="text-sm text-[#5A6474]">Resend code in {resendTimer}s</p>
+          ) : (
+            <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">
+              Resend code
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -47,7 +47,7 @@ export default function DriverVerifyPage() {
       sessionStorage.removeItem('otp_phone')
       sessionStorage.removeItem('otp_role')
 
-      router.push(data.isNewUser ? '/driver-app/onboarding' : '/driver-app/dashboard')
+      window.location.href = data.isNewUser ? '/driver-app/onboarding' : '/driver-app/dashboard'
     } catch (err) {
       toast.error((err as Error).message)
       setOtp('')

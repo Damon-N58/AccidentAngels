@@ -101,9 +101,12 @@ export async function verifyParentSigningToken(
 
 export async function getSession(cookieHeader: string | null): Promise<{ userId: string; role: string } | null> {
   if (!cookieHeader) return null
-  const match = cookieHeader.match(/session=([^;]+)/)
+  // Anchored to a cookie-name boundary so we never grab the tail of an
+  // unrelated cookie whose name merely ends in "session" (e.g. a stale
+  // third-party or previous-app cookie sharing the same host in dev).
+  const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/)
   if (!match) return null
-  return verifySessionToken(match[1])
+  return verifySessionToken(decodeURIComponent(match[1]))
 }
 
 export async function requireAdmin(): Promise<{ userId: string; role: string }> {
