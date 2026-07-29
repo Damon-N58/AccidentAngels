@@ -4,6 +4,7 @@ import { verifyChildAccess } from '@/lib/auth/ownership'
 import { supabase } from '@/lib/supabase'
 import { validateAndParseJson } from '@/lib/request-validation'
 import { hasOutstandingBalance } from '@/lib/payments/balance-check'
+import { checkDriverCapacity } from '@/lib/drivers/capacity'
 
 export async function PATCH(
   request: Request,
@@ -34,6 +35,25 @@ export async function PATCH(
           code: 'BALANCE_OUTSTANDING',
         },
         { status: 402 }
+      )
+    }
+  }
+
+  // Enforce vehicle capacity when (re)assigning to a driver.
+  if (body.driverId && body.driverId !== child.driverId) {
+    const { data: newDriver } = await supabase
+      .from('Driver')
+      .select('vehicleCapacity, status')
+      .eq('id', body.driverId)
+      .maybeSingle()
+    if (!newDriver || newDriver.status !== 'ACTIVE') {
+      return NextResponse.json({ error: 'Driver not found or not active' }, { status: 404 })
+    }
+    const cap = await checkDriverCapacity(body.driverId, newDriver.vehicleCapacity, childId)
+    if (!cap.ok) {
+      return NextResponse.json(
+        { error: `This driver is full (${cap.capacity} seats).`, code: 'DRIVER_AT_CAPACITY' },
+        { status: 409 },
       )
     }
   }
