@@ -49,7 +49,7 @@ export default function DriverTripsPage() {
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          className="w-full h-10 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a]"
+          className="w-full h-10 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d]"
         />
 
         {error && (
@@ -75,7 +75,7 @@ export default function DriverTripsPage() {
             <p className="text-xs text-[#5A6474]">
               Trips are auto-generated from children&apos;s schedules.
             </p>
-            <p className="text-xs text-[#fdc73e] font-medium pt-1">
+            <p className="text-xs text-[#b8860b] font-medium pt-1">
               Ask the parent to set up a schedule under their child&apos;s profile, then trips will appear here automatically.
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function DriverTripsPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-9 h-9 rounded-full bg-[#fdc73e]/10 flex items-center justify-center">
-                        <Sun className="w-5 h-5 text-[#fdc73e]" />
+                        <Sun className="w-5 h-5 text-[#b8860b]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm text-[#0F1923]">Morning school run</p>
@@ -134,8 +134,8 @@ export default function DriverTripsPage() {
                 <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center">
-                        <Moon className="w-5 h-5 text-[#ec3d3a]" />
+                      <div className="w-9 h-9 rounded-full bg-[#c1272d]/10 flex items-center justify-center">
+                        <Moon className="w-5 h-5 text-[var(--brand-ink)]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm text-[#0F1923]">Afternoon school run</p>

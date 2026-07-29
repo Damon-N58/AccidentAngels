@@ -43,14 +43,14 @@ export default function ParentLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="bg-gradient-to-br from-[#ec3d3a] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center text-center">
+      <div className="bg-gradient-to-br from-[#c1272d] to-[#c81c19] px-6 pt-16 pb-12 flex flex-col items-center text-center">
         <Logo size={80} className="mb-5 rounded-2xl object-contain bg-white p-2" />
         <h1 className="text-3xl font-bold text-white mb-2">GETS</h1>
         <p className="text-white/70 text-base">Safe transport, every day</p>
       </div>
 
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl -mt-4 px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Welcome back</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Welcome back</h2>
         <p className="text-sm text-[#5A6474] mb-8">Enter your number to sign in</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -68,7 +68,7 @@ export default function ParentLoginPage() {
           </Button>
         </form>
 
-        <p className="text-xs text-[#5A6474] text-center mt-8">
+        <p className="text-sm text-[#5A6474] text-center mt-8">
           New here? Sign up to add your child and choose a driver.
         </p>
       </div>

@@ -60,7 +60,7 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
             onDragEnd={(lngLat) => setPosition({ lat: lngLat.lat, lng: lngLat.lng })}
           >
             <MarkerContent>
-              <div className="w-8 h-8 rounded-full bg-[#ec3d3a] border-[3px] border-white shadow-lg flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-8 h-8 rounded-full bg-[#c1272d] border-[3px] border-white shadow-lg flex items-center justify-center text-white text-sm font-bold">
                 P
               </div>
             </MarkerContent>
@@ -82,7 +82,7 @@ export function MapPicker({ initialLat, initialLng, onConfirm, onCancel }: MapPi
           type="button"
           onClick={handleConfirm}
           disabled={confirming}
-          className="flex-1 h-11 bg-[#ec3d3a] text-white font-semibold rounded-xl text-sm hover:bg-[#ec3d3a]/90 disabled:opacity-60"
+          className="flex-1 h-11 bg-[#c1272d] text-white font-semibold rounded-xl text-sm hover:bg-[#c1272d]/90 disabled:opacity-60"
         >
           {confirming ? 'Confirming…' : 'Confirm pin location'}
         </button>

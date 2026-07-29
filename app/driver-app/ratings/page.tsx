@@ -57,7 +57,7 @@ export default async function MyRatingsPage() {
       <div className="px-4 pt-4 pb-8 space-y-4">
 
         {/* Aggregate banner */}
-        <div className="bg-[#ec3d3a] rounded-2xl p-5 text-white text-center">
+        <div className="bg-[#c1272d] rounded-2xl p-5 text-white text-center">
           <p className="text-5xl font-bold tracking-tight mb-1">
             {driver.ratingAvg != null ? Number(driver.ratingAvg).toFixed(1) : '—'}
           </p>

@@ -84,7 +84,7 @@ export default function BookTripPage() {
           </div>
           <Button
             onClick={() => router.push('/parent-app/trips')}
-            className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl"
+            className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl"
           >
             View trips calendar
           </Button>
@@ -113,7 +113,7 @@ export default function BookTripPage() {
             </p>
             <Button
               onClick={() => router.push('/parent-app/children/add')}
-              className="mt-4 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold"
+              className="mt-4 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold"
             >
               Add a child
             </Button>
@@ -126,7 +126,7 @@ export default function BookTripPage() {
               <select
                 value={selectedChildId}
                 onChange={e => setSelectedChildId(e.target.value)}
-                className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a] bg-white"
+                className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d] bg-white"
               >
                 {children.map((c: any) => (
                   <option key={c.id} value={c.id}>{c.name} — {c.schoolName}</option>
@@ -142,7 +142,7 @@ export default function BookTripPage() {
                 value={date}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={e => setDate(e.target.value)}
-                className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a]"
+                className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d]"
               />
             </div>
 
@@ -154,7 +154,7 @@ export default function BookTripPage() {
                   onClick={() => setTripType('MORNING')}
                   className={`flex-1 h-11 text-sm font-semibold rounded-xl transition-colors ${
                     tripType === 'MORNING'
-                      ? 'bg-[#ec3d3a] text-white'
+                      ? 'bg-[#c1272d] text-white'
                       : 'bg-white border border-[rgba(236,61,58,0.15)] text-[#5A6474]'
                   }`}
                 >
@@ -164,7 +164,7 @@ export default function BookTripPage() {
                   onClick={() => setTripType('AFTERNOON')}
                   className={`flex-1 h-11 text-sm font-semibold rounded-xl transition-colors ${
                     tripType === 'AFTERNOON'
-                      ? 'bg-[#ec3d3a] text-white'
+                      ? 'bg-[#c1272d] text-white'
                       : 'bg-white border border-[rgba(236,61,58,0.15)] text-[#5A6474]'
                   }`}
                 >
@@ -181,14 +181,14 @@ export default function BookTripPage() {
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 placeholder="e.g. Extra practice at school"
-                className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a]"
+                className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d]"
               />
             </div>
 
             <Button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-base"
+              className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl text-base"
             >
               {submitting ? 'Booking…' : 'Book trip'}
             </Button>

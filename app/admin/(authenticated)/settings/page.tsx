@@ -124,7 +124,7 @@ export default function AdminSettingsPage() {
                     size="sm"
                     onClick={() => save(config.key)}
                     disabled={saving === config.key}
-                    className="h-10 bg-[#ec3d3a] text-white hover:bg-[#ec3d3a]/90"
+                    className="h-10 bg-[#c1272d] text-white hover:bg-[#c1272d]/90"
                   >
                     <Save className="w-4 h-4 mr-1.5" />
                     Save

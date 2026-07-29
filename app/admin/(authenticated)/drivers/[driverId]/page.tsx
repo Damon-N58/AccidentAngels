@@ -115,7 +115,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Back */}
-      <Link href="/admin/drivers" className="inline-flex items-center gap-1.5 text-sm text-[#ec3d3a] font-medium hover:underline">
+      <Link href="/admin/drivers" className="inline-flex items-center gap-1.5 text-sm text-[#c1272d] font-medium hover:underline">
         <ChevronLeft className="w-4 h-4" /> All drivers
       </Link>
 
@@ -234,7 +234,7 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
                               href={doc.fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#ec3d3a] hover:underline"
+                              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#c1272d] hover:underline"
                             >
                               <FileText className="w-3.5 h-3.5" />
                               View document

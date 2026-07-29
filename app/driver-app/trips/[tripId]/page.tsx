@@ -5,12 +5,23 @@ import { useRouter } from 'next/navigation'
 import { DriverTopBar } from '@/components/driver/DriverTopBar'
 import { TripStopCard } from '@/components/trips/TripStopCard'
 import { TripProgressBar } from '@/components/trips/TripProgressBar'
-import { TripMap } from '@/components/trips/TripMap'
-import { ActiveTripNavigation } from '@/components/trips/ActiveTripNavigation'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Navigation, Play } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TripData } from '@/lib/trips/types'
+
+// Maps pull in maplibre-gl (~800KB). Load them only when this screen renders
+// (never in the initial/server bundle) so the rest of the app stays light on
+// low-end phones and slow networks.
+const TripMap = dynamic(() => import('@/components/trips/TripMap').then((m) => m.TripMap), {
+  ssr: false,
+  loading: () => <div className="h-64 w-full rounded-2xl bg-muted animate-pulse" aria-label="Loading map…" />,
+})
+const ActiveTripNavigation = dynamic(
+  () => import('@/components/trips/ActiveTripNavigation').then((m) => m.ActiveTripNavigation),
+  { ssr: false, loading: () => <div className="h-40 w-full rounded-2xl bg-muted animate-pulse" /> },
+)
 
 export default function DriverTripDetailPage({
   params,
@@ -146,7 +157,7 @@ export default function DriverTripDetailPage({
       <DriverTopBar title={tripLabel} />
       <div className="px-4 pt-4 pb-24 space-y-4">
 
-        <button onClick={() => router.push('/driver-app/trips')} className="flex items-center gap-1 text-sm text-[#ec3d3a] font-medium hover:underline">
+        <button onClick={() => router.push('/driver-app/trips')} className="flex items-center gap-1 text-sm text-[var(--brand-ink)] font-medium hover:underline">
           <ChevronLeft className="w-4 h-4" /> All trips
         </button>
 
@@ -160,7 +171,7 @@ export default function DriverTripDetailPage({
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
               isCompleted ? 'bg-[#0F6E56]/10 text-[#0F6E56]' :
               trip.status === 'CANCELLED' ? 'bg-[#E24B4A]/10 text-[#E24B4A]' :
-              'bg-[#ec3d3a]/10 text-[#ec3d3a]'
+              'bg-[#c1272d]/10 text-[var(--brand-ink)]'
             }`}>
               {isCompleted ? 'Completed' : trip.status === 'CANCELLED' ? 'Cancelled' : 'Scheduled'}
             </span>
@@ -199,7 +210,7 @@ export default function DriverTripDetailPage({
           <Button
             onClick={handleStart}
             disabled={starting}
-            className="w-full h-14 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-base"
+            className="w-full h-14 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl text-base"
           >
             <Play className="w-5 h-5 mr-2 fill-current" />
             {starting ? 'Starting…' : 'Start trip — begin navigation'}
@@ -209,7 +220,7 @@ export default function DriverTripDetailPage({
         {/* Stop list (summary view for scheduled/completed) */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Navigation className="w-4 h-4 text-[#ec3d3a]" />
+            <Navigation className="w-4 h-4 text-[var(--brand-ink)]" />
             <p className="font-semibold text-sm text-[#0F1923]">Route — {trip.stops.length} stops</p>
           </div>
           {trip.stops.map((stop, i) => (

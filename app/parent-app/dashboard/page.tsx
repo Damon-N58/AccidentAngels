@@ -117,47 +117,42 @@ export default async function ParentDashboardPage() {
   return (
     <div className="min-h-screen bg-[#F8F9FB]">
       <ParentTopBar showLogo />
-      <div className="px-4 pb-24 pt-5 space-y-4">
-        <div className="flex items-start justify-between">
+      <div className="px-4 pb-24 pt-5 space-y-5">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-[#0F1923]">{greeting}, {user.name.split(' ')[0]}</h2>
-            <p className="text-sm text-[#5A6474]">{today}</p>
+            <h2 className="text-2xl font-bold text-[#0F1923]">{greeting}, {user.name.split(' ')[0]}</h2>
+            <p className="text-[15px] text-[#5A6474]">{today}</p>
           </div>
-          <Link href="/parent-app/children/add">
-            <Button size="sm" className="h-8 bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] text-xs font-semibold gap-1">
-              <Plus className="w-3.5 h-3.5" /> Add child
-            </Button>
-          </Link>
         </div>
 
-        {/* Today's trips */}
+        {/* Today's trips — the thing a parent opens the app to check */}
         {todayTrips.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Navigation className="w-4 h-4 text-[#ec3d3a]" />
-              <h3 className="text-sm font-semibold text-[#0F1923]">Today&apos;s trips</h3>
+            <div className="flex items-center gap-2 mb-2.5">
+              <Navigation className="w-5 h-5 text-[var(--brand-ink)]" />
+              <h3 className="text-base font-semibold text-[#0F1923]">Today&apos;s trips</h3>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {todayTrips.map((trip: any) => {
                 const completed = trip.stops.filter((s: any) => s.status === 'COMPLETED').length
                 return (
                   <Link key={trip.id} href={`/parent-app/trips/${trip.id}`}>
-                    <Card className="rounded-xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
-                      <CardContent className="p-3 flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/10' : 'bg-[#ec3d3a]/10'
+                    <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none hover:shadow-sm transition-shadow">
+                      <CardContent className="p-4 flex items-center gap-3.5 min-h-[64px]">
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
+                          trip.type === 'MORNING' ? 'bg-[#fdc73e]/15' : 'bg-[#c1272d]/10'
                         }`}>
                           {trip.type === 'MORNING'
-                            ? <Sun className="w-4 h-4 text-[#fdc73e]" />
-                            : <Moon className="w-4 h-4 text-[#ec3d3a]" />}
+                            ? <Sun className="w-5 h-5 text-[#b8860b]" />
+                            : <Moon className="w-5 h-5 text-[var(--brand-ink)]" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#0F1923]">
+                          <p className="text-base font-semibold text-[#0F1923]">
                             {trip.type === 'MORNING' ? 'Morning' : 'Afternoon'} school run
                           </p>
-                          <p className="text-xs text-[#5A6474]">{completed} of {trip.stops.length} stops</p>
+                          <p className="text-sm text-[#5A6474]">{completed} of {trip.stops.length} stops done</p>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-[#5A6474] shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-[#5A6474] shrink-0" />
                       </CardContent>
                     </Card>
                   </Link>
@@ -167,20 +162,20 @@ export default async function ParentDashboardPage() {
           </div>
         )}
 
-        {/* Waiting charges callout — only shown when payments are live and there are unbilled charges */}
+        {/* Waiting charges callout — only when payments are live and unbilled charges exist */}
         {paymentsLive && waitingChargesTotal > 0 && (
           <Link href="/parent-app/charges">
-            <div className="bg-[#fdc73e]/10 border border-[#fdc73e]/30 rounded-2xl p-4 flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#fdc73e]/20 flex items-center justify-center shrink-0">
-                <Timer className="w-5 h-5 text-[#fdc73e]" />
+            <div className="bg-[#fdc73e]/12 border border-[#fdc73e]/40 rounded-2xl p-4 flex items-center gap-3.5 min-h-[64px]">
+              <div className="w-11 h-11 rounded-full bg-[#fdc73e]/25 flex items-center justify-center shrink-0">
+                <Timer className="w-5 h-5 text-[#b8860b]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-[#0F1923]">Waiting time charges</p>
-                <p className="text-xs text-[#5A6474] mt-0.5">
-                  R{(waitingChargesTotal / 100).toFixed(2)} pending on your next invoice
+                <p className="text-base font-bold text-[#0F1923]">Waiting time charges</p>
+                <p className="text-sm text-[#5A6474] mt-0.5">
+                  R{(waitingChargesTotal / 100).toFixed(2)} on your next bill
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#5A6474] shrink-0 mt-0.5" />
+              <ChevronRight className="w-5 h-5 text-[#5A6474] shrink-0" />
             </div>
           </Link>
         )}
@@ -188,81 +183,92 @@ export default async function ParentDashboardPage() {
         {children.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center border border-[rgba(236,61,58,0.10)]">
             <Logo size={64} className="mx-auto mb-4 rounded-2xl object-contain opacity-30" />
-            <p className="text-base font-semibold text-[#0F1923]">No children added yet</p>
-            <p className="text-sm text-[#5A6474] mt-2 mb-5 max-w-xs mx-auto">
-              Add your child and choose a verified driver to get started.
+            <p className="text-lg font-semibold text-[#0F1923]">No children added yet</p>
+            <p className="text-[15px] text-[#5A6474] mt-2 mb-6 max-w-xs mx-auto">
+              Add your child and choose a driver to get started.
             </p>
             <Link href="/parent-app/children/add">
-              <Button className="bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] font-semibold h-11 px-6">
+              <Button className="bg-[#fdc73e] hover:bg-[#fdc73e]/90 text-[#0F1923] font-semibold h-14 px-8 text-base w-full">
                 Add your first child →
               </Button>
             </Link>
           </div>
         ) : (
-          children.map((child: any) => {
-            const driver = child.driver
-            const contract = child.contracts[0]
-            const approvedDocs = (driver?.complianceDocs ?? []).filter((d: any) => d.status === 'APPROVED').length
-            const isVerified = approvedDocs === 6 && driver?.status === 'ACTIVE'
-            const awaitingDriver = contract?.status === 'PENDING_DRIVER_SIGNATURE'
+          <div className="space-y-4">
+            {children.map((child: any) => {
+              const driver = child.driver
+              const contract = child.contracts[0]
+              const approvedDocs = (driver?.complianceDocs ?? []).filter((d: any) => d.status === 'APPROVED').length
+              const isVerified = approvedDocs === 6 && driver?.status === 'ACTIVE'
+              const awaitingDriver = contract?.status === 'PENDING_DRIVER_SIGNATURE'
 
-            return (
-              <Card key={child.id} className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="font-bold text-base text-[#0F1923]">{child.name}</p>
-                      <p className="text-xs text-[#5A6474]">{child.schoolName}</p>
-                    </div>
-                    {contract && <StatusBadge status={contract.status} />}
-                  </div>
-
-                  {awaitingDriver && (
-                    <div className="flex items-center gap-2 bg-[#F59E0B]/10 rounded-xl p-3 mb-3">
-                      <Clock className="w-4 h-4 text-[#F59E0B] shrink-0" />
-                      <p className="text-xs text-[#0F1923] font-medium">Waiting for driver to accept</p>
-                    </div>
-                  )}
-
-                  {driver ? (
-                    <Link href={`/parent-app/driver/${driver.id}`} className="flex items-center justify-between bg-[#F8F9FB] rounded-xl p-3">
-                      <div className="flex items-center gap-2">
-                        {isVerified
-                          ? <CheckCircle2 className="w-5 h-5 text-[#0F6E56]" />
-                          : <AlertTriangle className="w-5 h-5 text-[#F59E0B]" />}
-                        <div>
-                          <p className="text-sm font-semibold text-[#0F1923]">{driver.user.name}</p>
-                          <p className={`text-xs font-medium ${isVerified ? 'text-[#0F6E56]' : 'text-[#F59E0B]'}`}>
-                            {isVerified ? 'Driver verified ✓' : 'Compliance pending'}
-                          </p>
-                        </div>
+              return (
+                <Card key={child.id} className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div>
+                        <p className="font-bold text-lg text-[#0F1923]">{child.name}</p>
+                        <p className="text-sm text-[#5A6474]">{child.schoolName}</p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#5A6474]" />
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-[#F8F9FB] rounded-xl p-3">
-                      <Clock className="w-5 h-5 text-[#5A6474]" />
-                      <p className="text-xs text-[#5A6474]">No driver assigned</p>
+                      {contract && <StatusBadge status={contract.status} />}
                     </div>
-                  )}
 
-                  <div className="flex items-center justify-between text-xs text-[#5A6474] mt-3 pt-3 border-t border-[rgba(236,61,58,0.06)]">
-                    <div className="flex gap-3">
-                      <Link href={`/parent-app/schedule/${child.id}`} className="font-medium text-[#ec3d3a] hover:underline">
+                    {awaitingDriver && (
+                      <div className="flex items-center gap-2 bg-[#F59E0B]/10 rounded-xl p-3 mb-3">
+                        <Clock className="w-5 h-5 text-[#c77700] shrink-0" />
+                        <p className="text-sm text-[#0F1923] font-medium">Waiting for driver to accept</p>
+                      </div>
+                    )}
+
+                    {driver ? (
+                      <Link href={`/parent-app/driver/${driver.id}`} className="flex items-center justify-between bg-[#F8F9FB] rounded-xl p-3.5 min-h-[60px]">
+                        <div className="flex items-center gap-2.5">
+                          {isVerified
+                            ? <CheckCircle2 className="w-6 h-6 text-[#0F6E56] shrink-0" />
+                            : <AlertTriangle className="w-6 h-6 text-[#c77700] shrink-0" />}
+                          <div>
+                            <p className="text-[15px] font-semibold text-[#0F1923]">{driver.user.name}</p>
+                            <p className={`text-sm font-medium ${isVerified ? 'text-[#0F6E56]' : 'text-[#c77700]'}`}>
+                              {isVerified ? 'Driver verified ✓' : 'Checking driver…'}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-[#5A6474]" />
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-2.5 bg-[#F8F9FB] rounded-xl p-3.5 min-h-[60px]">
+                        <Clock className="w-6 h-6 text-[#5A6474] shrink-0" />
+                        <p className="text-sm text-[#5A6474]">No driver chosen yet</p>
+                      </div>
+                    )}
+
+                    {/* Actions as clear, tappable chips (not tiny text links) */}
+                    <div className="flex gap-2.5 mt-3">
+                      <Link
+                        href={`/parent-app/schedule/${child.id}`}
+                        className="flex-1 text-center py-2.5 rounded-xl bg-[#c1272d]/8 text-[var(--brand-ink)] text-[15px] font-semibold"
+                      >
                         Schedule
                       </Link>
-                      <Link href={`/parent-app/children/${child.id}`} className="font-medium text-[#ec3d3a] hover:underline">
+                      <Link
+                        href={`/parent-app/children/${child.id}`}
+                        className="flex-1 text-center py-2.5 rounded-xl bg-[#F8F9FB] text-[#0F1923] text-[15px] font-semibold"
+                      >
                         Edit
                       </Link>
                     </div>
-                    {driver && (
-                      <span className="font-medium text-[#0F1923]">Next payment: —</span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })
+                  </CardContent>
+                </Card>
+              )
+            })}
+
+            {/* Add another child — clear full-width action */}
+            <Link href="/parent-app/children/add">
+              <Button variant="outline" className="w-full h-14 text-base font-semibold border-[rgba(236,61,58,0.25)] text-[var(--brand-ink)] gap-2">
+                <Plus className="w-5 h-5" /> Add another child
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
     </div>

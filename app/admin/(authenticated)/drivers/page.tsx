@@ -73,8 +73,8 @@ export default async function AdminDriversPage({
               href={s ? `/admin/drivers?status=${s}` : '/admin/drivers'}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 (status ?? '') === s
-                  ? 'bg-[#ec3d3a] text-white'
-                  : 'bg-white border border-[rgba(236,61,58,0.15)] text-[#5A6474] hover:border-[#ec3d3a]/30'
+                  ? 'bg-[#c1272d] text-white'
+                  : 'bg-white border border-[rgba(236,61,58,0.15)] text-[#5A6474] hover:border-[#c1272d]/30'
               }`}
             >
               {s || 'All'}
@@ -116,7 +116,7 @@ export default async function AdminDriversPage({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/drivers/${d.id}`} className="text-xs font-semibold text-[#ec3d3a] hover:underline">
+                      <Link href={`/admin/drivers/${d.id}`} className="text-xs font-semibold text-[#c1272d] hover:underline">
                         Review →
                       </Link>
                     </td>

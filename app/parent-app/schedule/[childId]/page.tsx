@@ -125,7 +125,7 @@ export default function ParentChildSchedulePage({
         )}
 
         {/* Explanation banner */}
-        <div className="bg-[#ec3d3a]/05 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
+        <div className="bg-[#c1272d]/5 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
           <p className="font-semibold text-[#0F1923]">How this works</p>
           <p>Set the days your child needs transport and the time windows for pickup and dropoff. Your driver will see the daily schedule and route on their app.</p>
           <p className="text-xs text-[#5A6474] mt-2">One-off schedule changes (e.g. skipping a day) can be done from the trips page.</p>
@@ -174,7 +174,7 @@ export default function ParentChildSchedulePage({
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white font-semibold rounded-xl text-base"
+          className="w-full h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white font-semibold rounded-xl text-base"
         >
           {saving ? 'Saving…' : schedule ? 'Update schedule' : 'Save schedule'}
         </Button>

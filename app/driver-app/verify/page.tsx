@@ -76,13 +76,13 @@ export default function DriverVerifyPage() {
   useEffect(() => { if (otp.length === 6 && !loading) handleVerify() }, [otp, loading])
 
   return (
-    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
+    <div className="min-h-screen bg-[#c1272d] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
         <Logo size={64} className="mb-4 rounded-2xl object-contain bg-white p-1" />
       </div>
 
       <div className="flex-1 bg-[#F8F9FB] rounded-t-3xl px-6 pt-8">
-        <h2 className="text-xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
+        <h2 className="text-2xl font-bold text-[#0F1923] mb-1">Enter your code</h2>
         <p className="text-sm text-[#5A6474] mb-8">
           We sent a 6-digit code to {phone ? formatPhone(phone) : '…'}
         </p>
@@ -94,7 +94,7 @@ export default function DriverVerifyPage() {
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || loading}
-          className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl mb-4"
+          className="w-full h-14 text-base font-semibold bg-[#c1272d] hover:bg-[#c1272d]/90 text-white rounded-xl mb-4"
         >
           {loading ? 'Verifying…' : 'Verify'}
         </Button>
@@ -103,7 +103,7 @@ export default function DriverVerifyPage() {
           {resendTimer > 0 ? (
             <p className="text-sm text-[#5A6474]">Resend code in {resendTimer}s</p>
           ) : (
-            <button onClick={handleResend} className="text-sm font-medium text-[#ec3d3a]">
+            <button onClick={handleResend} className="text-sm font-semibold text-[var(--brand-ink)]">
               Resend code
             </button>
           )}

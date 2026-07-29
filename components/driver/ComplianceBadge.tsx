@@ -5,11 +5,11 @@ type Status = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED' |
 
 const CFG = {
   PENDING:      { label: 'Pending',        Icon: Clock,          cls: 'text-[#5A6474] bg-[#5A6474]/10' },
-  UNDER_REVIEW: { label: 'Under review',   Icon: RotateCcw,      cls: 'text-[#F59E0B] bg-[#F59E0B]/10' },
+  UNDER_REVIEW: { label: 'Under review',   Icon: RotateCcw,      cls: 'text-[#c77700] bg-[#F59E0B]/10' },
   APPROVED:     { label: 'Approved',       Icon: CheckCircle2,   cls: 'text-[#0F6E56] bg-[#0F6E56]/10' },
   REJECTED:     { label: 'Rejected',       Icon: XCircle,        cls: 'text-[#E24B4A] bg-[#E24B4A]/10' },
   EXPIRED:      { label: 'Expired',        Icon: XCircle,        cls: 'text-[#E24B4A] bg-[#E24B4A]/10' },
-  EXPIRING:     { label: 'Expiring soon',  Icon: AlertTriangle,  cls: 'text-[#F59E0B] bg-[#F59E0B]/10' },
+  EXPIRING:     { label: 'Expiring soon',  Icon: AlertTriangle,  cls: 'text-[#c77700] bg-[#F59E0B]/10' },
 }
 
 interface ComplianceBadgeProps {

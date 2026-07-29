@@ -50,7 +50,7 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
   )
 
   const routeColor =
-    tripStatus === 'IN_PROGRESS' ? '#ec3d3a' : tripStatus === 'COMPLETED' ? '#0F6E56' : '#5A6474'
+    tripStatus === 'IN_PROGRESS' ? '#c1272d' : tripStatus === 'COMPLETED' ? '#0F6E56' : '#5A6474'
 
   useEffect(() => {
     if (!navigator.geolocation) return
@@ -113,7 +113,7 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
                 : stop.status === 'MISSED'
                   ? '#E24B4A'
                   : stop.type === 'PICKUP'
-                    ? '#ec3d3a'
+                    ? '#c1272d'
                     : '#0F6E56'
             const glyph =
               stop.status === 'COMPLETED' ? '✓' : stop.status === 'MISSED' ? '✕' : stop.type === 'PICKUP' ? 'P' : 'D'
@@ -166,7 +166,7 @@ export function TripMap({ stops, tripStatus, isDriverView = false }: TripMapProp
       </div>
       <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-white text-xs text-[#5A6474] border-t border-[rgba(236,61,58,0.06)]">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-[#ec3d3a] inline-block" /> Pickup
+          <span className="w-3 h-3 rounded-full bg-[#c1272d] inline-block" /> Pickup
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-[#0F6E56] inline-block" /> Dropoff

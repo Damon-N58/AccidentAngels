@@ -33,10 +33,10 @@ export default async function AdminDashboardPage() {
 
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total drivers',      value: totalDrivers ?? 0,   icon: <Users className="w-5 h-5 text-[#ec3d3a]" /> },
+          { label: 'Total drivers',      value: totalDrivers ?? 0,   icon: <Users className="w-5 h-5 text-[#c1272d]" /> },
           { label: 'Active / compliant', value: activeDrivers ?? 0,  icon: <ShieldCheck className="w-5 h-5 text-[#0F6E56]" /> },
           { label: 'Children enrolled',  value: totalChildren ?? 0,  icon: <Users className="w-5 h-5 text-[#fdc73e]" /> },
-          { label: 'Active contracts',   value: totalContracts ?? 0, icon: <FileText className="w-5 h-5 text-[#ec3d3a]" /> },
+          { label: 'Active contracts',   value: totalContracts ?? 0, icon: <FileText className="w-5 h-5 text-[#c1272d]" /> },
         ].map(({ label, value, icon }) => (
           <Card key={label} className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
             <CardContent className="p-4">
@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
           <p className="text-sm font-medium text-[#0F1923]">
             {pendingReview} compliance document{pendingReview !== 1 ? 's' : ''} awaiting review
           </p>
-          <Link href="/admin/drivers" className="text-sm font-semibold text-[#ec3d3a] ml-auto">Review →</Link>
+          <Link href="/admin/drivers" className="text-sm font-semibold text-[#c1272d] ml-auto">Review →</Link>
         </div>
       )}
 
@@ -75,7 +75,7 @@ export default async function AdminDashboardPage() {
               {(recentDrivers ?? []).map((d: any) => (
                 <tr key={d.id} className="border-b border-[rgba(236,61,58,0.05)] hover:bg-[#F8F9FB]">
                   <td className="px-4 py-3">
-                    <a href={`/admin/drivers/${d.id}`} className="font-medium text-[#ec3d3a] hover:underline">{d.user.name}</a>
+                    <a href={`/admin/drivers/${d.id}`} className="font-medium text-[#c1272d] hover:underline">{d.user.name}</a>
                     <p className="text-xs text-[#5A6474]">{d.user.phone}</p>
                   </td>
                   <td className="px-4 py-3 text-[#5A6474]">{d.association?.name ?? '—'}</td>

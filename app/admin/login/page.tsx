@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#ec3d3a] flex flex-col">
+    <div className="min-h-screen bg-[#c1272d] flex flex-col">
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
         <Logo size={80} className="mb-4 rounded-2xl object-contain bg-white p-2" />
         <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-14 text-base font-semibold bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white rounded-xl"
+            className="w-full h-14 text-base font-semibold bg-[#c1272d] hover:bg-[#c1272d]/90 text-white rounded-xl"
           >
             {loading ? 'Sending code…' : 'Get code →'}
           </Button>

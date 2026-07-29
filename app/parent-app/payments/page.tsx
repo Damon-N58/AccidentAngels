@@ -37,7 +37,7 @@ export default async function ParentPaymentsPage() {
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm font-medium text-[#0F1923]">Monthly transport</p>
-                <p className="text-xl font-bold text-[#ec3d3a]">{formatZAR(totalMonthly)}</p>
+                <p className="text-xl font-bold text-[var(--brand-ink)]">{formatZAR(totalMonthly)}</p>
               </div>
               {activeChildren.map((c: any) => (
                 <div key={c.id} className="flex justify-between text-xs text-[#5A6474] mt-1">

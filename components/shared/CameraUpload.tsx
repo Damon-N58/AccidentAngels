@@ -76,8 +76,8 @@ export function CameraUpload({
       'flex flex-col items-center gap-4',
       disabled && 'opacity-50 pointer-events-none'
     )}>
-      <div className="w-14 h-14 rounded-full bg-[#ec3d3a]/10 flex items-center justify-center">
-        <Camera className="w-7 h-7 text-[#ec3d3a]" />
+      <div className="w-14 h-14 rounded-full bg-[#c1272d]/10 flex items-center justify-center">
+        <Camera className="w-7 h-7 text-[#c1272d]" />
       </div>
 
       <div className="text-center">
@@ -93,7 +93,7 @@ export function CameraUpload({
         <Button
           type="button"
           onClick={() => cameraRef.current?.click()}
-          className="flex-1 h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white"
+          className="flex-1 h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white"
         >
           <Camera className="w-4 h-4 mr-2" />
           {label}

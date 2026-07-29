@@ -46,14 +46,14 @@ export function PaymentMethodPicker() {
             className={cn(
               'w-full text-left rounded-2xl p-4 border-2 transition-colors',
               selected === opt.id
-                ? 'border-[#ec3d3a] bg-[#ec3d3a]/04'
+                ? 'border-[#c1272d] bg-[#c1272d]/04'
                 : 'border-[rgba(236,61,58,0.15)] bg-white'
             )}
           >
             <div className="flex items-start gap-3">
               <div className={cn(
                 'w-10 h-10 rounded-full flex items-center justify-center shrink-0',
-                selected === opt.id ? 'bg-[#ec3d3a] text-white' : 'bg-[#ec3d3a]/10 text-[#ec3d3a]'
+                selected === opt.id ? 'bg-[#c1272d] text-white' : 'bg-[#c1272d]/10 text-[#c1272d]'
               )}>
                 {opt.icon}
               </div>

@@ -20,8 +20,8 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       className
     )}>
       {icon && (
-        <div className="w-16 h-16 rounded-full bg-[#ec3d3a]/08 flex items-center justify-center mb-4">
-          <div className="text-[#ec3d3a]/50 [&>svg]:w-8 [&>svg]:h-8">
+        <div className="w-16 h-16 rounded-full bg-[#c1272d]/08 flex items-center justify-center mb-4">
+          <div className="text-[#c1272d]/50 [&>svg]:w-8 [&>svg]:h-8">
             {icon}
           </div>
         </div>
@@ -33,7 +33,7 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       {action && (
         <Button
           onClick={action.onClick}
-          className="h-12 bg-[#ec3d3a] hover:bg-[#ec3d3a]/90 text-white"
+          className="h-12 bg-[#c1272d] hover:bg-[#c1272d]/90 text-white"
         >
           {action.label}
         </Button>

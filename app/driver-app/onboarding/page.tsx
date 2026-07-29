@@ -83,13 +83,13 @@ export default function DriverOnboardingPage() {
             <div
               key={i}
               className={`h-2 rounded-full transition-all ${
-                i === step ? 'w-6 bg-[#ec3d3a]' : i < step ? 'w-2 bg-[#ec3d3a]/40' : 'w-2 bg-[rgba(236,61,58,0.15)]'
+                i === step ? 'w-6 bg-[#c1272d]' : i < step ? 'w-2 bg-[#c1272d]/40' : 'w-2 bg-[rgba(236,61,58,0.15)]'
               }`}
             />
           ))}
         </div>
-        <p className="text-xs text-[#5A6474] text-center mb-2">Step {step + 1} of {STEPS.length}</p>
-        <h2 className="text-xl font-bold text-[#0F1923] text-center">{STEPS[step]}</h2>
+        <p className="text-sm text-[#5A6474] text-center mb-2">Step {step + 1} of {STEPS.length}</p>
+        <h2 className="text-2xl font-bold text-[#0F1923] text-center">{STEPS[step]}</h2>
       </div>
 
       <div className="flex-1 px-6 py-6 space-y-5">
@@ -101,7 +101,7 @@ export default function DriverOnboardingPage() {
                 placeholder="Thabo Molefe"
                 value={details.name}
                 onChange={e => setDetails(p => ({ ...p, name: e.target.value }))}
-                className="h-12"
+                className="h-14"
               />
             </div>
             <div className="space-y-2">
@@ -110,7 +110,7 @@ export default function DriverOnboardingPage() {
                 placeholder="GETS-12345"
                 value={details.getsNumber}
                 onChange={e => setDetails(p => ({ ...p, getsNumber: e.target.value }))}
-                className="h-12"
+                className="h-14"
               />
             </div>
           </>
@@ -133,7 +133,7 @@ export default function DriverOnboardingPage() {
                   placeholder={placeholder}
                   value={vehicle[key as keyof typeof vehicle]}
                   onChange={e => setVehicle(p => ({ ...p, [key]: e.target.value }))}
-                  className="h-12"
+                  className="h-14"
                 />
               </div>
             ))}
@@ -144,7 +144,7 @@ export default function DriverOnboardingPage() {
           <div className="space-y-2">
             <Label>Your association</Label>
             <Select value={selectedAssociation} onValueChange={(v) => setSelectedAssociation(v ?? '')}>
-              <SelectTrigger className="h-12">
+              <SelectTrigger className="h-14">
                 <SelectValue placeholder="Select your association" />
               </SelectTrigger>
               <SelectContent>
@@ -172,7 +172,7 @@ export default function DriverOnboardingPage() {
             <div className="space-y-2">
               <Label>Bank</Label>
               <Select value={banking.bankName} onValueChange={v => setBanking(p => ({ ...p, bankName: v ?? '' }))}>
-                <SelectTrigger className="h-12"><SelectValue placeholder="Select bank" /></SelectTrigger>
+                <SelectTrigger className="h-14"><SelectValue placeholder="Select bank" /></SelectTrigger>
                 <SelectContent>
                   {SA_BANKS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                 </SelectContent>
@@ -180,17 +180,23 @@ export default function DriverOnboardingPage() {
             </div>
             {[
               { key: 'accountName', label: 'Account holder name', placeholder: 'Thabo Molefe' },
-              { key: 'accountNumber', label: 'Account number', placeholder: '1234567890', type: 'number' },
-              { key: 'branchCode', label: 'Branch code', placeholder: '051001', type: 'number' },
-            ].map(({ key, label, placeholder, type }) => (
+              { key: 'accountNumber', label: 'Account number', placeholder: '1234567890', numeric: true },
+              { key: 'branchCode', label: 'Branch code', placeholder: '051001', numeric: true },
+            ].map(({ key, label, placeholder, numeric }) => (
               <div key={key} className="space-y-2">
-                <Label>{label}</Label>
+                <Label htmlFor={`banking-${key}`}>{label}</Label>
                 <Input
-                  type={type ?? 'text'}
+                  id={`banking-${key}`}
+                  // Banking numbers are text, NOT type="number": number inputs
+                  // strip leading zeros (SA branch codes like 051001) and allow
+                  // e/+/-, silently corrupting payout details.
+                  type="text"
+                  inputMode={numeric ? 'numeric' : undefined}
+                  pattern={numeric ? '[0-9]*' : undefined}
                   placeholder={placeholder}
                   value={banking[key as keyof typeof banking]}
                   onChange={e => setBanking(p => ({ ...p, [key]: e.target.value }))}
-                  className="h-12"
+                  className="h-14"
                 />
               </div>
             ))}
@@ -200,7 +206,7 @@ export default function DriverOnboardingPage() {
 
       <div className="px-6 pb-8 pt-2 flex gap-3">
         {step > 0 && (
-          <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-12 flex-1">
+          <Button variant="outline" onClick={() => setStep(s => s - 1)} className="h-14 flex-1">
             Back
           </Button>
         )}
@@ -208,7 +214,7 @@ export default function DriverOnboardingPage() {
           <Button
             onClick={nextStep}
             disabled={step === 0 && !details.name}
-            className="h-12 flex-1 bg-[#ec3d3a] text-white hover:bg-[#ec3d3a]/90"
+            className="h-14 flex-1 bg-[#c1272d] text-white hover:bg-[#c1272d]/90"
           >
             Continue →
           </Button>
@@ -216,7 +222,7 @@ export default function DriverOnboardingPage() {
           <Button
             onClick={handleFinish}
             disabled={loading}
-            className="h-12 flex-1 bg-[#ec3d3a] text-white hover:bg-[#ec3d3a]/90"
+            className="h-14 flex-1 bg-[#c1272d] text-white hover:bg-[#c1272d]/90"
           >
             {loading ? 'Setting up…' : 'Finish setup →'}
           </Button>

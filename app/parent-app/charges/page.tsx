@@ -115,7 +115,7 @@ export default async function ParentChargesPage() {
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-[#5A6474]">Amount</span>
-                      <span className="font-bold text-[#ec3d3a]">R{amount}</span>
+                      <span className="font-bold text-[var(--brand-ink)]">R{amount}</span>
                     </div>
                   </div>
                 </CardContent>

@@ -14,23 +14,21 @@ interface AddressPickerProps {
 
 const MapPicker = lazy(() => import('./MapPicker').then(m => ({ default: m.MapPicker })))
 
-// Nominatim rate limit: 1 req/sec. This queue serializes searches globally.
-let nominatimQueue = Promise.resolve()
-function rateLimitedFetch(url: string): Promise<any> {
-  const result = nominatimQueue.then(() =>
-    new Promise<any>((resolve) => {
-      setTimeout(async () => {
-        try {
-          const res = await fetch(url, { headers: { 'User-Agent': 'GETS/1.0' } })
-          resolve(res.ok ? res.json() : [])
-        } catch {
-          resolve([])
-        }
-      }, 1100)
-    })
-  )
-  nominatimQueue = result.then(() => {}) as any
-  return result
+type GeocodeResult = { display_name: string; lat: string; lon: string }
+
+// Geocode via our own /api/geocode proxy (same-origin). The proxy sends the
+// Nominatim-required identifying User-Agent server-side — a browser cannot set
+// that header, so calling Nominatim directly from here violated its usage
+// policy and risked our egress IP being blocked. The proxy also caches results.
+async function geocodeFetch(query: string, limit: number): Promise<GeocodeResult[]> {
+  try {
+    const res = await fetch(`/api/geocode?limit=${limit}&q=${encodeURIComponent(query)}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+  } catch {
+    return []
+  }
 }
 
 export function AddressPicker({ label, placeholder, value, lat, lng, onChange, geocodeOnBlur = true }: AddressPickerProps) {
@@ -47,9 +45,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
   async function geocodeText(text: string): Promise<boolean> {
     setGeocoding(true)
     try {
-      const data = await rateLimitedFetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text + ', South Africa')}&limit=1&addressdetails=1`
-      )
+      const data = await geocodeFetch(text, 1)
       if (data && data.length > 0) {
         const r = data[0]
         onChange(r.display_name, parseFloat(r.lat), parseFloat(r.lon))
@@ -75,9 +71,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
     }
     debounceRef.current = setTimeout(async () => {
       setSearching(true)
-      const data = await rateLimitedFetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', South Africa')}&limit=5&addressdetails=1`
-      )
+      const data = await geocodeFetch(query, 5)
       setResults(data ?? [])
       setSearchedOnce(true)
       setSearching(false)
@@ -122,7 +116,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               autoComplete="off"
-              className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#ec3d3a] bg-white"
+              className="w-full h-11 text-sm border border-[rgba(236,61,58,0.15)] rounded-xl px-3 outline-none focus:border-[#c1272d] bg-white"
             />
             {searching && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#5A6474]">Searching…</span>
@@ -146,7 +140,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
               {search.trim().length >= 3 && (
                 <button
                   onMouseDown={(e) => { e.preventDefault(); selectFreeText() }}
-                  className="w-full text-left px-3 py-3 text-sm font-medium text-[#ec3d3a] hover:bg-[#F0F2F5] border-t border-[rgba(236,61,58,0.08)]"
+                  className="w-full text-left px-3 py-3 text-sm font-medium text-[#c1272d] hover:bg-[#F0F2F5] border-t border-[rgba(236,61,58,0.08)]"
                 >
                   Use &ldquo;{search}&rdquo;
                 </button>
@@ -163,7 +157,7 @@ export function AddressPicker({ label, placeholder, value, lat, lng, onChange, g
           <button
             type="button"
             onClick={() => setShowMap(true)}
-            className="w-full h-10 text-xs font-medium text-[#ec3d3a] border border-dashed border-[rgba(236,61,58,0.25)] rounded-xl hover:bg-[#ec3d3a]/05 transition-colors"
+            className="w-full h-10 text-xs font-medium text-[#c1272d] border border-dashed border-[rgba(236,61,58,0.25)] rounded-xl hover:bg-[#c1272d]/05 transition-colors"
           >
             Drop a pin on the map instead
           </button>
