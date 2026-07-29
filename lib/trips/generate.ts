@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { optimizeRoute } from './optimize'
-import type { StopToOptimize, OptimizationResult } from './types'
+import type { StopToOptimize, OptimizationResult, ChildWithSchedule } from './types'
 import { TRIP_START_HOURS } from './types'
 
 async function getActiveChildrenWithSchedules(driverId: string, date: string) {
@@ -96,8 +96,8 @@ async function getActiveChildrenWithSchedules(driverId: string, date: string) {
     })
 }
 
-function buildStopsForType(
-  children: Awaited<ReturnType<typeof getActiveChildrenWithSchedules>>,
+export function buildStopsForType(
+  children: ChildWithSchedule[],
   tripType: 'MORNING' | 'AFTERNOON',
 ): StopToOptimize[] {
   if (tripType === 'MORNING') {
@@ -159,15 +159,13 @@ function buildStopsForType(
         windowLatest: c.afternoonPickupLatest ? parseTime(c.afternoonPickupLatest) : undefined,
       }))
 
-    // Deduplicate school stops by lat/lng (same school = same coordinates)
-    const seen = new Set<string>()
-    const uniqueSchoolStops = schoolStops.filter(s => {
-      const key = `${s.lat},${s.lng}`
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
-
+    // NOTE: do NOT deduplicate school pickups by coordinate. Each child needs
+    // their OWN school PICKUP leg: optimizeRoute pairs stops by childId and
+    // discards any child missing a pickup or dropoff. Collapsing same-school
+    // pickups to one child stranded every other child at that school (they got
+    // a home dropoff but no pickup, so they were dropped from the route and
+    // never taken home). This mirrors the morning path, which emits one
+    // per-child school DROPOFF with no dedup.
     const homeStops = children
       .filter(c => {
         if (c.pickupLat == null || c.pickupLng == null) return false
@@ -184,7 +182,7 @@ function buildStopsForType(
         windowLatest: c.afternoonDropoffLatest ? parseTime(c.afternoonDropoffLatest) : undefined,
       }))
 
-    return [...uniqueSchoolStops, ...homeStops]
+    return [...schoolStops, ...homeStops]
   }
 }
 
