@@ -88,6 +88,7 @@ CREATE TABLE "TripStop" (
   "notes"          TEXT,
   "missedReason"   TEXT,
   "completedAt"    TIMESTAMP(3),
+  "lateByMinutes"  INTEGER,
   CONSTRAINT "TripStop_pkey" PRIMARY KEY ("id")
 );
 CREATE INDEX "TripStop_tripId_stopOrder_idx" ON "TripStop"("tripId", "stopOrder");

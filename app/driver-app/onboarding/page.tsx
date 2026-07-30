@@ -8,13 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DriverTopBar } from '@/components/driver/DriverTopBar'
+import { AddressPicker } from '@/components/shared/AddressPicker'
 
 const SA_BANKS = [
   'Absa', 'African Bank', 'Bidvest Bank', 'Capitec Bank', 'Discovery Bank',
   'FNB', 'Investec', 'Nedbank', 'Standard Bank', 'TymeBank',
 ]
 
-const STEPS = ['Your details', 'Your vehicle', 'Your association', 'Banking details']
+const STEPS = ['Your details', 'Your vehicle', 'Start location', 'Your association', 'Banking details']
 
 export default function DriverOnboardingPage() {
   const router = useRouter()
@@ -25,13 +26,16 @@ export default function DriverOnboardingPage() {
   const [vehicle, setVehicle] = useState({
     make: '', model: '', year: '', registration: '', colour: '', capacity: '',
   })
+  const [baseLocation, setBaseLocation] = useState<{ address: string; lat: number | null; lng: number | null }>({
+    address: '', lat: null, lng: null,
+  })
   const [associations, setAssociations] = useState<{ id: string; name: string; region: string }[]>([])
   const [selectedAssociation, setSelectedAssociation] = useState('')
   const [banking, setBanking] = useState({
     bankName: '', accountNumber: '', branchCode: '', accountName: '',
   })
 
-  // Load associations on step 2
+  // Load associations on step 3
   async function loadAssociations() {
     try {
       const res = await fetch('/api/associations')
@@ -49,8 +53,8 @@ export default function DriverOnboardingPage() {
     // Validate current step before advancing
     if (step === 0 && !details.name.trim()) { toast.error('Please enter your name'); return }
     if (step === 1 && !vehicle.make.trim() && !vehicle.model.trim()) { toast.error('Please enter vehicle details'); return }
-    // Load associations just before showing step 2
-    if (s === 2) await loadAssociations()
+    // Load associations just before showing step 3
+    if (s === 3) await loadAssociations()
     setStep(s)
   }
 
@@ -60,7 +64,7 @@ export default function DriverOnboardingPage() {
       const res = await fetch('/api/driver/onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ details, vehicle, associationId: selectedAssociation, banking }),
+        body: JSON.stringify({ details, vehicle, baseLocation, associationId: selectedAssociation, banking }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to complete setup')
@@ -142,6 +146,23 @@ export default function DriverOnboardingPage() {
 
         {step === 2 && (
           <div className="space-y-2">
+            <AddressPicker
+              label="Where does your day start?"
+              placeholder="Search your home or depot address"
+              value={baseLocation.address}
+              lat={baseLocation.lat}
+              lng={baseLocation.lng}
+              onChange={(address, lat, lng) => setBaseLocation({ address, lat, lng })}
+            />
+            <p className="text-xs text-[#5A6474]">
+              This is where you usually start your route from — we use it to plan your
+              first stop. You can update this later.
+            </p>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-2">
             <Label>Your association</Label>
             <Select value={selectedAssociation} onValueChange={(v) => setSelectedAssociation(v ?? '')}>
               <SelectTrigger className="h-14">
@@ -164,7 +185,7 @@ export default function DriverOnboardingPage() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <>
             <p className="text-sm text-[#5A6474] bg-[#fdc73e]/10 rounded-xl p-3">
               Your banking details are used for payouts when payments go live. They are stored securely and never shared.
@@ -210,7 +231,7 @@ export default function DriverOnboardingPage() {
             Back
           </Button>
         )}
-        {step < 3 ? (
+        {step < 4 ? (
           <Button
             onClick={nextStep}
             disabled={step === 0 && !details.name}

@@ -30,6 +30,8 @@ export interface StopToOptimize {
   lng: number
   windowEarliest?: number
   windowLatest?: number
+  /** This child's parent has an overdue balance — used as a soft ordering tie-break, not a hard reorder. */
+  overdue?: boolean
   notes?: string
 }
 
@@ -44,6 +46,8 @@ export interface OptimizedStop {
   estimatedArrivalMinutes: number
   distanceFromPrevMeters: number
   notes?: string
+  /** Set when the estimated arrival falls after windowLatest — minutes late. */
+  lateByMinutes?: number
 }
 
 export interface OptimizationResult {
@@ -88,6 +92,8 @@ export interface TripStopData {
   completedAt: string | null
   arrivedAt: string | null
   waitingChargeCents: number | null
+  /** Minutes the estimated arrival fell after the child's windowLatest, if any. */
+  lateByMinutes: number | null
   child?: { name: string; schoolName: string }
   /** Set only in the DRIVER branch — whether this stop's parent has an overdue balance */
   paymentStatus?: 'PAID' | 'OVERDUE'
