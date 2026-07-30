@@ -36,6 +36,14 @@ export async function POST(
     if (trip.driverId !== driver.id) {
       return NextResponse.json({ error: 'You do not own this trip' }, { status: 403 })
     }
+    // Arrival is only valid on a live trip (matches the driver UI, which shows
+    // arrival controls only when IN_PROGRESS).
+    if (trip.status !== 'IN_PROGRESS') {
+      return NextResponse.json(
+        { error: `Trip is not in progress (status: ${trip.status}).`, status: trip.status },
+        { status: 409 },
+      )
+    }
 
     // Fetch the stop (must belong to this trip)
     const { data: stop } = await supabase
