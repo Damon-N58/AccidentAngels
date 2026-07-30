@@ -6,9 +6,23 @@ import { ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { ParentTopBar } from '@/components/parent/ParentTopBar'
 import { DaySelector } from '@/components/trips/DaySelector'
-import { TimeWindowPicker } from '@/components/trips/TimeWindowPicker'
 import { Button } from '@/components/ui/button'
 import type { ChildScheduleData } from '@/lib/trips/types'
+
+/** Single time input (replaces the old earliest–latest window picker). */
+function TimeField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <label className="flex items-center justify-between gap-3">
+      <span className="text-sm text-[#0F1923]">{label}</span>
+      <input
+        type="time"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="h-11 rounded-xl border border-[rgba(236,61,58,0.15)] bg-white px-3 text-base text-[#0F1923] outline-none focus:border-[#c1272d]"
+      />
+    </label>
+  )
+}
 
 export default function ParentChildSchedulePage({
   params,
@@ -23,14 +37,12 @@ export default function ParentChildSchedulePage({
   const [saving, setSaving] = useState(false)
 
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([1, 2, 3, 4, 5])
-  const [morningPickupEarliest, setMorningPickupEarliest] = useState('06:45')
-  const [morningPickupLatest, setMorningPickupLatest] = useState('07:15')
-  const [morningDropoffEarliest, setMorningDropoffEarliest] = useState('07:45')
-  const [morningDropoffLatest, setMorningDropoffLatest] = useState('08:00')
-  const [afternoonPickupEarliest, setAfternoonPickupEarliest] = useState('14:00')
-  const [afternoonPickupLatest, setAfternoonPickupLatest] = useState('14:30')
-  const [afternoonDropoffEarliest, setAfternoonDropoffEarliest] = useState('14:45')
-  const [afternoonDropoffLatest, setAfternoonDropoffLatest] = useState('15:30')
+  // Single times (not windows). Each is persisted into BOTH the *Earliest and
+  // *Latest DB columns so the schema is unchanged and nothing downstream breaks.
+  const [morningPickup, setMorningPickup] = useState('06:45')
+  const [morningDropoff, setMorningDropoff] = useState('08:00')
+  const [afternoonPickup, setAfternoonPickup] = useState('14:00')
+  const [afternoonDropoff, setAfternoonDropoff] = useState('15:00')
 
   useEffect(() => {
     const load = async () => {
@@ -49,14 +61,15 @@ export default function ParentChildSchedulePage({
           if (active) {
             setSchedule(active)
             setDaysOfWeek(active.daysOfWeek)
-            if (active.morningPickupEarliest) setMorningPickupEarliest(active.morningPickupEarliest)
-            if (active.morningPickupLatest) setMorningPickupLatest(active.morningPickupLatest)
-            if (active.morningDropoffEarliest) setMorningDropoffEarliest(active.morningDropoffEarliest)
-            if (active.morningDropoffLatest) setMorningDropoffLatest(active.morningDropoffLatest)
-            if (active.afternoonPickupEarliest) setAfternoonPickupEarliest(active.afternoonPickupEarliest)
-            if (active.afternoonPickupLatest) setAfternoonPickupLatest(active.afternoonPickupLatest)
-            if (active.afternoonDropoffEarliest) setAfternoonDropoffEarliest(active.afternoonDropoffEarliest)
-            if (active.afternoonDropoffLatest) setAfternoonDropoffLatest(active.afternoonDropoffLatest)
+            // Prefer the stored Earliest as the single time (falls back to Latest).
+            const mp = active.morningPickupEarliest || active.morningPickupLatest
+            const md = active.morningDropoffEarliest || active.morningDropoffLatest
+            const ap = active.afternoonPickupEarliest || active.afternoonPickupLatest
+            const ad = active.afternoonDropoffEarliest || active.afternoonDropoffLatest
+            if (mp) setMorningPickup(mp)
+            if (md) setMorningDropoff(md)
+            if (ap) setAfternoonPickup(ap)
+            if (ad) setAfternoonDropoff(ad)
           }
         }
       } catch {
@@ -75,14 +88,15 @@ export default function ParentChildSchedulePage({
       const body = {
         daysOfWeek,
         startDate: schedule?.startDate ?? new Date().toISOString().split('T')[0],
-        morningPickupEarliest,
-        morningPickupLatest,
-        morningDropoffEarliest,
-        morningDropoffLatest,
-        afternoonPickupEarliest,
-        afternoonPickupLatest,
-        afternoonDropoffEarliest,
-        afternoonDropoffLatest,
+        // Single time written to both window columns (earliest === latest).
+        morningPickupEarliest:    morningPickup,
+        morningPickupLatest:      morningPickup,
+        morningDropoffEarliest:   morningDropoff,
+        morningDropoffLatest:     morningDropoff,
+        afternoonPickupEarliest:  afternoonPickup,
+        afternoonPickupLatest:    afternoonPickup,
+        afternoonDropoffEarliest: afternoonDropoff,
+        afternoonDropoffLatest:   afternoonDropoff,
       }
       const res = await fetch(`/api/children/${childId}/schedule`, {
         method,
@@ -127,7 +141,7 @@ export default function ParentChildSchedulePage({
         {/* Explanation banner */}
         <div className="bg-[#c1272d]/5 rounded-xl p-4 text-sm text-[#5A6474] space-y-1.5">
           <p className="font-semibold text-[#0F1923]">How this works</p>
-          <p>Set the days your child needs transport and the time windows for pickup and dropoff. Your driver will see the daily schedule and route on their app.</p>
+          <p>Set the days your child needs transport and their pickup and drop-off times. Your driver will see the daily schedule and route on their app.</p>
           <p className="text-xs text-[#5A6474] mt-2">One-off schedule changes (e.g. skipping a day) can be done from the trips page.</p>
         </div>
 
@@ -137,38 +151,18 @@ export default function ParentChildSchedulePage({
           <DaySelector selectedDays={daysOfWeek} onChange={setDaysOfWeek} />
         </div>
 
-        {/* Morning window */}
+        {/* Morning times */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
-          <p className="font-semibold text-sm text-[#0F1923]">Morning pickup from home</p>
-          <TimeWindowPicker
-            label="Pickup window"
-            earliest={morningPickupEarliest}
-            latest={morningPickupLatest}
-            onChange={(e, l) => { setMorningPickupEarliest(e); setMorningPickupLatest(l) }}
-          />
-          <TimeWindowPicker
-            label="Dropoff at school by"
-            earliest={morningDropoffEarliest}
-            latest={morningDropoffLatest}
-            onChange={(e, l) => { setMorningDropoffEarliest(e); setMorningDropoffLatest(l) }}
-          />
+          <p className="font-semibold text-sm text-[#0F1923]">Morning</p>
+          <TimeField label="Pickup from home" value={morningPickup} onChange={setMorningPickup} />
+          <TimeField label="Drop off at school by" value={morningDropoff} onChange={setMorningDropoff} />
         </div>
 
-        {/* Afternoon window */}
+        {/* Afternoon times */}
         <div className="bg-white rounded-2xl border border-[rgba(236,61,58,0.10)] p-4 space-y-3">
-          <p className="font-semibold text-sm text-[#0F1923]">Afternoon pickup from school</p>
-          <TimeWindowPicker
-            label="Pickup window"
-            earliest={afternoonPickupEarliest}
-            latest={afternoonPickupLatest}
-            onChange={(e, l) => { setAfternoonPickupEarliest(e); setAfternoonPickupLatest(l) }}
-          />
-          <TimeWindowPicker
-            label="Dropoff at home by"
-            earliest={afternoonDropoffEarliest}
-            latest={afternoonDropoffLatest}
-            onChange={(e, l) => { setAfternoonDropoffEarliest(e); setAfternoonDropoffLatest(l) }}
-          />
+          <p className="font-semibold text-sm text-[#0F1923]">Afternoon</p>
+          <TimeField label="Pickup from school" value={afternoonPickup} onChange={setAfternoonPickup} />
+          <TimeField label="Drop off at home by" value={afternoonDropoff} onChange={setAfternoonDropoff} />
         </div>
 
         <Button
