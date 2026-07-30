@@ -10,14 +10,6 @@ const PAYSTACK_BASE = 'https://api.paystack.co'
 // than blindly re-charged (which would double-charge once the pending settles).
 const DEFINITIVE_DECLINE_STATUSES = new Set(['failed', 'abandoned', 'reversed'])
 
-// Paystack checkout channels offered during payment-method setup. Configurable
-// via env (comma-separated) so Capitec Pay can be enabled once confirmed on the
-// Paystack account; defaults to card only.
-const PAYSTACK_CHANNELS = (process.env.PAYSTACK_CHANNELS ?? 'card')
-  .split(',')
-  .map(c => c.trim())
-  .filter(Boolean)
-
 async function paystackRequest<T>(
   method: 'GET' | 'POST',
   path: string,
@@ -63,13 +55,7 @@ export class PaystackCardProvider implements PaymentProvider {
           amount:   50,
           reference,
           metadata: { parentId: params.parentId, purpose: 'card_setup' },
-          // Checkout channels are configurable so Capitec Pay (and other
-          // Paystack ZA channels) can be offered without a code change — set
-          // PAYSTACK_CHANNELS, e.g. "card,capitec". Defaults to card only.
-          // NOTE: recurring monthly billing reuses the authorization_code from
-          // this setup; confirm in test mode that a chosen channel returns a
-          // reusable authorization before relying on it for unattended debits.
-          channels: PAYSTACK_CHANNELS,
+          channels: ['card'],
         }
       )
       return { success: true, authorizationUrl: data.authorization_url, reference: data.reference }
