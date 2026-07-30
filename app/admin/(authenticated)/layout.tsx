@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, Building2, CreditCard, ShieldCheck, Settings, Flag } from 'lucide-react'
+import { LayoutDashboard, Building2, CreditCard, ShieldCheck, Settings, Flag, Receipt } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth'
 import { Logo } from '@/components/ui/Logo'
 
@@ -8,6 +8,7 @@ const NAV = [
   { href: '/admin/drivers',        label: 'Drivers',       Icon: ShieldCheck },
   { href: '/admin/associations',   label: 'Associations',  Icon: Building2 },
   { href: '/admin/payments',       label: 'Payments',      Icon: CreditCard },
+  { href: '/admin/transactions',   label: 'Transactions',  Icon: Receipt },
   { href: '/admin/reports',        label: 'Reports',       Icon: Flag },
   { href: '/admin/settings',       label: 'Settings',      Icon: Settings },
 ]

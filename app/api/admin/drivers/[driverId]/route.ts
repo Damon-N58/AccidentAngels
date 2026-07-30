@@ -39,6 +39,7 @@ export async function GET(
       vehicleYear:            driver.vehicleYear,
       vehicleColour:          driver.vehicleColour,
       vehicleCapacity:        driver.vehicleCapacity,
+      paystackSubAccountCode: driver.paystackSubAccountCode ?? null,
       user: {
         name:  driver.user.name,
         phone: driver.user.phone,

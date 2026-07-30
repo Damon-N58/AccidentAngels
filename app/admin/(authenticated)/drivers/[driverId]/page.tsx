@@ -58,10 +58,13 @@ interface Driver {
   vehicleColour: string | null
   vehicleCapacity: number | null
   getsRegistrationNumber: string | null
+  paystackSubAccountCode: string | null
   user: { name: string; phone: string; email: string | null }
   association: { name: string; region: string } | null
   complianceDocs: Doc[]
 }
+
+interface Bank { name: string; code: string }
 
 export default function DriverDetailPage({ params }: { params: Promise<{ driverId: string }> }) {
   const { driverId } = use(params)
@@ -69,6 +72,43 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
   const [loading, setLoading] = useState(true)
   const [reviewing, setReviewing] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({})
+  const [banks, setBanks] = useState<Bank[]>([])
+  const [payout, setPayout] = useState<{ bankCode: string; accountNumber: string } | null>(null)
+  const [payoutBusy, setPayoutBusy] = useState(false)
+
+  async function openPayout() {
+    setPayout({ bankCode: '', accountNumber: '' })
+    if (!banks.length) {
+      try { const r = await fetch('/api/admin/paystack?resource=banks'); if (r.ok) setBanks(await r.json()) } catch { /* can still type code */ }
+    }
+  }
+
+  async function createDriverSubAccount() {
+    if (!driver || !payout) return
+    if (!payout.bankCode || !payout.accountNumber) { toast.error('Bank and account number are required'); return }
+    setPayoutBusy(true)
+    try {
+      const res = await fetch('/api/admin/paystack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'createSubAccount', targetType: 'driver', targetId: driver.id,
+          displayName: driver.user.name || `Driver ${driver.id.slice(0, 8)}`,
+          bankCode: payout.bankCode, accountNumber: payout.accountNumber,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to create payout account')
+      toast.success('Driver payout account created')
+      setPayout(null)
+      const updated = await fetch(`/api/admin/drivers/${driverId}`).then(r => r.json())
+      setDriver(updated)
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setPayoutBusy(false)
+    }
+  }
 
   useEffect(() => {
     fetch(`/api/admin/drivers/${driverId}`)
@@ -189,6 +229,60 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
           </CardContent>
         </Card>
       </div>
+
+      {/* Payout account (Paystack subaccount) — needed for the driver's split to
+          route to their bank; the code is the reference for billing disputes. */}
+      <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-[#0F1923] flex items-center gap-1.5">
+            <Building2 className="w-4 h-4" /> Payout account
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {driver.paystackSubAccountCode ? (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[#5A6474]">Account code</span>
+              <code className="font-mono text-[#0F1923] bg-[#F8F9FB] px-2 py-0.5 rounded">{driver.paystackSubAccountCode}</code>
+            </div>
+          ) : payout ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-[#5A6474]">Bank</label>
+                <select
+                  value={payout.bankCode}
+                  onChange={e => setPayout(p => p && { ...p, bankCode: e.target.value })}
+                  className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none"
+                >
+                  <option value="">{banks.length ? 'Select bank…' : 'Loading banks…'}</option>
+                  {banks.map(b => <option key={b.code} value={b.code}>{b.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-[#5A6474]">Account number</label>
+                <input
+                  inputMode="numeric"
+                  value={payout.accountNumber}
+                  onChange={e => setPayout(p => p && { ...p, accountNumber: e.target.value })}
+                  className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none"
+                />
+              </div>
+              <div className="col-span-2 flex gap-2">
+                <Button onClick={createDriverSubAccount} disabled={payoutBusy} className="h-9 bg-[#c1272d] text-white hover:bg-[#c1272d]/90 rounded-xl text-sm">
+                  {payoutBusy ? 'Creating…' : 'Create at Paystack'}
+                </Button>
+                <Button onClick={() => setPayout(null)} className="h-9 bg-white border border-input text-[#5A6474] rounded-xl text-sm">Cancel</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[#b8860b]">⚠ No payout account — the driver’s share can’t route to their bank yet.</span>
+              <Button onClick={openPayout} className="h-9 bg-white border border-[#c1272d] text-[#c1272d] hover:bg-[#c1272d]/5 rounded-xl text-sm shrink-0">
+                Create payout account
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Compliance documents */}
       <div>
