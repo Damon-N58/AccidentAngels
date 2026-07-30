@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     const [body, bodyErr] = await validateAndParseJson(request)
     if (bodyErr) return bodyErr
-    const { details, vehicle, associationId, banking } = body as Record<string, any>
+    const { details, vehicle, baseLocation, associationId, banking } = body as Record<string, any>
     // Monthly fee the driver charges per child, entered in Rand → stored as cents.
     const monthlyFeeRands = Number(banking?.monthlyFeeRands ?? details?.monthlyFeeRands ?? 0)
     const monthlyFeeCents = Number.isFinite(monthlyFeeRands) ? Math.max(0, Math.round(monthlyFeeRands * 100)) : 0
@@ -41,6 +41,9 @@ export async function POST(request: Request) {
       vehicleColour:          vehicle.colour?.trim() || null,
       vehicleCapacity:        vehicle.capacity ? parseInt(vehicle.capacity) : null,
       monthlyFeeCents:        monthlyFeeCents,
+      baseAddress:            baseLocation?.address?.trim() || null,
+      baseLat:                typeof baseLocation?.lat === 'number' ? baseLocation.lat : null,
+      baseLng:                typeof baseLocation?.lng === 'number' ? baseLocation.lng : null,
       bankName:               banking.bankName?.trim() || null,
       bankAccountNumber:      banking.accountNumber?.trim() ? encrypt(banking.accountNumber.trim()) : null,
       bankBranchCode:         banking.branchCode?.trim() ? encrypt(banking.branchCode.trim()) : null,
