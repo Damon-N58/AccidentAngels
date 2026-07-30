@@ -15,9 +15,9 @@ export function PaymentMethodPicker() {
       id: 'CAPITEC_PAY_VRP' as Method,
       icon: <Smartphone className="w-5 h-5" />,
       title: 'Capitec Pay',
-      desc: 'Recurring debit via your Capitec app. Most popular.',
+      desc: 'Pay from your Capitec app via Paystack. Set up once for monthly billing.',
       recommended: true,
-      enabled: false,
+      enabled: true,
     },
     {
       id: 'PAYSTACK_CARD' as Method,
@@ -78,10 +78,13 @@ export function PaymentMethodPicker() {
 
           {selected === opt.id && (
             <div className="mt-2 rounded-2xl border border-[rgba(236,61,58,0.15)] bg-white p-4">
-              {opt.id === 'PAYSTACK_CARD' && <PaystackCardSetup />}
-              {(opt.id === 'CAPITEC_PAY_VRP' || opt.id === 'DEBICHECK') && (
+              {/* Card and Capitec Pay both run the Paystack setup — Paystack's
+                  checkout presents whichever channels are enabled (see
+                  PAYSTACK_CHANNELS). DebiCheck remains a separate, unbuilt rail. */}
+              {(opt.id === 'PAYSTACK_CARD' || opt.id === 'CAPITEC_PAY_VRP') && <PaystackCardSetup />}
+              {opt.id === 'DEBICHECK' && (
                 <p className="text-sm text-center text-[#5A6474] py-4">
-                  This payment method is coming soon. In the meantime, please use a debit or credit card.
+                  This payment method is coming soon. In the meantime, please use a card or Capitec Pay.
                 </p>
               )}
             </div>

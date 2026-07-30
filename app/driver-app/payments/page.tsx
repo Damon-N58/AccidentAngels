@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { formatZAR } from '@/lib/utils/cents'
 import { decrypt } from '@/lib/auth/encryption'
 import { CreditCard, Building2, TrendingUp } from 'lucide-react'
+import { DriverPayoutSetup } from '@/components/payments/DriverPayoutSetup'
 
 export default async function DriverPaymentsPage() {
   const cookieStore = await cookies()
@@ -44,18 +45,9 @@ export default async function DriverPaymentsPage() {
           <p className="text-xs text-[#5A6474] mt-0.5">Your earnings below are a preview. Actual payouts will begin once payments go live.</p>
         </div>
 
-        {driver.paystackSubAccountCode && (
-          <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <CreditCard className="w-4 h-4 text-[var(--brand-ink)]" />
-                <span className="font-semibold text-sm text-[#0F1923]">Account code</span>
-              </div>
-              <p className="text-xs text-[#5A6474] mb-2">Quote this if you ever query a payment.</p>
-              <code className="font-mono text-sm text-[#0F1923] bg-[#F8F9FB] px-2 py-1 rounded inline-block">{driver.paystackSubAccountCode}</code>
-            </CardContent>
-          </Card>
-        )}
+        {/* Self-service payout account setup (creates the driver's Paystack
+            subaccount) + shows the Account code once set. */}
+        <DriverPayoutSetup initialAccountCode={driver.paystackSubAccountCode ?? null} />
 
         <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
           <CardContent className="p-4">
