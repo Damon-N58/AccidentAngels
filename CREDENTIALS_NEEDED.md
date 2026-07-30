@@ -41,7 +41,7 @@ AT_SENDER_ID     "AccidentAngels" (must be approved by Africa's Talking for prod
 ```
 PAYSTACK_SECRET_KEY              sk_live_... (keep secret!)
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY  pk_live_... (safe to expose)
-PAYSTACK_WEBHOOK_SECRET          set in Paystack dashboard → Webhooks
+PAYSTACK_WEBHOOK_SECRET          set to the SAME value as PAYSTACK_SECRET_KEY (Paystack signs webhooks with the secret key; there is no separate webhook secret)
 ```
 
 ---

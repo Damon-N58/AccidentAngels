@@ -101,6 +101,7 @@ export default async function ParentDashboardPage() {
       .from('WaitingCharge')
       .select('chargeCents, billedAt')
       .eq('parentId', parent.id)
+      .eq('isLive', true) // match the charges page + API; exclude pre-go-live dormant charges
       .is('billedAt', null),
     isPaymentsLive(),
   ])
