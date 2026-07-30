@@ -59,6 +59,7 @@ interface Driver {
   vehicleCapacity: number | null
   getsRegistrationNumber: string | null
   paystackSubAccountCode: string | null
+  monthlyFeeCents: number
   user: { name: string; phone: string; email: string | null }
   association: { name: string; region: string } | null
   complianceDocs: Doc[]
@@ -75,6 +76,32 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
   const [banks, setBanks] = useState<Bank[]>([])
   const [payout, setPayout] = useState<{ bankCode: string; accountNumber: string } | null>(null)
   const [payoutBusy, setPayoutBusy] = useState(false)
+  const [feeRands, setFeeRands] = useState('')
+  const [feeBusy, setFeeBusy] = useState(false)
+
+  useEffect(() => {
+    if (driver) setFeeRands(String(Math.round((driver.monthlyFeeCents ?? 0) / 100)))
+  }, [driver])
+
+  async function saveFee() {
+    if (!driver) return
+    setFeeBusy(true)
+    try {
+      const cents = Math.max(0, Math.round(Number(feeRands || '0') * 100))
+      const res = await fetch(`/api/admin/drivers/${driverId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ monthlyFeeCents: cents }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error ?? 'Failed to save')
+      toast.success('Monthly fee updated')
+      setDriver({ ...driver, monthlyFeeCents: cents })
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setFeeBusy(false)
+    }
+  }
 
   async function openPayout() {
     setPayout({ bankCode: '', accountNumber: '' })
@@ -229,6 +256,29 @@ export default function DriverDetailPage({ params }: { params: Promise<{ driverI
           </CardContent>
         </Card>
       </div>
+
+      {/* Monthly fee — the car's per-child rate. Snapshots into NEW contracts
+          on assignment; existing signed contracts keep their agreed amount. */}
+      <Card className="rounded-2xl border-[rgba(236,61,58,0.10)] shadow-none">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-[#0F1923] flex items-center gap-1.5">
+            <Car className="w-4 h-4" /> Monthly fee (per child)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center gap-2">
+          <span className="text-[#5A6474] text-sm">R</span>
+          <input
+            inputMode="numeric"
+            value={feeRands}
+            onChange={e => setFeeRands(e.target.value.replace(/[^0-9]/g, ''))}
+            className="h-9 w-28 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none"
+          />
+          <span className="text-[#5A6474] text-xs">/ month</span>
+          <Button onClick={saveFee} disabled={feeBusy} className="h-9 ml-2 bg-[#c1272d] text-white hover:bg-[#c1272d]/90 rounded-xl text-sm">
+            {feeBusy ? 'Saving…' : 'Save'}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Payout account (Paystack subaccount) — needed for the driver's split to
           route to their bank; the code is the reference for billing disputes. */}

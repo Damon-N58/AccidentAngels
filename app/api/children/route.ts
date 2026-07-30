@@ -135,7 +135,8 @@ export async function POST(request: Request) {
       pickupLng:      pickupLng ?? null,
       dropoffLat:     dropoffLat ?? null,
       dropoffLng:     dropoffLng ?? null,
-      monthlyFee:     null,
+      // Snapshot the driver's per-car monthly rate (display mirror of the contract).
+      monthlyFee:     driver?.monthlyFeeCents ?? null,
       startDate:      startDate ? new Date(startDate).toISOString() : now,
       isActive:       true,
       createdAt:      now,
@@ -173,7 +174,8 @@ export async function POST(request: Request) {
         parentId:               parent.id,
         childId:                child.id,
         contractVersion:        '1.0',
-        monthlyAmountCents:     0,
+        // Lock in the driver's monthly rate at signing (billing charges this).
+        monthlyAmountCents:     driver.monthlyFeeCents ?? 0,
         startDate:              startDate ? new Date(startDate).toISOString() : now,
         terms:                  {},
         // No driver-acceptance step: assigning the driver the parent chose
@@ -210,7 +212,7 @@ export async function POST(request: Request) {
           schoolName:          child.schoolName,
           pickupAddress:       child.pickupAddress,
           dropoffAddress:      child.dropoffAddress,
-          monthlyAmountCents:  0,
+          monthlyAmountCents:  contract.monthlyAmountCents,
           startDate:           new Date(contract.startDate),
           parentSignedAt:      new Date(now),
           generatedAt:         new Date(),

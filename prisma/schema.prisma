@@ -150,6 +150,11 @@ model Driver {
   vehicleCapacity     Int?
   vehicleColour       String?
 
+  // The monthly amount this driver charges per child (the car's rate).
+  // Snapshotted into Contract.monthlyAmountCents on assignment. Created by
+  // scripts/driver-monthly-fee.sql.
+  monthlyFeeCents     Int      @default(0)
+
   bankName              String?
   bankAccountNumber     String?
   bankBranchCode        String?

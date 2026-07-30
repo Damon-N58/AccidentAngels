@@ -43,7 +43,7 @@ export async function PATCH(
   if (body.driverId && body.driverId !== child.driverId) {
     const { data: newDriver } = await supabase
       .from('Driver')
-      .select('vehicleCapacity, status')
+      .select('vehicleCapacity, status, monthlyFeeCents')
       .eq('id', body.driverId)
       .maybeSingle()
     if (!newDriver || newDriver.status !== 'ACTIVE') {
@@ -99,13 +99,17 @@ export async function PATCH(
       .not('status', 'eq', 'CANCELLED')
       .maybeSingle()
     if (!existing) {
+      // Snapshot the driver's per-car monthly rate into the contract (billing
+      // charges this) and mirror it onto the child for display.
+      const { data: drv } = await supabase.from('Driver').select('monthlyFeeCents').eq('id', body.driverId).maybeSingle()
+      const monthlyAmountCents = drv?.monthlyFeeCents ?? 0
       const { error: contractErr } = await supabase.from('Contract').insert({
         id:                 crypto.randomUUID(),
         driverId:           body.driverId,
         parentId:           child.parentId,
         childId,
         contractVersion:    '1.0',
-        monthlyAmountCents: 0,
+        monthlyAmountCents,
         startDate:          (data?.startDate ?? nowIso),
         terms:              {},
         status:             'FULLY_SIGNED',
@@ -115,6 +119,7 @@ export async function PATCH(
         updatedAt:          nowIso,
       })
       if (contractErr) console.error('[children/PATCH] contract auto-create failed:', contractErr)
+      else await supabase.from('Child').update({ monthlyFee: monthlyAmountCents, updatedAt: nowIso }).eq('id', childId)
     }
   }
 
