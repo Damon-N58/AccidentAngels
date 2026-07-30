@@ -130,6 +130,37 @@ describe('generateTripsForDriver', () => {
     expect(morningTrip?.totalDistanceMeters as number).toBeGreaterThan(10000)
   })
 
+  it("respects the driver's vehicleCapacity when generating stop order", async () => {
+    const CHILD_2 = {
+      ...CHILD,
+      id: 'child-2',
+      name: 'Test Child 2',
+      parentId: 'parent-2',
+      pickupLat: -26.2101,
+      pickupLng: 28.0501,
+    }
+    seed('Child', [CHILD, CHILD_2])
+    seed('ChildSchedule', [fullDaySchedule(), fullDaySchedule({ id: 'sched-2', childId: 'child-2' })])
+    seed('ScheduleOverride', [])
+    seed('Trip', [])
+    seed('Driver', [{ id: 'driver-1', vehicleCapacity: 1 }])
+
+    const result = await generateTripsForDriver('driver-1', TEST_DATE)
+
+    const morningStops = mocks.tables['TripStop']
+      .filter(s => s.tripId === result.morningTripId)
+      .sort((a, b) => (a.stopOrder as number) - (b.stopOrder as number))
+
+    let onboard = 0
+    let maxOnboard = 0
+    for (const s of morningStops) {
+      if (s.type === 'PICKUP') { onboard++; maxOnboard = Math.max(maxOnboard, onboard) }
+      else onboard--
+    }
+    expect(maxOnboard).toBeLessThanOrEqual(1) // vehicleCapacity: 1
+    expect(morningStops).toHaveLength(4) // both children still routed, 2 stops each
+  })
+
   it('does not recreate a trip type that already exists for that driver/date', async () => {
     seed('Child', [CHILD])
     seed('ChildSchedule', [fullDaySchedule()])

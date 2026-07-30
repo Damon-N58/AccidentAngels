@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { optimizeRoute } from './optimize'
 import type { StopToOptimize, OptimizationResult } from './types'
 import { TRIP_START_HOURS } from './types'
+import { getOverdueParentIds } from '@/lib/payments/overdue-parents'
 
 async function getActiveChildrenWithSchedules(driverId: string, date: string) {
   const dayOfWeek = new Date(date).getDay()
@@ -99,6 +100,7 @@ async function getActiveChildrenWithSchedules(driverId: string, date: string) {
 function buildStopsForType(
   children: Awaited<ReturnType<typeof getActiveChildrenWithSchedules>>,
   tripType: 'MORNING' | 'AFTERNOON',
+  overdueParentIds: Set<string>,
 ): StopToOptimize[] {
   if (tripType === 'MORNING') {
     // Morning: pick each child up at home (PICKUP), then drop at school (DROPOFF).
@@ -124,6 +126,7 @@ function buildStopsForType(
       lng: c.pickupLng!,
       windowEarliest: c.morningPickupEarliest ? parseTime(c.morningPickupEarliest) : undefined,
       windowLatest: c.morningPickupLatest ? parseTime(c.morningPickupLatest) : undefined,
+      overdue: overdueParentIds.has(c.parentId),
     }))
 
     const dropoffs = routable.map(c => ({
@@ -135,6 +138,7 @@ function buildStopsForType(
       lng: c.dropoffLng!,
       windowEarliest: c.morningDropoffEarliest ? parseTime(c.morningDropoffEarliest) : undefined,
       windowLatest: c.morningDropoffLatest ? parseTime(c.morningDropoffLatest) : undefined,
+      overdue: overdueParentIds.has(c.parentId),
     }))
 
     return [...pickups, ...dropoffs]
@@ -157,6 +161,7 @@ function buildStopsForType(
         lng: c.dropoffLng!,
         windowEarliest: c.afternoonPickupEarliest ? parseTime(c.afternoonPickupEarliest) : undefined,
         windowLatest: c.afternoonPickupLatest ? parseTime(c.afternoonPickupLatest) : undefined,
+        overdue: overdueParentIds.has(c.parentId),
       }))
 
     // Deduplicate school stops by lat/lng (same school = same coordinates)
@@ -182,21 +187,28 @@ function buildStopsForType(
         lng: c.pickupLng!,
         windowEarliest: c.afternoonDropoffEarliest ? parseTime(c.afternoonDropoffEarliest) : undefined,
         windowLatest: c.afternoonDropoffLatest ? parseTime(c.afternoonDropoffLatest) : undefined,
+        overdue: overdueParentIds.has(c.parentId),
       }))
 
     return [...uniqueSchoolStops, ...homeStops]
   }
 }
 
-async function getDriverStartLocation(driverId: string): Promise<{ lat: number; lng: number } | undefined> {
+async function getDriverRouteContext(
+  driverId: string,
+): Promise<{ start?: { lat: number; lng: number }; vehicleCapacity?: number }> {
   const { data } = await supabase
     .from('Driver')
-    .select('baseLat, baseLng')
+    .select('baseLat, baseLng, vehicleCapacity')
     .eq('id', driverId)
     .maybeSingle()
 
-  if (data?.baseLat == null || data?.baseLng == null) return undefined
-  return { lat: data.baseLat, lng: data.baseLng }
+  return {
+    start: data?.baseLat != null && data?.baseLng != null
+      ? { lat: data.baseLat, lng: data.baseLng }
+      : undefined,
+    vehicleCapacity: data?.vehicleCapacity ?? undefined,
+  }
 }
 
 function parseTime(t: string): number {
@@ -243,7 +255,14 @@ async function createSingleTrip(
   const children = await getActiveChildrenWithSchedules(driverId, date)
   if (children.length === 0) return undefined
 
-  const stops = buildStopsForType(children, type)
+  let overdueParentIds = new Set<string>()
+  try {
+    overdueParentIds = await getOverdueParentIds(driverId)
+  } catch (err) {
+    console.error('[generate] payment check failed, defaulting all PAID:', err)
+  }
+
+  const stops = buildStopsForType(children, type, overdueParentIds)
   const startMinutes = parseTime(TRIP_START_HOURS[type])
 
   // Filter out stops with missing coordinates
@@ -251,8 +270,8 @@ async function createSingleTrip(
 
   let optimizationResult: OptimizationResult
   if (geocodedStops.length >= 2) {
-    const start = await getDriverStartLocation(driverId)
-    optimizationResult = optimizeRoute(geocodedStops, type, start)
+    const { start, vehicleCapacity } = await getDriverRouteContext(driverId)
+    optimizationResult = optimizeRoute(geocodedStops, type, start, { vehicleCapacity, tripStartMinutes: startMinutes })
   } else {
     // Not enough geocoded data — use original order
     const fallback = stops.map((s, i) => ({
@@ -307,6 +326,7 @@ async function createSingleTrip(
       estimatedTime: scheduledTime,
       status: 'PENDING',
       notes: s.notes ?? null,
+      lateByMinutes: s.lateByMinutes ?? null,
     }
   })
 

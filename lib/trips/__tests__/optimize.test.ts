@@ -126,3 +126,100 @@ describe('optimizeRoute', () => {
     expect(result.totalDurationSeconds).toBe(Math.round(minutesExact * 60))
   })
 })
+
+function maxConcurrentOnboard(stops: { type: 'PICKUP' | 'DROPOFF' }[]): number {
+  let onboard = 0
+  let max = 0
+  for (const s of stops) {
+    if (s.type === 'PICKUP') { onboard++; max = Math.max(max, onboard) }
+    else onboard--
+  }
+  return max
+}
+
+describe('optimizeRoute — vehicle capacity', () => {
+  const homes = Array.from({ length: 5 }, (_, i) => ({ lat: HOME_A1.lat + i * 0.0002, lng: HOME_A1.lng }))
+  const stops = homes.flatMap((home, i) => makeLeg(`c${i}`, `Child ${i}`, home, SCHOOL_A, 'MORNING'))
+
+  it('without a capacity limit, all children may be onboard at once', () => {
+    const result = optimizeRoute(stops, 'MORNING')
+    expect(maxConcurrentOnboard(result.stops)).toBe(5)
+  })
+
+  it('with a capacity limit, occupancy never exceeds it, and every stop is still generated', () => {
+    const result = optimizeRoute(stops, 'MORNING', undefined, { vehicleCapacity: 2 })
+    expect(maxConcurrentOnboard(result.stops)).toBeLessThanOrEqual(2)
+    expect(result.stops).toHaveLength(10)
+    expect(new Set(result.stops.map(s => s.childId))).toEqual(new Set(stops.map(s => s.childId)))
+  })
+})
+
+describe('optimizeRoute — payment status tie-break', () => {
+  const START = { lat: -26.20, lng: 28.05 }
+  const HOME_PAID = { lat: -26.19, lng: 28.05 }
+  const HOME_OVERDUE = { lat: -26.21, lng: 28.05 }
+  const SCHOOL = { lat: -26.20, lng: 28.06 }
+
+  it('visits a near-equidistant paid stop before an overdue one', () => {
+    const stops: StopToOptimize[] = [
+      { childId: 'paid', childName: 'Paid', type: 'PICKUP', address: 'a', lat: HOME_PAID.lat, lng: HOME_PAID.lng, overdue: false },
+      { childId: 'paid', childName: 'Paid', type: 'DROPOFF', address: 'b', lat: SCHOOL.lat, lng: SCHOOL.lng },
+      { childId: 'overdue', childName: 'Overdue', type: 'PICKUP', address: 'c', lat: HOME_OVERDUE.lat, lng: HOME_OVERDUE.lng, overdue: true },
+      { childId: 'overdue', childName: 'Overdue', type: 'DROPOFF', address: 'd', lat: SCHOOL.lat, lng: SCHOOL.lng },
+    ]
+    const result = optimizeRoute(stops, 'MORNING', START)
+    expect(result.stops[0].childId).toBe('paid')
+  })
+})
+
+describe('optimizeRoute — time windows', () => {
+  it('does not evaluate windows at all when tripStartMinutes is omitted', () => {
+    const stops: StopToOptimize[] = [
+      { childId: 'c1', childName: 'C', type: 'PICKUP', address: 'a', lat: HOME_A1.lat, lng: HOME_A1.lng, windowLatest: 1 },
+      { childId: 'c1', childName: 'C', type: 'DROPOFF', address: 'b', lat: SCHOOL_A.lat, lng: SCHOOL_A.lng },
+    ]
+    const result = optimizeRoute(stops, 'MORNING')
+    expect(result.stops[0].lateByMinutes).toBeUndefined()
+  })
+
+  it('waits for windowEarliest rather than departing early', () => {
+    const stops: StopToOptimize[] = [
+      { childId: 'c1', childName: 'C', type: 'PICKUP', address: 'a', lat: HOME_A1.lat, lng: HOME_A1.lng, windowEarliest: 400 },
+      { childId: 'c1', childName: 'C', type: 'DROPOFF', address: 'b', lat: SCHOOL_A.lat, lng: SCHOOL_A.lng },
+    ]
+    // Start exactly at the pickup point, so natural arrival is ~0 minutes — well before windowEarliest.
+    const result = optimizeRoute(stops, 'MORNING', HOME_A1, { tripStartMinutes: 360 })
+    expect(result.stops[0].estimatedArrivalMinutes).toBe(40) // 400 - 360
+    expect(result.stops[0].lateByMinutes).toBeUndefined()
+  })
+
+  it('flags lateByMinutes when the estimated arrival falls after windowLatest', () => {
+    const stops: StopToOptimize[] = [
+      { childId: 'c1', childName: 'C', type: 'PICKUP', address: 'a', lat: HOME_A1.lat, lng: HOME_A1.lng, windowLatest: 365 },
+      { childId: 'c1', childName: 'C', type: 'DROPOFF', address: 'b', lat: SCHOOL_A.lat, lng: SCHOOL_A.lng },
+    ]
+    // Starting from far-away SCHOOL_B makes the first leg long enough to blow past a 5-minute window.
+    const result = optimizeRoute(stops, 'MORNING', SCHOOL_B, { tripStartMinutes: 360 })
+    const dist = haversine(SCHOOL_B.lat, SCHOOL_B.lng, HOME_A1.lat, HOME_A1.lng)
+    const minutesExact = travelMinutesExact(dist)
+    const expectedLate = Math.round(360 + minutesExact - 365)
+
+    expect(result.stops[0].estimatedArrivalMinutes).toBe(Math.round(minutesExact))
+    expect(result.stops[0].lateByMinutes).toBe(expectedLate)
+  })
+
+  it('a tighter windowLatest deadline wins a near-equidistant tie', () => {
+    const START = { lat: -26.20, lng: 28.05 }
+    const HOME_TIGHT = { lat: -26.20, lng: 28.04 }
+    const HOME_LOOSE = { lat: -26.20, lng: 28.06 }
+    const SCHOOL = { lat: -26.20, lng: 28.05 }
+    const stops: StopToOptimize[] = [
+      { childId: 'tight', childName: 'Tight', type: 'PICKUP', address: 'a', lat: HOME_TIGHT.lat, lng: HOME_TIGHT.lng, windowLatest: 400 },
+      { childId: 'tight', childName: 'Tight', type: 'DROPOFF', address: 'b', lat: SCHOOL.lat, lng: SCHOOL.lng },
+      { childId: 'loose', childName: 'Loose', type: 'PICKUP', address: 'c', lat: HOME_LOOSE.lat, lng: HOME_LOOSE.lng, windowLatest: 500 },
+      { childId: 'loose', childName: 'Loose', type: 'DROPOFF', address: 'd', lat: SCHOOL.lat, lng: SCHOOL.lng },
+    ]
+    const result = optimizeRoute(stops, 'MORNING', START)
+    expect(result.stops[0].childId).toBe('tight')
+  })
+})
