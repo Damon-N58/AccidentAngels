@@ -12,7 +12,10 @@ export async function GET(request: Request) {
     const { data: drivers } = await supabase
       .from('Driver')
       .select('*, user:User(id, name, phone), association:Association(id, name, region), complianceDocs:ComplianceDocument(status)')
-      .in('status', ['ACTIVE', 'PENDING_COMPLIANCE'])
+      // Only ACTIVE drivers are assignable — child creation rejects non-ACTIVE,
+      // so offering PENDING_COMPLIANCE drivers here dead-ended parents at the
+      // final step with a cryptic "Driver not found or not active".
+      .eq('status', 'ACTIVE')
       .order('createdAt', { ascending: false })
 
     const result = (drivers ?? []).map((d: any) => ({

@@ -43,13 +43,24 @@ export async function PATCH(
   if (trip.driverId !== driver.id) {
     return NextResponse.json({ error: 'You do not own this trip' }, { status: 403 })
   }
+  // Stops may only be actioned on a live (started, not-yet-finished) trip. This
+  // matches the driver UI (stop controls render only when IN_PROGRESS) and,
+  // server-side, prevents completing stops on a SCHEDULED trip and — critically
+  // — resurrecting a CANCELLED/COMPLETED trip back to COMPLETED via the
+  // auto-complete below.
+  if (trip.status !== 'IN_PROGRESS') {
+    return NextResponse.json(
+      { error: `Trip is not in progress (status: ${trip.status}).`, status: trip.status },
+      { status: 409 },
+    )
+  }
 
   const now = new Date().toISOString()
 
-  // Fetch the stop first so we have arrivedAt for waiting-charge calculation
+  // Fetch the stop first so we have arrivedAt + type for waiting-charge calculation
   const { data: stopBefore } = await supabase
     .from('TripStop')
-    .select('id, childId, arrivedAt, status')
+    .select('id, childId, arrivedAt, status, type')
     .eq('id', body.stopId)
     .eq('tripId', tripId)
     .maybeSingle()
@@ -62,10 +73,12 @@ export async function PATCH(
     return NextResponse.json({ error: 'Stop already finalised', status: stopBefore.status }, { status: 409 })
   }
 
-  // Compute waiting charge when completing a stop
+  // Compute waiting charge when completing a stop — only for PICKUP stops.
+  // Waiting time is charged while the driver waits for a child to be brought
+  // out; a DROPOFF must never accrue a charge (dropping off is not waiting).
   let waitingChargeCents = 0
   let waitingChargeResult: ReturnType<typeof calcWaitingCharge> | null = null
-  if (body.status === 'COMPLETED' && stopBefore?.arrivedAt) {
+  if (body.status === 'COMPLETED' && stopBefore?.arrivedAt && stopBefore.type === 'PICKUP') {
     // arrivedAt comes from a TIMESTAMP(3) column (no tz) — parse as UTC, not local.
     waitingChargeResult = calcWaitingCharge(toUtcDate(stopBefore.arrivedAt), new Date(now))
     waitingChargeCents = waitingChargeResult.chargeCents

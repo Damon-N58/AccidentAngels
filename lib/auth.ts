@@ -72,7 +72,7 @@ export async function createSessionToken(userId: string, role: string): Promise<
 
 export async function verifySessionToken(token: string): Promise<{ userId: string; role: string } | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET)
+    const { payload } = await jwtVerify(token, SECRET, { algorithms: ['HS256'] })
     return payload as { userId: string; role: string }
   } catch {
     return null

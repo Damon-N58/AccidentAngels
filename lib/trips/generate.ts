@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { optimizeRoute } from './optimize'
-import type { StopToOptimize, OptimizationResult } from './types'
+import type { StopToOptimize, OptimizationResult, ChildWithSchedule } from './types'
 import { TRIP_START_HOURS } from './types'
 import { getOverdueParentIds } from '@/lib/payments/overdue-parents'
 
@@ -97,8 +97,8 @@ async function getActiveChildrenWithSchedules(driverId: string, date: string) {
     })
 }
 
-function buildStopsForType(
-  children: Awaited<ReturnType<typeof getActiveChildrenWithSchedules>>,
+export function buildStopsForType(
+  children: ChildWithSchedule[],
   tripType: 'MORNING' | 'AFTERNOON',
   overdueParentIds: Set<string>,
 ): StopToOptimize[] {
@@ -164,15 +164,13 @@ function buildStopsForType(
         overdue: overdueParentIds.has(c.parentId),
       }))
 
-    // Deduplicate school stops by lat/lng (same school = same coordinates)
-    const seen = new Set<string>()
-    const uniqueSchoolStops = schoolStops.filter(s => {
-      const key = `${s.lat},${s.lng}`
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
-
+    // NOTE: do NOT deduplicate school pickups by coordinate. Each child needs
+    // their OWN school PICKUP leg: optimizeRoute pairs stops by childId and
+    // discards any child missing a pickup or dropoff. Collapsing same-school
+    // pickups to one child stranded every other child at that school (they got
+    // a home dropoff but no pickup, so they were dropped from the route and
+    // never taken home). This mirrors the morning path, which emits one
+    // per-child school DROPOFF with no dedup.
     const homeStops = children
       .filter(c => {
         if (c.pickupLat == null || c.pickupLng == null) return false
@@ -190,7 +188,7 @@ function buildStopsForType(
         overdue: overdueParentIds.has(c.parentId),
       }))
 
-    return [...uniqueSchoolStops, ...homeStops]
+    return [...schoolStops, ...homeStops]
   }
 }
 
@@ -217,9 +215,12 @@ function parseTime(t: string): number {
 }
 
 function timeToDate(date: string, minutes: number): string {
-  const d = new Date(date + 'T00:00:00')
-  d.setMinutes(d.getMinutes() + minutes)
-  return d.toISOString()
+  // TRIP_START_HOURS are South African local times (SAST = UTC+2, no DST).
+  // Anchor to SAST midnight so the stored timestamp renders as the intended
+  // local time; without the offset a 06:00 start was stored as 06:00Z and shown
+  // to SA users as 08:00.
+  const sastMidnight = Date.parse(date.slice(0, 10) + 'T00:00:00+02:00')
+  return new Date(sastMidnight + minutes * 60_000).toISOString()
 }
 
 export async function generateTripsForDriver(
@@ -289,7 +290,6 @@ async function createSingleTrip(
     optimizationResult = { stops: fallback, totalDistanceMeters: 0, totalDurationSeconds: 0 }
   }
 
-  const tripStart = new Date(date + 'T' + TRIP_START_HOURS[type])
   const tripId = crypto.randomUUID()
 
   // Insert trip

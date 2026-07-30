@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { hasOutstandingBalance } from '@/lib/payments/balance-check'
+import { checkDriverCapacity } from '@/lib/drivers/capacity'
 import { generateContractPdf } from '@/lib/pdf/contract-generator'
 import { getSupabaseAdmin, contractPdfPath, CONTRACTS_BUCKET } from '@/lib/storage/supabase'
 import { sendSms, smsTemplates } from '@/lib/sms/africas-talking'
@@ -67,6 +68,15 @@ export async function POST(request: Request) {
         .from('Driver').select('*, user:User(*)')
         .eq('id', driverId).eq('status', 'ACTIVE').maybeSingle()
       if (!d) return NextResponse.json({ error: 'Driver not found or not active' }, { status: 404 })
+
+      // Never load a driver past their vehicle's licensed capacity.
+      const cap = await checkDriverCapacity(driverId, d.vehicleCapacity)
+      if (!cap.ok) {
+        return NextResponse.json(
+          { error: `This driver is full (${cap.capacity} seats). Please choose another driver.`, code: 'DRIVER_AT_CAPACITY' },
+          { status: 409 },
+        )
+      }
       driver = d
     }
 
@@ -125,7 +135,8 @@ export async function POST(request: Request) {
       pickupLng:      pickupLng ?? null,
       dropoffLat:     dropoffLat ?? null,
       dropoffLng:     dropoffLng ?? null,
-      monthlyFee:     null,
+      // Snapshot the driver's per-car monthly rate (display mirror of the contract).
+      monthlyFee:     driver?.monthlyFeeCents ?? null,
       startDate:      startDate ? new Date(startDate).toISOString() : now,
       isActive:       true,
       createdAt:      now,
@@ -163,10 +174,14 @@ export async function POST(request: Request) {
         parentId:               parent.id,
         childId:                child.id,
         contractVersion:        '1.0',
-        monthlyAmountCents:     0,
+        // Lock in the driver's monthly rate at signing (billing charges this).
+        monthlyAmountCents:     driver.monthlyFeeCents ?? 0,
         startDate:              startDate ? new Date(startDate).toISOString() : now,
         terms:                  {},
-        status:                 'PENDING_DRIVER_SIGNATURE',
+        // No driver-acceptance step: assigning the driver the parent chose
+        // activates the arrangement immediately (driver auto-accepted).
+        status:                 'FULLY_SIGNED',
+        driverSignedAt:         now,
         parentSignedAt:         now,
         parentSignatureOtpHash: null,
         parentIpAddress:        ipAddress,
@@ -197,7 +212,7 @@ export async function POST(request: Request) {
           schoolName:          child.schoolName,
           pickupAddress:       child.pickupAddress,
           dropoffAddress:      child.dropoffAddress,
-          monthlyAmountCents:  0,
+          monthlyAmountCents:  contract.monthlyAmountCents,
           startDate:           new Date(contract.startDate),
           parentSignedAt:      new Date(now),
           generatedAt:         new Date(),

@@ -100,7 +100,7 @@ export async function GET(request: Request) {
     if (!parent) return NextResponse.json([], { status: 200 })
 
     const { data: children } = await supabase
-      .from('Child').select('driverId').eq('parentId', parent.id).eq('isActive', true)
+      .from('Child').select('id, driverId').eq('parentId', parent.id).eq('isActive', true)
     const driverIds = [...new Set((children ?? []).map(c => c.driverId).filter(Boolean))]
 
     if (driverIds.length === 0) return NextResponse.json([])

@@ -34,6 +34,7 @@ export default function DriverOnboardingPage() {
   const [banking, setBanking] = useState({
     bankName: '', accountNumber: '', branchCode: '', accountName: '',
   })
+  const [monthlyFeeRands, setMonthlyFeeRands] = useState('')
 
   // Load associations on step 3
   async function loadAssociations() {
@@ -64,7 +65,7 @@ export default function DriverOnboardingPage() {
       const res = await fetch('/api/driver/onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ details, vehicle, baseLocation, associationId: selectedAssociation, banking }),
+        body: JSON.stringify({ details, vehicle, baseLocation, associationId: selectedAssociation, banking: { ...banking, monthlyFeeRands } }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to complete setup')
@@ -221,6 +222,20 @@ export default function DriverOnboardingPage() {
                 />
               </div>
             ))}
+            <div className="space-y-2">
+              <Label htmlFor="monthlyFee">Monthly fee you charge per child (Rand)</Label>
+              <Input
+                id="monthlyFee"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="e.g. 650"
+                value={monthlyFeeRands}
+                onChange={e => setMonthlyFeeRands(e.target.value.replace(/[^0-9]/g, ''))}
+                className="h-14"
+              />
+              <p className="text-xs text-[#5A6474]">This is the amount each parent pays you per month. You can change it later.</p>
+            </div>
           </>
         )}
       </div>

@@ -15,8 +15,8 @@ export function PaymentMethodPicker() {
       id: 'CAPITEC_PAY_VRP' as Method,
       icon: <Smartphone className="w-5 h-5" />,
       title: 'Capitec Pay',
-      desc: 'Recurring debit via your Capitec app. Most popular.',
-      recommended: true,
+      desc: 'Pay from your Capitec app. Coming soon.',
+      recommended: false,
       enabled: false,
     },
     {

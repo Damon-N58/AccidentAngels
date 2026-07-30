@@ -4,6 +4,7 @@ import { verifyChildAccess } from '@/lib/auth/ownership'
 import { supabase } from '@/lib/supabase'
 import { validateAndParseJson } from '@/lib/request-validation'
 import { hasOutstandingBalance } from '@/lib/payments/balance-check'
+import { checkDriverCapacity } from '@/lib/drivers/capacity'
 
 export async function PATCH(
   request: Request,
@@ -38,6 +39,25 @@ export async function PATCH(
     }
   }
 
+  // Enforce vehicle capacity when (re)assigning to a driver.
+  if (body.driverId && body.driverId !== child.driverId) {
+    const { data: newDriver } = await supabase
+      .from('Driver')
+      .select('vehicleCapacity, status, monthlyFeeCents')
+      .eq('id', body.driverId)
+      .maybeSingle()
+    if (!newDriver || newDriver.status !== 'ACTIVE') {
+      return NextResponse.json({ error: 'Driver not found or not active' }, { status: 404 })
+    }
+    const cap = await checkDriverCapacity(body.driverId, newDriver.vehicleCapacity, childId)
+    if (!cap.ok) {
+      return NextResponse.json(
+        { error: `This driver is full (${cap.capacity} seats).`, code: 'DRIVER_AT_CAPACITY' },
+        { status: 409 },
+      )
+    }
+  }
+
   const updates: Record<string, any> = {}
   if (body.driverId !== undefined) updates.driverId = body.driverId || null
   if (body.name !== undefined) updates.name = body.name
@@ -63,6 +83,44 @@ export async function PATCH(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Assigning a driver here (e.g. from the parent's driver picker) activates the
+  // arrangement with no driver-acceptance step. Ensure a FULLY_SIGNED contract
+  // exists for this child+driver so billing/driver-active-list work — mirroring
+  // child creation. Idempotent: skip if a live contract already exists.
+  if (body.driverId && body.driverId !== child.driverId) {
+    const nowIso = new Date().toISOString()
+    const { data: existing } = await supabase
+      .from('Contract')
+      .select('id')
+      .eq('childId', childId)
+      .eq('driverId', body.driverId)
+      .not('status', 'eq', 'CANCELLED')
+      .maybeSingle()
+    if (!existing) {
+      // Snapshot the driver's per-car monthly rate into the contract (billing
+      // charges this) and mirror it onto the child for display.
+      const { data: drv } = await supabase.from('Driver').select('monthlyFeeCents').eq('id', body.driverId).maybeSingle()
+      const monthlyAmountCents = drv?.monthlyFeeCents ?? 0
+      const { error: contractErr } = await supabase.from('Contract').insert({
+        id:                 crypto.randomUUID(),
+        driverId:           body.driverId,
+        parentId:           child.parentId,
+        childId,
+        contractVersion:    '1.0',
+        monthlyAmountCents,
+        startDate:          (data?.startDate ?? nowIso),
+        terms:              {},
+        status:             'FULLY_SIGNED',
+        driverSignedAt:     nowIso,
+        parentSignedAt:     nowIso,
+        createdAt:          nowIso,
+        updatedAt:          nowIso,
+      })
+      if (contractErr) console.error('[children/PATCH] contract auto-create failed:', contractErr)
+      else await supabase.from('Child').update({ monthlyFee: monthlyAmountCents, updatedAt: nowIso }).eq('id', childId)
+    }
   }
 
   return NextResponse.json(data)

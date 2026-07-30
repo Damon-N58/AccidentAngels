@@ -39,6 +39,8 @@ export async function GET(
       vehicleYear:            driver.vehicleYear,
       vehicleColour:          driver.vehicleColour,
       vehicleCapacity:        driver.vehicleCapacity,
+      paystackSubAccountCode: driver.paystackSubAccountCode ?? null,
+      monthlyFeeCents:        driver.monthlyFeeCents ?? 0,
       user: {
         name:  driver.user.name,
         phone: driver.user.phone,
@@ -63,4 +65,23 @@ export async function GET(
     console.error('[admin/drivers/:id]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
+
+/** Admin: update a driver's monthly fee (the car's per-child rate, in cents). */
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ driverId: string }> },
+) {
+  const session = await getSession(request.headers.get('cookie'))
+  if (!session || session.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { driverId } = await params
+  const body = (await request.json().catch(() => null)) as Record<string, any> | null
+  if (body?.monthlyFeeCents == null || !Number.isFinite(+body.monthlyFeeCents)) {
+    return NextResponse.json({ error: 'monthlyFeeCents is required' }, { status: 400 })
+  }
+  const monthlyFeeCents = Math.max(0, Math.round(+body.monthlyFeeCents))
+  const { error } = await supabase.from('Driver').update({ monthlyFeeCents }).eq('id', driverId)
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ ok: true, monthlyFeeCents })
 }

@@ -63,9 +63,14 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#0F1923]">Platform Settings</h1>
-        <p className="text-sm text-[#5A6474]">Changes take effect immediately.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#0F1923]">Platform Settings</h1>
+          <p className="text-sm text-[#5A6474]">Changes take effect immediately.</p>
+        </div>
+        <a href="/admin/settings/splits" className="text-sm font-medium bg-white border border-[#c1272d] text-[#c1272d] rounded-xl px-4 py-2">
+          Split configuration →
+        </a>
       </div>
 
       {/* Payments live banner */}

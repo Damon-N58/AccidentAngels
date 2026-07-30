@@ -50,9 +50,14 @@ export default function ContractDetailPage({ params }: { params: Promise<{ contr
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // Send the code to the DRIVER (the signer), not the parent. Omitting
+        // `phone` makes send-otp fall back to the authenticated session user's
+        // number — the driver — which is what the sign route verifies against
+        // (verifyOtp(driver.user.phone, ...)). Passing the parent's number sent
+        // the code to the wrong person and the verify never matched, so drivers
+        // could never accept a contract.
         body: JSON.stringify({
           purpose: 'contract_sign',
-          phone: contract.parentPhone,
           role: 'DRIVER',
         }),
       })

@@ -12,6 +12,9 @@ export async function POST(request: Request) {
     const [body, bodyErr] = await validateAndParseJson(request)
     if (bodyErr) return bodyErr
     const { details, vehicle, baseLocation, associationId, banking } = body as Record<string, any>
+    // Monthly fee the driver charges per child, entered in Rand → stored as cents.
+    const monthlyFeeRands = Number(banking?.monthlyFeeRands ?? details?.monthlyFeeRands ?? 0)
+    const monthlyFeeCents = Number.isFinite(monthlyFeeRands) ? Math.max(0, Math.round(monthlyFeeRands * 100)) : 0
 
     if (!details?.name) {
       return NextResponse.json({ error: 'Full name is required' }, { status: 400 })
@@ -37,6 +40,7 @@ export async function POST(request: Request) {
       vehicleRegistration:    vehicle.registration?.trim() || null,
       vehicleColour:          vehicle.colour?.trim() || null,
       vehicleCapacity:        vehicle.capacity ? parseInt(vehicle.capacity) : null,
+      monthlyFeeCents:        monthlyFeeCents,
       baseAddress:            baseLocation?.address?.trim() || null,
       baseLat:                typeof baseLocation?.lat === 'number' ? baseLocation.lat : null,
       baseLng:                typeof baseLocation?.lng === 'number' ? baseLocation.lng : null,
