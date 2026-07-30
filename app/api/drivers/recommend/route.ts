@@ -80,11 +80,14 @@ export async function GET(request: Request) {
       } as CandidateDriver & { _raw: any }
     })
 
-    // Rank and slice top 20
-    const ranked = rankDrivers(candidates as CandidateDriver[], childPickupLat, childPickupLng).slice(0, 20)
+    // Rank and take the top 5 most efficient, eligible options for the parent.
+    const ranked = rankDrivers(candidates as CandidateDriver[], childPickupLat, childPickupLng).slice(0, 5)
 
-    // Map to response shape — eligible drivers always have 6 approved docs
-    const result = ranked.map((rd) => {
+    // Map to response shape — eligible drivers always have 6 approved docs (that
+    // includes the roadworthy certificate), are ACTIVE, and have spare capacity.
+    // The single highest composite score (efficiency + rating) is flagged as the
+    // recommended option.
+    const result = ranked.map((rd, idx) => {
       const raw = (rd as any)._raw
       return {
         id: rd.id,
@@ -93,6 +96,7 @@ export async function GET(request: Request) {
         vehicleModel: raw.vehicleModel ?? null,
         vehicleColour: raw.vehicleColour ?? null,
         vehicleCapacity: raw.vehicleCapacity ?? null,
+        seatsLeft: raw.vehicleCapacity != null ? Math.max(0, raw.vehicleCapacity - rd.activeChildCount) : null,
         profilePhotoUrl: raw.profilePhotoUrl ?? null,
         association: raw.association
           ? { name: raw.association.name, region: raw.association.region }
@@ -103,6 +107,7 @@ export async function GET(request: Request) {
         distanceKm:
           rd.distanceKm !== null ? Math.round(rd.distanceKm * 10) / 10 : null,
         approvedDocsCount: 6, // all eligible drivers have exactly 6
+        recommended: idx === 0, // top-ranked = the recommended choice
       }
     })
 

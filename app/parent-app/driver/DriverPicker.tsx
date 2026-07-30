@@ -20,6 +20,8 @@ type Driver = {
   ratingAvg: number | null
   ratingCount: number
   distanceKm: number | null
+  seatsLeft: number | null
+  recommended: boolean
 }
 
 export function ParentDriverPicker({
@@ -106,14 +108,17 @@ export function ParentDriverPicker({
           ) : (
             drivers.map((d, idx) => {
               const vehicle = [d.vehicleColour, d.vehicleMake, d.vehicleModel].filter(Boolean).join(' ')
-              // Show "Recommended" badge on first card when it has ≥4 avg rating from ≥3 parents
-              const showRecommended = idx === 0 && d.ratingAvg != null && d.ratingAvg >= 4 && d.ratingCount >= 3
+              // The API flags the single best option (efficiency + rating, among
+              // eligible ACTIVE + fully-compliant + has-capacity drivers).
+              const showRecommended = d.recommended ?? idx === 0
               return (
                 <button
                   key={d.id}
                   onClick={() => assignDriver(d.id)}
                   disabled={assigning !== null}
-                  className="w-full text-left rounded-xl border border-[rgba(236,61,58,0.12)] p-3 hover:border-[#c1272d]/30 transition-colors disabled:opacity-50"
+                  className={`w-full text-left rounded-xl border p-3 transition-colors disabled:opacity-50 ${
+                    showRecommended ? 'border-[#fdc73e] bg-[#fdc73e]/5' : 'border-[rgba(236,61,58,0.12)] hover:border-[#c1272d]/30'
+                  }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-full bg-[#c1272d]/10 flex items-center justify-center shrink-0">
@@ -150,6 +155,11 @@ export function ParentDriverPicker({
                         {d.distanceKm != null && (
                           <span className="text-[10px] bg-[#c1272d]/08 text-[var(--brand-ink)] px-1.5 py-0.5 rounded-full font-medium">
                             ~{d.distanceKm} km
+                          </span>
+                        )}
+                        {d.seatsLeft != null && (
+                          <span className="text-[10px] bg-[#0F6E56]/10 text-[#0F6E56] px-1.5 py-0.5 rounded-full font-medium">
+                            {d.seatsLeft} seat{d.seatsLeft === 1 ? '' : 's'} left
                           </span>
                         )}
                       </div>

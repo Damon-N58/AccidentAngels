@@ -85,6 +85,39 @@ export async function PATCH(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Assigning a driver here (e.g. from the parent's driver picker) activates the
+  // arrangement with no driver-acceptance step. Ensure a FULLY_SIGNED contract
+  // exists for this child+driver so billing/driver-active-list work — mirroring
+  // child creation. Idempotent: skip if a live contract already exists.
+  if (body.driverId && body.driverId !== child.driverId) {
+    const nowIso = new Date().toISOString()
+    const { data: existing } = await supabase
+      .from('Contract')
+      .select('id')
+      .eq('childId', childId)
+      .eq('driverId', body.driverId)
+      .not('status', 'eq', 'CANCELLED')
+      .maybeSingle()
+    if (!existing) {
+      const { error: contractErr } = await supabase.from('Contract').insert({
+        id:                 crypto.randomUUID(),
+        driverId:           body.driverId,
+        parentId:           child.parentId,
+        childId,
+        contractVersion:    '1.0',
+        monthlyAmountCents: 0,
+        startDate:          (data?.startDate ?? nowIso),
+        terms:              {},
+        status:             'FULLY_SIGNED',
+        driverSignedAt:     nowIso,
+        parentSignedAt:     nowIso,
+        createdAt:          nowIso,
+        updatedAt:          nowIso,
+      })
+      if (contractErr) console.error('[children/PATCH] contract auto-create failed:', contractErr)
+    }
+  }
+
   return NextResponse.json(data)
 }
 

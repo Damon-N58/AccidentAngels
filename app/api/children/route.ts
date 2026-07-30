@@ -176,7 +176,10 @@ export async function POST(request: Request) {
         monthlyAmountCents:     0,
         startDate:              startDate ? new Date(startDate).toISOString() : now,
         terms:                  {},
-        status:                 'PENDING_DRIVER_SIGNATURE',
+        // No driver-acceptance step: assigning the driver the parent chose
+        // activates the arrangement immediately (driver auto-accepted).
+        status:                 'FULLY_SIGNED',
+        driverSignedAt:         now,
         parentSignedAt:         now,
         parentSignatureOtpHash: null,
         parentIpAddress:        ipAddress,

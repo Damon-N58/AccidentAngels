@@ -160,6 +160,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
   const [driverPos, setDriverPos] = useState<{ lat: number; lng: number } | null>(null)
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([])
   const [eta, setEta] = useState<number | null>(null)
+  const [distanceKm, setDistanceKm] = useState<number | null>(null)
   const [nearStop, setNearStop] = useState(false)
   const [completing, setCompleting] = useState(false)
   const [arriving, setArriving] = useState(false)    // loading state for the "Arrived" button
@@ -216,6 +217,7 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
 
     const dist = haversineMeters(driverPos.lat, driverPos.lng, nextStop.lat, nextStop.lng)
     setNearStop(dist < ARRIVAL_RADIUS_METERS)
+    setDistanceKm(Math.round((dist / 1000) * 10) / 10)
 
     // Only re-fetch route if moved far enough from the last fetch position.
     const last = lastRoutePos.current
@@ -227,6 +229,25 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
       if (minutes > 0) setEta(minutes)
     })
   }, [driverPos, nextStop])
+
+  // In-app "navigate": frame the driver and the next stop together (keeps the
+  // driver inside the app instead of handing off to Google Maps). The map
+  // otherwise auto-follows the driver on every GPS update (effect above).
+  function recenterOnRoute() {
+    const map = mapRef.current
+    if (!map) return
+    if (driverPos && nextStop?.lat && nextStop?.lng) {
+      map.fitBounds(
+        [
+          [Math.min(driverPos.lng, nextStop.lng), Math.min(driverPos.lat, nextStop.lat)],
+          [Math.max(driverPos.lng, nextStop.lng), Math.max(driverPos.lat, nextStop.lat)],
+        ],
+        { padding: { top: 120, bottom: 320, left: 60, right: 60 }, duration: 700, maxZoom: 16 },
+      )
+    } else if (driverPos) {
+      map.easeTo({ center: [driverPos.lng, driverPos.lat], zoom: 16, duration: 700 })
+    }
+  }
 
   // ── Actions ───────────────────────────────────────────────
 
@@ -434,10 +455,11 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   }`}>
                     {stopActionLabel(nextStop)}
                   </span>
-                  {eta !== null && !hasArrived && (
+                  {!hasArrived && (eta !== null || distanceKm !== null) && (
                     <span className="flex items-center gap-1 text-xs text-[#5A6474]">
                       <Clock className="w-3 h-3" />
-                      ~{eta} min
+                      {distanceKm !== null && <>~{distanceKm} km</>}
+                      {eta !== null && <> · ~{eta} min</>}
                     </span>
                   )}
                   {!driverPos && (
@@ -480,16 +502,17 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
             {/* Action buttons */}
             {!showMissed ? (
               <div className="flex gap-3">
-                {/* Navigate button — always visible */}
-                <a
-                  href={nextStop.lat && nextStop.lng ? googleMapsUrl(nextStop.lat, nextStop.lng) : '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                {/* Navigate — stays IN-APP: frames the driver + next stop on the
+                    live map (which auto-follows GPS). Google Maps is a small
+                    fallback link below for drivers who want voice guidance. */}
+                <button
+                  type="button"
+                  onClick={recenterOnRoute}
                   className="flex-1 h-12 rounded-xl border-2 border-[#c1272d] text-[var(--brand-ink)] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[#c1272d]/5"
                 >
                   <Navigation2 className="w-4 h-4" />
                   Navigate
-                </a>
+                </button>
 
                 {!hasArrived ? (
                   // Stage 1 — driver has not yet arrived
@@ -518,7 +541,21 @@ export function ActiveTripNavigation({ trip, onBack, onStopComplete, onStopMisse
                   </Button>
                 )}
               </div>
-            ) : (
+            ) : null}
+
+            {/* Fallback: voice turn-by-turn via Google Maps for drivers who want it */}
+            {!showMissed && nextStop.lat && nextStop.lng && (
+              <a
+                href={googleMapsUrl(nextStop.lat, nextStop.lng)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center text-xs text-[#5A6474] underline underline-offset-2"
+              >
+                Open in Google Maps ↗
+              </a>
+            )}
+
+            {showMissed && (
               <div className="space-y-2">
                 <input
                   autoFocus
